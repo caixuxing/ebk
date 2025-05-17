@@ -1,0 +1,60 @@
+﻿<div id="appAssignChannel">
+  <el-dialog v-model="assignChannelState.dialogVisible" title="分配渠道"  close="assignChannelState.dialogVisible=false" :close-on-click-modal="false" 
+  draggable width="600px" >
+   <el-form :model="statet.formData"  label-width="auto">
+          <el-form-item label="公司名称" >
+                <el-input v-model="statet.formData.companyName" autocomplete="off" clearable placeholder="请输入公司名称" disabled maxlength="30"></el-input>
+            </el-form-item>
+
+            <el-form-item label="渠道" >
+                 <el-checkbox-group v-model="statet.formData.channelArray">
+                    <el-checkbox label="Option A" value="Value A"></el-checkbox>
+                    <el-checkbox label="Option B" value="Value B"></el-checkbox>
+                    <el-checkbox label="Option C" value="Value C"></el-checkbox>
+                  </el-checkbox-group>
+            </el-form-item>
+    </el-form>
+    <template #footer>
+      <div class="dialog-footer">
+        <el-button type="primary" v-on:click="savet" >保存 </el-button>
+      </div>
+    </template>
+</el-dialog>
+
+</div>
+    <script type="text/javascript">
+        const appt = Vue.createApp({
+            setup() {
+                const statet = Vue.reactive({
+                    formData: {
+                    companyId: 0,
+                    companyName: "9999",
+                    channelArray: [],
+                    }
+                });
+
+                const savet = () => {
+
+                    alert("保存成功");
+                };
+
+
+             const assignChannelState = Vue.reactive({
+                dialogVisible: false,
+            });
+
+
+
+                const loadAssignChannelPage = () => {
+                    debugger;
+                   assignChannelState.dialogVisible  = true;
+                };
+
+                return { savet,statet,assignChannelState,loadAssignChannelPage}
+            }
+        });
+        appt.use(ElementPlus);
+        appt.mount('#appAssignChannel');
+    </script>
+
+

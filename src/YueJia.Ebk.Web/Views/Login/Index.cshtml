@@ -1,0 +1,156 @@
+﻿@inject IHostEnvironment env
+@{
+	    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@section head {
+	 <title>Ebk-登录  @string.Format("{0}",$"-【{ env.EnvironmentName}】")
+	 </title>
+	<style scoped>
+		.login-container {
+			display: flex;
+			justify-content: center;
+			align-items: center;
+			height: 100vh;
+		}
+		.login-card {
+			width: 400px;
+		}
+		.login-title {
+			color: rgb(71, 143, 202) !important;
+			width: 100%;
+			padding: 10px 0px;
+			border-bottom: 1px solid #e4e7ed;
+			position: relative;
+		}
+
+			.login-title::after {
+				content: '';
+				position: absolute;
+				width: 90px;
+				height: 2px;
+				background:rgb(71, 143, 202) !important;
+				bottom: 0;
+				left: 0px;
+			}
+
+		.el-form {
+			margin-top: 30px;
+		}
+
+		.el-input {
+			width: 100%;
+			height: 40px;
+		}
+
+		.el-button {
+			width: 100%;
+			height: 40px;
+			border-radius: 20px;
+		/* 	background: #de2910;
+			border: #de2910; */
+			margin: 20px 0px;
+		}
+
+		.login-content-code {
+			width: 70%;
+		}
+		.login-content-code-img {
+			width: 25%;
+			background-color: #fff;
+			border: 1px solid rgb(220, 223, 230);
+			height: 38px;
+			border-radius: 5px;
+			margin-left: 4.5%;
+			line-height: 38px;
+			text-align: center;
+			cursor: pointer;
+		}
+		.login-msg {
+			margin-top: 30px;
+			color: #a8abb2;
+			font-size: 12px;
+		}
+        body {
+		  background-color:#1D2024;
+		  overflow:hidden;
+        }
+
+	</style>
+}
+
+<div class="login-container">
+	<el-card class="login-card">
+		<h2 class="login-title">Ebk-登录</h2>
+		<el-form :model="state" ref="loginRef" :rules="loginRules">
+			<el-form-item prop="AccountNo">
+				<el-input v-model="state.AccountNo" autocomplete="off" :prefix-icon="User" placeholder="账户" clearable />
+			</el-form-item>
+			<el-form-item prop="AccountPwd">
+				<el-input v-model="state.AccountPwd" type="password"
+				show-password
+				clearable
+				auto-complete="new-password" :prefix-icon="Lock" placeholder="密码"  />
+			</el-form-item>
+			<el-form-item>
+				<el-button type="primary" v-on:click="handleLogin" :loading="isLoginLoading">登录</el-button>
+			</el-form-item>
+		</el-form>
+		<div class="login-msg">注:*</div>
+	</el-card>
+</div>
+
+@section scripts {
+	<script type="text/javascript">
+		const app = Vue.createApp({
+			setup() {
+				const state = Vue.reactive({
+					AccountNo: "@ViewBag.UserNmae",
+					AccountPwd: "@ViewBag.Password"
+				});
+				const loginRef = Vue.ref(null);
+				const loginRules = {
+					AccountNo: [{ required: true, message: '登录账户必填', trigger: 'blur' }],
+					AccountPwd: [{ required: true, message: '登录密码必填', trigger: 'blur' }]
+				};
+              const isLoginLoading = Vue.ref(false)
+
+				const handleLogin =() => {
+					loginRef.value.validate((valid) => {
+						if (!valid) {
+						 return;
+						}
+						isLoginLoading.value = true;
+						axios.post('/login', { userName: state.AccountNo, passWord: state.AccountPwd })
+						.then((response) => {
+							isLoginLoading.value = false;
+							if (response.status == 200&&response.data.isSuccess) {
+						        ElMessage({ message: `登录成功!`,  type: `success` });
+								window.location.href = `${response.data.data}`;
+								return;
+							}
+							ElMessage.error(response.data.message);
+						})
+						.catch(error => {
+							console.error('登录请求失败：', error)
+						})
+						
+					  });
+				};
+
+				Vue.onMounted(() => {
+					loginRef.value?.resetFields();
+				});
+				return {
+					state,
+					handleLogin,
+					loginRules,
+					loginRef,
+					isLoginLoading
+				};
+			}
+		});
+		app.use(ElementPlus);
+		app.mount('#app');
+	</script>
+}

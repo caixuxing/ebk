@@ -1,0 +1,18 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Volo.Abp.Ddd.Application" Version="8.2.3" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\YueJia.Ebk.Application.Contracts\YueJia.Ebk.Application.Contracts.csproj" />
+    <ProjectReference Include="..\YueJia.Ebk.Infrastructure\YueJia.Ebk.Infrastructure.csproj" />
+  </ItemGroup>
+
+</Project>

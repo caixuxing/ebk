@@ -1,0 +1,86 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- Import style -->
+    <link rel="stylesheet" href="//unpkg.com/element-plus/dist/index.css" />
+    <!-- Import Vue 3 -->
+    <script src="//unpkg.com/vue@3"></script>
+    <!-- Import component library -->
+    <script src="//unpkg.com/element-plus"></script>
+    <script src="//unpkg.com/element-plus/dist/locale/zh-cn"></script>
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+    <script src="http://ms.mxhols.com/admin/Scripts/jquery-3.3.1.min.js"></script>
+    <style>
+        body {
+            font-family: "Helvetica Neue",Helvetica,Arial,sans-serif;
+            font-size: 14px;
+            line-height: 1.42857143;
+            color: #333;
+            margin: 0px;
+            overflow: hidden;
+        }
+        [v-cloak] {
+            display: none !important;
+        }
+        .lspan {
+            color: black !important;
+        }
+
+        .el-main {
+            display: inline-flex;
+            flex-grow: 1;
+            flex-direction: column;
+            border: #ebeef5 1px solid;
+            overflow: hidden;
+            height: 100%;
+            width: 100%;
+            padding: 10px !important;
+            margin: 0px;
+            border: none;
+        }
+
+        .el-table {
+            flex-grow: 1;
+          /*   display: flex; */
+            overflow: auto;
+            height: 1px;
+        }
+        .el-table__empty-block {
+       width: 100% !important;
+   }
+
+    </style>
+    @await RenderSectionAsync("head",false)
+</head>
+<body>
+    <div id="app" class="element-main" v-cloak>
+        @RenderBody()
+    </div>
+</body>
+<script src="https://unpkg.com/dayjs@1.8.21/dayjs.min.js"></script>
+<script src="https://unpkg.com/dayjs@1.8.21/plugin/utc.js"></script>
+
+<script type="text/javascript">
+     axios.interceptors.response.use(
+        response => response,
+        error => {
+            if (error.response  && !error.response.data.isSuccess  && [400, 500].includes(error.response.status))  {
+                ElMessage.error(error.response.data.message); 
+                return;
+            }
+            else if (error.response && error.response.status === 401) {
+                ElMessage({ message: error.response.data.message, type: error.response.data.messageType });
+                top.location.href = "/";
+            } else {
+                ElMessage.error('请求响应异常,请联系管理员!')
+            }
+            return Promise.reject(error);
+        }
+    );
+
+    const { ElMessage, ElMessageBox, ElLoading } = ElementPlus;
+</script>
+@await RenderSectionAsync("scripts", false)
+</html>

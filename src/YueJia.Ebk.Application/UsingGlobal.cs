@@ -1,0 +1,9 @@
+﻿global using SqlSugar;
+global using System.Diagnostics.CodeAnalysis;
+global using Volo.Abp.Application.Services;
+global using Volo.Abp.Modularity;
+global using Volo.Abp.Validation;
+global using YueJia.Ebk.Application.Contracts;
+global using YueJia.Ebk.Application.Contracts.Validate;
+global using YueJia.Ebk.Domain.Shared.Response;
+global using YueJia.Ebk.Infrastructure;

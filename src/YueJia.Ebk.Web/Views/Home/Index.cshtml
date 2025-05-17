@@ -1,0 +1,20 @@
+﻿@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+<el-container style="height:100vh;overflow: hidden;">
+    <el-main>
+        欢迎来到EBK管理系统
+    </el-main>
+</el-container>
+@section scripts {
+    <script type="text/javascript">
+        const app = Vue.createApp({
+        setup() {
+        }
+        });
+        app.use(ElementPlus);
+        app.mount('#app');
+    </script>
+}
+
+

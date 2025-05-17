@@ -1,0 +1,9 @@
+﻿global using FluentValidation;
+global using FluentValidation.AspNetCore;
+global using System.Reflection;
+global using System.Text.Json.Serialization;
+global using Volo.Abp.Modularity;
+global using YueJia.Ebk.Application.Contracts.Comm.BaseObj;
+global using YueJia.Ebk.Domain.Shared.Enums;
+global using YueJia.Ebk.Domain.Shared.Formatt;
+global using YueJia.Ebk.Domain.Shared.Utils;
