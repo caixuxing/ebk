@@ -22,6 +22,8 @@ public class CompanyController : AbpController
         return View();
     }
 
+    public IActionResult AssignChannel() => View();
+
 
 
     /// <summary>

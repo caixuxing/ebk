@@ -1,0 +1,63 @@
+﻿@using Microsoft.Extensions.Hosting
+@inject IHostEnvironment hostEnvironment
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+@section head {
+    <title>分配渠道</title>
+}
+<el-container style="height:100vh;overflow: hidden;">
+    <el-main>
+        <el-form :model="state.formData" label-width="auto">
+            <el-form-item label="公司名称">
+                <el-input v-model="state.formData.companyName" autocomplete="off" clearable placeholder="请输入公司名称" disabled maxlength="30"></el-input>
+            </el-form-item>
+
+            <el-form-item label="渠道">
+                <el-checkbox-group v-model="state.formData.channelArray">
+                    <el-checkbox label="Option A" value="Value A"></el-checkbox>
+                    <el-checkbox label="Option B" value="Value B"></el-checkbox>
+                    <el-checkbox label="Option C" value="Value C"></el-checkbox>
+                </el-checkbox-group>
+            </el-form-item>
+          
+                <div class="dialog-footer">
+                    <el-button type="primary" v-on:click="savet">保存 </el-button>
+                </div>
+           
+        </el-form>
+   
+    </el-main>
+</el-container>
+
+@section scripts {
+    <script type="text/javascript">
+
+        var frameIndex = parent.layer.getFrameIndex(window.name);
+        const app = Vue.createApp({
+            setup() {
+                const state = Vue.reactive({
+                    dataLoading: false,
+                    formData: {
+                        companyName: '',
+                        channelArray: [],
+                    },
+                    dataList: []
+
+                });
+
+                const savet = () => {
+
+                    parent.$("#query").click();
+                    parent.layer.close(frameIndex);
+                
+                }
+
+                return { state, savet }
+            }
+        });
+        app.use(ElementPlus, { locale: ElementPlusLocaleZhCn });
+        app.mount('#app');
+    </script>
+
+}

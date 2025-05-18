@@ -25,7 +25,7 @@
                       </el-select>
                 </el-form-item>
                 <el-form-item prop="desc" style="margin-bottom:5px;">
-                    <el-button type="primary" v-on:click="pageIndex=1;loadData()">查询</el-button>
+                    <el-button type="primary" v-on:click="pageIndex=1;loadData()" id="query">查询</el-button>
                     <el-button v-on:click="resetQueryForm">重置</el-button>
                 </el-form-item>
             </div>
@@ -92,7 +92,7 @@
             <el-table-column label="操作" prop="opt" width="240px" align="center">
                 <template #default="scope">
                     <div style="text-align:center">
-                       <el-button size="small" v-on:click="loadAssignChannelPage()">配置渠道</el-button>
+                        <el-button size="small" v-on:click="add">配置渠道</el-button>
                        <el-button size="small" v-on:click="edit(scope.row)">编辑</el-button>
                        <el-button size="small" type="danger" v-on:click="deleteItem(scope.row.id)">删除 </el-button>
                     </div>
@@ -190,6 +190,7 @@
                 state.dataLoading = true;
                 axios.post(`/Company/PageList`, {...state.qry}).then(response => {
                     let {data,status}=response;
+                    alert("ccx1111111111111111111");
                     Object.assign(state,
                                 {dataList:data.data.list,
                             qry:{
@@ -306,8 +307,28 @@
                               };
                 };
 
+                const add = () => {
+
+                    layui.use(function () {
+                        var layer = layui.layer;
+                        layer.open({
+                            type: 2,
+                            area: ['90%', '90%'],
+                            title: " 房型 Mapping 供应商酒店房型",
+                            fix: true,
+                            maxmin: true,
+                            shadeClose: true,
+                            content: `Company/AssignChannel`
+                        });
+                    });
+
+               
+                
+                }
+
             return {state,dialog,loadData,handleSizeChange,handleCurrentChange, addDialog,deleteItem,FormDataRules,
-                    FormDataRef,save,edit,resetQueryForm};
+                    FormDataRef, save, edit, resetQueryForm, add
+                };
                 }
             });
             app.use(ElementPlus,{ locale: ElementPlusLocaleZhCn });
