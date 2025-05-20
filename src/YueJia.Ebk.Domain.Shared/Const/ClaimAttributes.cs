@@ -29,8 +29,8 @@
         public const string RefreshToken = "token";
 
         /// <summary>
-        /// 组织
+        /// 租户
         /// </summary>
-        public const string OrgCode = "org";
+        public const string TenantId = "Tid";
     }
 }

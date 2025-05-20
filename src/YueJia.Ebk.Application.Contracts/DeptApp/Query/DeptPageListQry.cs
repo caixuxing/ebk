@@ -8,8 +8,6 @@
         /// </summary>
         public string? Name { get; set; }
 
-
-
         /// <summary>
         /// 状态
         /// </summary>

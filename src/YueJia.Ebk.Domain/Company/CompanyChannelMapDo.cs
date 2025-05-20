@@ -5,7 +5,7 @@
 /// 公司渠道关联映射表
 /// </summary>
 [SugarTable("CompanyChannelMap", "公司渠道关联映射表")]
-public partial record CompanyChannelMapDo : EntityBase
+public partial record CompanyChannelMapDo : EntityTenant
 {
     public CompanyChannelMapDo()
     {
@@ -31,16 +31,17 @@ public partial record CompanyChannelMapDo : EntityBase
 
 public partial record CompanyChannelMapDo
 {
-    private CompanyChannelMapDo(long companyId, long channelId, YesOrNoType status)
+    private CompanyChannelMapDo(long companyId, long channelId, YesOrNoType status, long tenantId)
     {
         CompanyId = companyId;
         ChannelId = channelId;
         Status = status;
+        TenantId = tenantId;
     }
 
-    public static CompanyChannelMapDo Create(long companyId, long channelId)
+    public static CompanyChannelMapDo Create(long companyId, long channelId, long tenantId)
     {
-        return new CompanyChannelMapDo(companyId, channelId, YesOrNoType.Yes);
+        return new CompanyChannelMapDo(companyId, channelId, YesOrNoType.Yes, tenantId);
     }
 
     public CompanyChannelMapDo SetCompanyId(long companyId)

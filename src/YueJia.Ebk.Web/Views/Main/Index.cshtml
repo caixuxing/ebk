@@ -1,4 +1,6 @@
 ﻿@inject IHostEnvironment env
+@inject  YueJia.Ebk.Application.Contracts.UserApp.ICurrentUserApp currentUser
+
 
 @section head {
     <title>Ebk后台管理  @string.Format("{0}",$"-【{ env.EnvironmentName}】") </title>
@@ -89,7 +91,7 @@
         <el-row style="line-height:60px">
             <div style=" background:#72cfb8;width: 199px;text-align: center;font-weight: 700;">
                 <a href="/Main/Index" style="display: flex;justify-content: center;line-height: 60px; flex-direction:column; color: #fff; text-decoration: none;">
-                    <h1 class="ws-logo-title" style="display:flex;line-height:35px;margin:0px auto 0px">Admin </h1>
+                    <h1 class="ws-logo-title" style="display:flex;line-height:35px;margin:0px auto 0px">@currentUser.UserName </h1>
                     <div class="ws-logo-subtitle" style="line-height:10px">Ebk后台管理</div>
                 </a>
             </div>

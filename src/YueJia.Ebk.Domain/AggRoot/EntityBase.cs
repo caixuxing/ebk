@@ -64,3 +64,18 @@ public abstract record EntityBase : EntityBaseId, IDeletedFilter
     public long Version { get; set; }
 }
 
+
+
+/// <summary>
+/// 租户实体基类
+/// </summary>
+[SugarIndex("index_{table}_tenantid", nameof(TenantId), OrderByType.Asc)]
+public abstract record EntityTenant : EntityBase, ITenantIdFilter
+{
+    /// <summary>
+    /// 租户Id
+    /// </summary>
+    [SugarColumn(ColumnDescription = "租户Id", IsOnlyIgnoreUpdate = true)]
+    public virtual long? TenantId { get; set; }
+}
+

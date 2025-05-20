@@ -1,0 +1,80 @@
+﻿@model  YueJia.Ebk.Application.Contracts.DeptApp.Dto.DeptDetailsDto
+@using System.Text.Json;
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+@section head {
+    <title>新增/编辑部门</title>
+}
+<el-container style="height:100vh;overflow: hidden;">
+    <el-main>
+        <el-form :model="state.formData" label-width="auto" :rules="FormDataRules" ref="FormDataRef">
+            <el-form-item label="部门名称" required prop="name" > 
+                <el-input v-model="state.formData.name" autocomplete="off" clearable placeholder="部门名称"  maxlength="30"></el-input>
+            </el-form-item>
+            <el-form-item label="归属上级部门" required prop="parentDeptId">
+                     <el-select v-model="state.formData.parentDeptId" placeholder="请选择上级部门"  filterable > 
+                       <el-option v-for="option in state.deptData" :key="option.Text" :label="option.Label" :value="option.Text"  ></el-option>
+                    </el-select>
+            </el-form-item>
+              <el-form-item label="是否启用" label-width="auto">
+                <el-switch v-model="state.formData.status" inline-prompt active-text="是" inactive-text="否"/>
+              </el-form-item>
+            <el-form-item label-width="0">
+                <div class="dialog-footer" style="width:100%;display: flex;justify-content: flex-end">
+                    <el-button v-on:click="cancel">关闭</el-button>
+                    <el-button type="primary" v-on:click="save">保存 </el-button>
+                </div>
+            </el-form-item>
+        </el-form>
+
+    </el-main>
+</el-container>
+
+@section scripts {
+    <script type="text/javascript">
+        var frameIndex = parent.layer.getFrameIndex(window.name);
+        const app = Vue.createApp({
+            setup() {
+                const state = Vue.reactive({
+                    dataLoading: false,
+                    formData: {
+                        name:`@Html.Raw(Model.DeptName)`,
+                        parentDeptId:`@Html.Raw(Model.ParentDeptId)`,
+                        companyId:`@Model.CompanyId`,
+                        status: @((Model.Status == YueJia.Ebk.Domain.Shared.Enums.YesOrNoType.No ? false:true).ToString().ToLower())
+                    },
+                    deptData: @Html.Raw(ViewBag.DeptData)
+                });
+               const id = Vue.ref(`@Html.Raw(Model.Id)`);
+               const FormDataRef = Vue.ref(null);
+               const FormDataRules = {
+                    name: [{ required: true, message: '部门名称必填!', trigger: 'blur' }]
+               };
+
+               const save = async () => {
+                let isValid = await FormDataRef.value.validate(); 
+                if(!isValid) return ElMessage({ message: "请完善表单信息!", type: "error" });
+                let requestData = { ...state.formData, status: state.formData.status  ? 1 : 0 };
+                let url = id.value ? `/dept/${id.value}/update`  : '/dept/create';
+                let method = id.value  ? 'put' : 'post';
+                let response = await axios[method](url, requestData);
+                    if (response.status  === 200) {
+                          ElMessage({ message: "保存成功!", type: "success" });
+                          state.openAddDialog  = false;
+                           parent.$("#query").click();
+                           parent.layer.close(frameIndex);
+                    }
+               }
+                const cancel =() => {
+                       parent.$("#query").click();
+                       parent.layer.close(frameIndex);
+                }
+                return { state, save,cancel,FormDataRules,FormDataRef }
+            }
+        });
+        app.use(ElementPlus, { locale: ElementPlusLocaleZhCn });
+        app.mount('#app');
+    </script>
+
+}

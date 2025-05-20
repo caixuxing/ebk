@@ -15,8 +15,4 @@
     <ProjectReference Include="..\YueJia.Ebk.Domain.Shared\YueJia.Ebk.Domain.Shared.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="DeptApp\Commands\" />
-  </ItemGroup>
-
 </Project>

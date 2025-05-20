@@ -1,5 +1,4 @@
-﻿@using Microsoft.Extensions.Hosting
-@inject IHostEnvironment hostEnvironment
+﻿@model  YueJia.Ebk.Web.ViewModels.Company.AssignChannelVo
 @{
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
@@ -9,24 +8,25 @@
 <el-container style="height:100vh;overflow: hidden;">
     <el-main>
         <el-form :model="state.formData" label-width="auto">
-            <el-form-item label="公司名称">
+            <el-form-item label="公司名称" required>
                 <el-input v-model="state.formData.companyName" autocomplete="off" clearable placeholder="请输入公司名称" disabled maxlength="30"></el-input>
             </el-form-item>
 
             <el-form-item label="渠道">
-                <el-checkbox-group v-model="state.formData.channelArray">
-                    <el-checkbox label="Option A" value="Value A"></el-checkbox>
-                    <el-checkbox label="Option B" value="Value B"></el-checkbox>
-                    <el-checkbox label="Option C" value="Value C"></el-checkbox>
+                <el-checkbox-group v-model="state.formData.channelData">
+                    <template v-for="obj in state.channelData">
+                        <el-checkbox :label="obj.Describe" :value="obj.Value" border style="margin:10px"></el-checkbox>
+                    </template>
                 </el-checkbox-group>
+
             </el-form-item>
-          
-                <div class="dialog-footer">
-                    <el-button type="primary" v-on:click="savet">保存 </el-button>
+              <el-form-item label-width="0" >
+                <div class="dialog-footer" style="width:100%;display: flex;justify-content: flex-end">
+                    <el-button v-on:click="cancel">关闭 </el-button>
+                    <el-button type="primary" v-on:click="save">保存 </el-button>
                 </div>
-           
+               </el-form-item>
         </el-form>
-   
     </el-main>
 </el-container>
 
@@ -39,21 +39,29 @@
                 const state = Vue.reactive({
                     dataLoading: false,
                     formData: {
-                        companyName: '',
-                        channelArray: [],
+                        companyName:`@Html.Raw(Model.CompanyName)`,
+                        channelData: @Html.Raw(Model.SelectedChannelJosn),
                     },
-                    dataList: []
-
+                    channelData:@Html.Raw(Model.ChannelDataJosn)
                 });
 
-                const savet = () => {
+              const id =Vue.ref(`@Model.CompanyId`);
 
-                    parent.$("#query").click();
-                    parent.layer.close(frameIndex);
-                
-                }
-
-                return { state, savet }
+              const save = async () => {
+                let requestData = { ...state.formData };
+           
+                let response = await axios.post(`/Company/${id.value}/AssignChannel`, requestData);
+                    if (response.status  === 200) {
+                          ElMessage({ message: "保存成功!", type: "success" });
+                         state.openAddDialog  = false;
+                          parent.$("#query").click();
+                          parent.layer.close(frameIndex);
+                    }
+               }
+               const cancel =  () => {
+                 parent.layer.close(frameIndex);
+               }
+                return { state, save,cancel }
             }
         });
         app.use(ElementPlus, { locale: ElementPlusLocaleZhCn });

@@ -6,4 +6,5 @@ global using Volo.Abp.Validation;
 global using YueJia.Ebk.Application.Contracts;
 global using YueJia.Ebk.Application.Contracts.Validate;
 global using YueJia.Ebk.Domain.Shared.Response;
+global using YueJia.Ebk.Domain.Shared.Utils;
 global using YueJia.Ebk.Infrastructure;

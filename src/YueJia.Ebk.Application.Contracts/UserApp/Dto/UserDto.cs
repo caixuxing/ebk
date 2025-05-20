@@ -7,5 +7,7 @@
 
         public string UserPwd { get; set; }
 
+        public long? TenantId { get; set; }
+
     }
 }

@@ -1,0 +1,24 @@
+﻿@* 分配渠道 *@
+
+<el-dialog v-model="dialog.openAddDialog" :title="dialog.title" close="dialog.openAddDialog=false" :close-on-click-modal="false" draggable width="600px">
+    <el-form :model="state.formData" label-width="auto">
+        <el-form-item label="公司名称" required>
+            <el-input v-model="state.formData.companyName" autocomplete="off" clearable placeholder="请输入公司名称" disabled maxlength="30"></el-input>
+        </el-form-item>
+
+        <el-form-item label="渠道">
+            <el-checkbox-group v-model="state.formData.channelData">
+                <template v-for="obj in state.channelData">
+                    <el-checkbox :label="obj.Describe" :value="obj.Value" border style="margin:10px"></el-checkbox>
+                </template>
+            </el-checkbox-group>
+
+        </el-form-item>
+        <el-form-item label-width="0">
+            <div class="dialog-footer" style="width:100%;display: flex;justify-content: flex-end">
+                <el-button v-on:click="cancel">关闭 </el-button>
+                <el-button type="primary" v-on:click="save">保存 </el-button>
+            </div>
+        </el-form-item>
+    </el-form>
+</el-dialog>

@@ -7,7 +7,7 @@ namespace YueJia.Ebk.Domain.Company;
 /// 公司
 /// </summary>
 [SugarTable("Company", "公司")]
-public partial record CompanyDO : EntityBase
+public partial record CompanyDO : EntityTenant
 {
     /// <summary>
     /// 构造函数
@@ -78,6 +78,7 @@ public partial record CompanyDO
         Status = status;
         Password = EncryptUtils.MD5Encrypt("123456");
         this.Id = SnowFlakeSingle.instance.getID();
+        this.TenantId = SnowFlakeSingle.instance.getID();
     }
 
     public static CompanyDO Create(string name, string responsible, string contactPhone, string email, string companyAddr, YesOrNoType isChannelManage, YesOrNoType status)

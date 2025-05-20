@@ -69,7 +69,7 @@ public record CompanyPageListDto
     /// <summary>
     /// 创建日期
     /// </summary>
-    [JsonConverter(typeof(DateTimeConverter))] // 自定义日期格式
+    [JsonConverter(typeof(DateTimeConverter))]
     public DateTime? CreateTime { get; set; }
 
 }

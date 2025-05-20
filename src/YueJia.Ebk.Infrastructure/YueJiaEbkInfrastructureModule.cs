@@ -69,7 +69,14 @@ public class YueJiaEbkInfrastructureModule : AbpModule
            {
                // 配置全局过滤器
                db.QueryFilter.AddTableFilter<IDeletedFilter>(it => !it.IsDelete);
-               if (!true)
+
+               // 配置租户过滤器
+               var tenantId = _accesssor.Value?.HttpContext?.User?.FindFirst(ClaimAttributes.TenantId)?.Value;
+               if (!string.IsNullOrWhiteSpace(tenantId))
+                   db.QueryFilter.AddTableFilter<ITenantIdFilter>(u => u.TenantId == long.Parse(tenantId));
+
+
+               if (true)
                {
                    db.Aop.OnLogExecuting = (sql, pars) =>
                    {

@@ -5,7 +5,7 @@
 /// 部门
 /// </summary>
 [SugarTable("Department", "部门")]
-public partial record DepartmentDo : EntityBase
+public partial record DepartmentDo : EntityTenant
 {
     /// <summary>
     /// 构造函数
@@ -41,18 +41,20 @@ public partial record DepartmentDo : EntityBase
 
 public partial record DepartmentDo
 {
-    private DepartmentDo(string name, long parentId, long companyId, YesOrNoType status)
+    private DepartmentDo(string name, long parentId, long companyId, YesOrNoType status, long tenantId)
     {
         Name = name;
         ParentId = parentId;
         CompanyId = companyId;
         Status = status;
         this.Id = SnowFlakeSingle.instance.getID();
+        this.TenantId = tenantId;
     }
 
-    public static DepartmentDo Create(string name, long parentId, long companyId, YesOrNoType status)
+    public static DepartmentDo Create(string name, long parentId, long companyId, YesOrNoType status, long tenantId)
     {
-        return new DepartmentDo(name, parentId, companyId, status);
+        if (tenantId <= 0) throw new ArgumentException("当前租户不存在，部门创建失败!");
+        return new DepartmentDo(name, parentId, companyId, status, tenantId);
     }
 
     public DepartmentDo SetName(string name)

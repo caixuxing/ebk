@@ -2,6 +2,7 @@
 using YueJia.Ebk.Application.Contracts.CompanyApp.Commands;
 using YueJia.Ebk.Application.Contracts.CompanyApp.Dto;
 using YueJia.Ebk.Application.Contracts.CompanyApp.Query;
+using YueJia.Ebk.Application.Contracts.UserApp;
 using YueJia.Ebk.Application.Utils;
 using YueJia.Ebk.Domain.Company;
 using YueJia.Ebk.Domain.Dept;
@@ -18,10 +19,16 @@ public class CompanyApp : ApplicationService, ICompanyApp
 
     private ISqlSugarClient db => LazyServiceProvider.LazyGetRequiredService<ISqlSugarClient>();
 
+    private ICurrentUserApp CurrentUserApp => LazyServiceProvider.LazyGetRequiredService<ICurrentUserApp>();
+
     public async Task<long> CreateCompanyAsync([NotNull] CreateOrUpdateCommpanyCmd cmd)
     {
         //验证
         await LazyServiceProvider.LazyGetRequiredService<FluentValidation.IValidator<CreateOrUpdateCommpanyCmd>>().ValidateAndThrowAsync(cmd);
+
+
+        if (CurrentUserApp.TenantId.ToLong(0) != 0) throw new InvalidOperationException("当前用户无权创建公司！");
+
 
         //校验唯一性
         if (await CompanyRepo.IsAnyAsync(x => x.ContactPhone == cmd.ContactPhone)) throw new InvalidOperationException("公司联系电话已存在！");
@@ -38,7 +45,7 @@ public class CompanyApp : ApplicationService, ICompanyApp
                                     status: cmd.Status
                                     ) ?? throw new InvalidOperationException("公司创建失败！");
 
-        var DeptEntity = DepartmentDo.Create("默认部门", -1, entity.Id, YesOrNoType.Yes) ?? throw new InvalidOperationException("部门创建失败！");
+        var DeptEntity = DepartmentDo.Create("默认部门", -1, entity.Id, YesOrNoType.Yes, entity.TenantId.GetValueOrDefault(0)) ?? throw new InvalidOperationException("部门创建失败！");
 
         return await DbTransaction.ExecuteInTransactionAsync(db, async () =>
         {
