@@ -32,5 +32,10 @@
         /// 租户
         /// </summary>
         public const string TenantId = "Tid";
+
+        /// <summary>
+        /// 账号类型
+        /// </summary>
+        public const string AccountType = "AccountType";
     }
 }

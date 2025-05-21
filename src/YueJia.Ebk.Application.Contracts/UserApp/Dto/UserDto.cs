@@ -9,5 +9,10 @@
 
         public long? TenantId { get; set; }
 
+        /// <summary>
+        /// 账户类型
+        /// </summary>
+        public AccountTypeEnum AccountType { get; set; }
+
     }
 }

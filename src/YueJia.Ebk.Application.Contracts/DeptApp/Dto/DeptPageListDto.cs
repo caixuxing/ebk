@@ -1,6 +1,17 @@
 ﻿namespace YueJia.Ebk.Application.Contracts.DeptApp.Dto
 {
-    public class DeptPageListDto
+    public record DeptPageListDto : DeptPageListBaseDto
+    {
+
+        /// <summary>
+        /// 子级
+        /// </summary>
+        public List<DeptPageListBaseDto> Children { get; set; } = new();
+    }
+
+
+
+    public record DeptPageListBaseDto
     {
         [JsonNumberHandling(JsonNumberHandling.WriteAsString)]
         public long DeptId { get; set; }

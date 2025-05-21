@@ -7,6 +7,7 @@ using SqlSugar.IOC;
 using System.Reflection;
 using YueJia.Ebk.Domain.AggRoot;
 using YueJia.Ebk.Domain.Shared.Const;
+using YueJia.Ebk.Domain.Shared.Enums;
 
 namespace YueJia.Ebk.Infrastructure;
 
@@ -67,15 +68,15 @@ public class YueJiaEbkInfrastructureModule : AbpModule
             },
            db =>
            {
-               // 配置全局过滤器
+
                db.QueryFilter.AddTableFilter<IDeletedFilter>(it => !it.IsDelete);
 
-               // 配置租户过滤器
-               var tenantId = _accesssor.Value?.HttpContext?.User?.FindFirst(ClaimAttributes.TenantId)?.Value;
-               if (!string.IsNullOrWhiteSpace(tenantId))
-                   db.QueryFilter.AddTableFilter<ITenantIdFilter>(u => u.TenantId == long.Parse(tenantId));
-
-
+               if (_accesssor.Value?.HttpContext?.User?.FindFirst(ClaimAttributes.AccountType)?.Value != ((int)AccountTypeEnum.SuperAdmin).ToString())
+               {
+                   var tenantId = _accesssor.Value?.HttpContext?.User?.FindFirst(ClaimAttributes.TenantId)?.Value;
+                   if (!string.IsNullOrWhiteSpace(tenantId))
+                       db.QueryFilter.AddTableFilter<ITenantIdFilter>(u => u.TenantId == long.Parse(tenantId));
+               }
                if (true)
                {
                    db.Aop.OnLogExecuting = (sql, pars) =>
@@ -149,7 +150,7 @@ public class YueJiaEbkInfrastructureModule : AbpModule
                        {
                            var id = entityInfo.EntityColumnInfo.PropertyInfo.GetValue(entityInfo.EntityValue);
                            if (id == null || (long)id == 0)
-                               entityInfo.SetValue(0L);
+                               entityInfo.SetValue(SnowFlakeSingle.instance.getID());
                        }
                        // 若创建时间为空则赋值当前时间
                        else if (entityInfo.PropertyName == nameof(EntityBase.CreateTime) && entityInfo.EntityColumnInfo.PropertyInfo.GetValue(entityInfo.EntityValue) == null)
@@ -160,6 +161,13 @@ public class YueJiaEbkInfrastructureModule : AbpModule
                        if (_accesssor.Value?.HttpContext?.User != null)
                        {
                            dynamic entityValue = entityInfo.EntityValue;
+
+                           if (entityInfo.PropertyName == nameof(EntityTenant.TenantId))
+                           {
+                               var tenantId = entityValue.TenantId;
+                               if (tenantId == null || tenantId == 0)
+                                   entityInfo.SetValue(_accesssor.Value?.HttpContext?.User?.FindFirst(ClaimAttributes.TenantId)?.Value);
+                           }
 
                            if (entityInfo.PropertyName == nameof(EntityBase.CreatedbyId))
                            {

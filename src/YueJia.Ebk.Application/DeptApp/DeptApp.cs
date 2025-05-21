@@ -118,6 +118,7 @@ namespace YueJia.Ebk.Application.DeptApp
                    .LeftJoin<CompanyDO>((t, t1) => t.CompanyId == t1.Id).With(SqlWith.NoLock)
                    .WhereIF(!string.IsNullOrWhiteSpace(qry.Name), (t, t1) => SqlFunc.Like(t.Name, $"{qry.Name}%"))
                    .WhereIF(qry.Status.HasValue, (t, t1) => t.Status.Equals(qry.Status))
+                   .Where((t, t1) => t.ParentId == -1)
                    .Select((t, t1) => new DeptPageListDto()
                    {
                        DeptId = t.Id,
@@ -130,6 +131,31 @@ namespace YueJia.Ebk.Application.DeptApp
                    });
             var data = await query.ToPageListAsync(qry.PageIndex, qry.PageSize, total);
 
+
+            var ids = data.Select(x => x.DeptId).ToList();
+
+            var ChildData = await DepartmentRepo.AsQueryable().With(SqlWith.NoLock)
+                   .LeftJoin<CompanyDO>((t, t1) => t.CompanyId == t1.Id).With(SqlWith.NoLock)
+                   .WhereIF(!string.IsNullOrWhiteSpace(qry.Name), (t, t1) => SqlFunc.Like(t.Name, $"{qry.Name}%"))
+                   .WhereIF(qry.Status.HasValue, (t, t1) => t.Status.Equals(qry.Status))
+                   .Where((t, t1) => t.ParentId != -1 && ids.Contains(t.ParentId))
+                   .Select((t, t1) => new DeptPageListBaseDto()
+                   {
+                       DeptId = t.Id,
+                       DeptName = t.Name,
+                       ParentDeptId = t.ParentId,
+                       CompanyName = t1.Name,
+                       CompanyId = t1.Id,
+                       Status = t.Status,
+                       CreateTime = t.CreateTime,
+                   }).ToListAsync();
+
+            data = data.Select(item =>
+            {
+                item.Children = ChildData.Where(q => q.ParentDeptId == item.DeptId).ToList();
+                return item;
+            })
+            .ToList();
             return new PageData<IEnumerable<DeptPageListDto>>(total, qry.PageSize, qry.PageIndex, data);
         }
 
