@@ -1,4 +1,4 @@
-﻿@inject  YueJia.Ebk.Application.Contracts.UserApp.ICurrentUserApp currentUser
+﻿@inject  YueJia.Ebk.Application.Contracts.SysUserApp.ICurrentUserApp currentUser
 @using YueJia.Ebk.Domain.Shared.Utils
 @{
     Layout = "~/Views/Shared/_Layout.cshtml";
@@ -32,7 +32,7 @@
        <el-form label-width="100px" :inline="true" style="margin-top:30px;">
             <div>
                 <el-form-item prop="desc" style="margin-bottom:5px;">
-                     @if (currentUser.TenantId.ToLong(0) == 0)
+                     @if (currentUser.AccountType==YueJia.Ebk.Domain.Shared.Enums.AccountTypeEnum.SuperAdmin)
                         {
                     <el-button type="primary" v-on:click="addDialog()">新增</el-button>
                    @* <el-button type="primary" v-on:click="ttt.tttx()">新增22222</el-button> *@
@@ -97,7 +97,7 @@
                     <div style="text-align:center">
                         <el-button size="small" v-on:click="assignChannels(scope.row)">配置渠道</el-button>
                        <el-button size="small" v-on:click="edit(scope.row)">编辑</el-button>
-                        @if (currentUser.TenantId.ToLong(0) == 0)
+                        @if (currentUser.AccountType==YueJia.Ebk.Domain.Shared.Enums.AccountTypeEnum.SuperAdmin)
                         {
                          <el-button size="small" type="danger" v-on:click="deleteItem(scope.row.id)">删除 </el-button>
                         }

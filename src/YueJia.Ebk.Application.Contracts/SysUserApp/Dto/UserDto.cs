@@ -1,4 +1,4 @@
-﻿namespace YueJia.Ebk.Application.Contracts.UserApp.Dto
+﻿namespace YueJia.Ebk.Application.Contracts.SysUserApp.Dto
 {
     public class UserDto
     {

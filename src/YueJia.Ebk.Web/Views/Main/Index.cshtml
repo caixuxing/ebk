@@ -1,5 +1,5 @@
 ﻿@inject IHostEnvironment env
-@inject  YueJia.Ebk.Application.Contracts.UserApp.ICurrentUserApp currentUser
+@inject  YueJia.Ebk.Application.Contracts.SysUserApp.ICurrentUserApp currentUser
 
 
 @section head {
@@ -156,6 +156,7 @@
                           { pageIndex: "page2", title: "系统管理", children: [
                             { pageIndex: 'page2-1', title: '公司管理', url: "@Url.Action("Index", "Company")" },
                             { pageIndex: "page2-2", title: "部门管理", url: "@Url.Action("Index", "Dept")" },
+                            { pageIndex: "page2-3", title: "用户管理", url: "@Url.Action("Index", "SysUser")" },
                         ] },
                     ],
                     TabsMap: [

@@ -20,12 +20,6 @@ namespace YueJia.Ebk.Application.Contracts.DeptApp.Commands
         public string ParentDeptId { get; set; } = default!;
 
         /// <summary>
-        /// 公司ID
-        /// </summary>
-        [Required]
-        public string CompanyId { get; set; } = default!;
-
-        /// <summary>
         /// 状态
         /// </summary>
         [Required]

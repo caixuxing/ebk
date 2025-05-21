@@ -40,8 +40,6 @@ namespace YueJia.Ebk.Application.Contracts.DeptApp
         Task<PageData<IEnumerable<DeptPageListDto>>> GetPageListDeptAsync(DeptPageListQry qry);
 
 
-
-
         /// <summary>
         /// 按Id获取部门详情
         /// </summary>
@@ -54,8 +52,15 @@ namespace YueJia.Ebk.Application.Contracts.DeptApp
         /// 获取顶级部门数据
         /// </summary>
         /// <returns></returns>
-        public Task<List<SelectDataDto<string>>> GetTopLevelDeptData();
+        Task<List<SelectDataDto<string>>> GetTopLevelDeptData();
 
+
+
+        /// <summary>
+        /// 获取部门TreeSelect
+        /// </summary>
+        /// <returns></returns>
+        Task<List<TreeSelectDataDto<string>>> GetDeptTreeSelectData();
 
     }
 }

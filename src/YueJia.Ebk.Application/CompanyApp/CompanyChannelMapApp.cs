@@ -1,7 +1,7 @@
 ﻿using YueJia.Ebk.Application.Contracts.CompanyApp;
 using YueJia.Ebk.Application.Contracts.CompanyApp.Commands;
 using YueJia.Ebk.Application.Contracts.CompanyApp.Dto;
-using YueJia.Ebk.Application.Contracts.UserApp;
+using YueJia.Ebk.Application.Contracts.SysUserApp;
 using YueJia.Ebk.Application.Utils;
 using YueJia.Ebk.Domain.Company;
 

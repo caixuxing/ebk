@@ -13,8 +13,8 @@
                 <el-input v-model="state.formData.name" autocomplete="off" clearable placeholder="部门名称"  maxlength="30"></el-input>
             </el-form-item>
             <el-form-item label="归属上级部门" required prop="parentDeptId">
-                     <el-select v-model="state.formData.parentDeptId" placeholder="请选择上级部门" disabled filterable > 
-                       <el-option v-for="option in state.deptData" :key="option.Text" :label="option.Label" :value="option.Text"  ></el-option>
+                     <el-select v-model="state.formData.parentDeptId" placeholder="请选择上级部门"  filterable > 
+                       <el-option v-for="option in state.deptData" :key="option.Value" :label="option.Label" :value="option.Value"  ></el-option>
                     </el-select>
             </el-form-item>
               <el-form-item label="是否启用" label-width="auto">

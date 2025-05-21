@@ -13,10 +13,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="SysUser\" />
-  </ItemGroup>
-
-  <ItemGroup>
     <ProjectReference Include="..\YueJia.Ebk.Domain.Shared\YueJia.Ebk.Domain.Shared.csproj" />
   </ItemGroup>
 

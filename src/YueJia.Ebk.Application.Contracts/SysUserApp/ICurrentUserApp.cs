@@ -1,4 +1,4 @@
-﻿namespace YueJia.Ebk.Application.Contracts.UserApp;
+﻿namespace YueJia.Ebk.Application.Contracts.SysUserApp;
 
 public interface ICurrentUserApp
 {
@@ -21,4 +21,12 @@ public interface ICurrentUserApp
     ///租户Id
     /// </summary>
     string TenantId { get; }
+
+
+    AccountTypeEnum? AccountType { get; }
+
+    /// <summary>
+    /// 公司Id
+    /// </summary>
+    string CompanyId { get; }
 }

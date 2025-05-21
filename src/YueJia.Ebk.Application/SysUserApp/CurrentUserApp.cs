@@ -1,8 +1,9 @@
 ﻿using Microsoft.AspNetCore.Http;
-using YueJia.Ebk.Application.Contracts.UserApp;
+using YueJia.Ebk.Application.Contracts.SysUserApp;
 using YueJia.Ebk.Domain.Shared.Const;
+using YueJia.Ebk.Domain.Shared.Enums;
 
-namespace YueJia.Ebk.Application.UserApp;
+namespace YueJia.Ebk.Application.SysUserApp;
 
 public class CurrentUserApp : ApplicationService, ICurrentUserApp
 {
@@ -62,6 +63,25 @@ public class CurrentUserApp : ApplicationService, ICurrentUserApp
         {
             var orgcode = _accessor?.HttpContext?.User?.FindFirst(ClaimAttributes.TenantId);
             return orgcode?.Value ?? string.Empty;
+        }
+    }
+
+    public AccountTypeEnum? AccountType
+    {
+        get
+        {
+            var accountType = _accessor?.HttpContext?.User?.FindFirst(ClaimAttributes.AccountType);
+            return (AccountTypeEnum)Enum.ToObject(typeof(AccountTypeEnum), int.Parse(accountType?.Value ?? AccountTypeEnum.NormalUser.GetHashCode().ToString()));
+
+        }
+    }
+
+    public string CompanyId
+    {
+        get
+        {
+            var companyId = _accessor?.HttpContext?.User?.FindFirst(ClaimAttributes.CompanyId);
+            return companyId?.Value ?? string.Empty;
         }
     }
 }

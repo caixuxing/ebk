@@ -1,7 +1,7 @@
 ﻿using System.Security.Claims;
-using YueJia.Ebk.Application.Contracts.UserApp.Query;
+using YueJia.Ebk.Application.Contracts.SysUserApp.Query;
 
-namespace YueJia.Ebk.Application.Contracts.UserApp;
+namespace YueJia.Ebk.Application.Contracts.SysUserApp;
 
 public interface IAuthApp
 {

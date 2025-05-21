@@ -4,6 +4,8 @@ using Microsoft.Extensions.Hosting;
 using SqlSugar;
 using System.IO.Enumeration;
 using System.Reflection;
+using YueJia.Ebk.Domain.Shared.Enums;
+using YueJia.Ebk.Domain.SysUser;
 
 namespace YueJia.Ebk.DbMigrator
 {
@@ -43,7 +45,7 @@ namespace YueJia.Ebk.DbMigrator
 
 
             Console.WriteLine("正在开始导入种子数据！");
-            await Task.Delay(50);
+            await CreateSeedData(db);
             Console.WriteLine("种子数据导入已完成！");
 
             Console.WriteLine("数据迁移已完成！");
@@ -84,6 +86,21 @@ namespace YueJia.Ebk.DbMigrator
                         }
                     }
                 }
+            }
+        }
+
+
+
+
+        public async Task CreateSeedData(SqlSugarClient db)
+        {
+            if (!await db.Queryable<SysUserDo>().AnyAsync(x => x.AccountName == "admin"))
+            {
+                var entity = SysUserDo.Create("admin", "超级管理员", AccountTypeEnum.SuperAdmin, YesOrNoType.Yes, null, null);
+                entity.TenantId = 1000000000000000000L;
+                entity.CreatedbyId = "-1";
+                entity.CreatedbyName = "默认用户";
+                await db.Insertable(entity).ExecuteReturnSnowflakeIdAsync();
             }
         }
 

@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
-using YueJia.Ebk.Application.Contracts.UserApp;
-using YueJia.Ebk.Application.Contracts.UserApp.Query;
+using YueJia.Ebk.Application.Contracts.SysUserApp;
+using YueJia.Ebk.Application.Contracts.SysUserApp.Query;
 
 namespace YueJia.Ebk.Web.Controllers
 {

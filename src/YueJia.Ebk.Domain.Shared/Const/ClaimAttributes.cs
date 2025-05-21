@@ -37,5 +37,10 @@
         /// 账号类型
         /// </summary>
         public const string AccountType = "AccountType";
+
+        /// <summary>
+        /// 公司ID
+        /// </summary>
+        public const string CompanyId = "";
     }
 }
