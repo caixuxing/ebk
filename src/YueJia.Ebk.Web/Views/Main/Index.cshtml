@@ -104,8 +104,8 @@
                         <el-option v-for="item in state.languageMap" :key="item.Value" :label="item.Text" :value="item.Value" />
                     </el-select>
                 </el-text> *@
-                <el-text style="margin-right:15px">修改密码</el-text>
-                <el-text v-on:click="handleSignOut()">退出登录</el-text>
+                <el-text style="margin-right:15px;cursor: pointer;">修改密码</el-text>
+                <el-text style="margin-right:15px;cursor: pointer;" v-on:click="handleSignOut()">退出登录</el-text>
             </div>
         </el-row>
     </el-header>
@@ -136,8 +136,14 @@
             </el-footer>
         </el-container>
     </el-container>
-
 </el-container>
+
+<template>
+
+
+</template>
+
+
 @section scripts {
     <script src="https://unpkg.com/dayjs@1.8.21/dayjs.min.js"></script>
     <script src="https://unpkg.com/dayjs@1.8.21/plugin/utc.js"></script>
@@ -151,8 +157,12 @@
                     resourcessMenuMap:``,
                     menuMap: [
                         { pageIndex: 'page1', title: '首页', url: "@Url.Action("Index", "Home")" },
-                         { pageIndex: "page3", title: "工作台管理", children: [{ pageIndex: 'page3-1', title: '我的代办项', url: "@Url.Action("Index", "Dashboard")" }] },
+                         
+                        { pageIndex: "page3", title: "酒店管理", children: [
+                             { pageIndex: 'page3-1', title: '我的酒店', url: "@Url.Action("HotelPublishList", "Hotel")" }] 
+                         },
                   
+
                           { pageIndex: "page2", title: "系统管理", children: [
                             { pageIndex: 'page2-1', title: '公司管理', url: "@Url.Action("Index", "Company")" },
                             { pageIndex: "page2-2", title: "部门管理", url: "@Url.Action("Index", "Dept")" },

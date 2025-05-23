@@ -53,38 +53,41 @@ namespace YueJia.Ebk.Application.DeptApp
 
 
             // 使用递归CTE查询 
-            var entityList = await db.Ado.SqlQueryAsync<DepartmentDo>(@"
-                                    WITH cte AS (
-                                        SELECT 
-                                            id, name, parent_id, company_id, status, 
-                                            create_time, createdby_id, createdby_name, 
-                                            last_modified_time, last_modifiedby_id, last_modifiedby_name, 
-                                            is_delete, version 
-                                        FROM 
-                                            department 
-                                        WHERE 
-                                            id = @DepartmentId AND is_delete = 0 
-                                        UNION ALL 
-                                        SELECT 
-                                            d.id,  d.name,  d.parent_id,  d.company_id,  d.status,  
-                                            d.create_time,  d.createdby_id,  d.createdby_name,  
-                                            d.last_modified_time,  d.last_modifiedby_id,  d.last_modifiedby_name,  
-                                            d.is_delete,  d.version  
-                                        FROM 
-                                            department d 
-                                        INNER JOIN 
-                                            cte dh ON d.parent_id  = dh.id  
-                                        WHERE 
-                                            d.is_delete  = 0 
-                                    )
-                                    SELECT * FROM cte ", new { DepartmentId = id }) ?? throw new InvalidOperationException($"部门ID:{id}资源不存在！");
+            //var entityList = await db.Ado.SqlQueryAsync<DepartmentDo>(@"
+            //                        WITH cte AS (
+            //                            SELECT 
+            //                                id, name, parent_id, company_id, status, 
+            //                                create_time, createdby_id, createdby_name, 
+            //                                last_modified_time, last_modifiedby_id, last_modifiedby_name, 
+            //                                is_delete, version 
+            //                            FROM 
+            //                                department 
+            //                            WHERE 
+            //                                id = @DepartmentId AND is_delete = 0 
+            //                            UNION ALL 
+            //                            SELECT 
+            //                                d.id,  d.name,  d.parent_id,  d.company_id,  d.status,  
+            //                                d.create_time,  d.createdby_id,  d.createdby_name,  
+            //                                d.last_modified_time,  d.last_modifiedby_id,  d.last_modifiedby_name,  
+            //                                d.is_delete,  d.version  
+            //                            FROM 
+            //                                department d 
+            //                            INNER JOIN 
+            //                                cte dh ON d.parent_id  = dh.id  
+            //                            WHERE 
+            //                                d.is_delete  = 0 
+            //                        )
+            //                        SELECT * FROM cte ", new { DepartmentId = id }) ?? throw new InvalidOperationException($"部门ID:{id}资源不存在！");
             // var entity = await DepartmentRepo.GetByIdAsync(id) ?? throw new InvalidOperationException($"部门ID:{id}资源不存在！");
+
+
+            var entityList = await DepartmentRepo.GetListAsync(x => x.Id == id || x.ParentId == id) ?? throw new InvalidOperationException($"部门ID:{id}资源不存在！");
 
             entityList.ForEach(item => item.IsDelete = true);
             var affectedRows = await DepartmentRepo.AsUpdateable(entityList)
              .UpdateColumns(it => new { it.IsDelete, it.Version, it.LastModifiedbyId, it.LastModifiedbyName, it.LastModifiedTime })
-             .ExecuteCommandWithOptLockAsync();
-            if (affectedRows is not 1) throw new InvalidOperationException($"部门信息删除失败!");
+             .ExecuteCommandAsync();
+            if (affectedRows < 1) throw new InvalidOperationException($"部门信息删除失败!");
             return true;
         }
 

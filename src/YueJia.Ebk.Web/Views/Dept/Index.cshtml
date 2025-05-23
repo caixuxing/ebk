@@ -85,7 +85,7 @@
         <div style=" height:35px;padding: 10px 0px 0px 20px; ">
             <el-pagination v-model:current-page="state.qry.pageIndex"
                            v-model:page-size="state.qry.pageSize"
-                           :page-sizes="[2, 50, 100,500]"
+                           :page-sizes="[20, 50, 100,500]"
                            layout="total, sizes, prev, pager, next, jumper"
                            :total="state.qry.totalCount"
                            v-on:size-change="handleSizeChange"
@@ -107,7 +107,7 @@
                     name: null,
                     status: null,
                     pageIndex: 0,
-                    pageSize: 2,
+                    pageSize: 20,
                     totalCount: 0,
                 },
                 dataList: []

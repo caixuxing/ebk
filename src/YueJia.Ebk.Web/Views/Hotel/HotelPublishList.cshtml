@@ -1,0 +1,420 @@
+﻿@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+@section head {
+    <title>酒店发布管理</title>
+}
+<el-container style="height:100vh;overflow: hidden;">
+    <el-main>
+        <el-form label-width="auto" :inline="true">
+            <div>
+                <el-form-item label="酒店编码" style="margin-bottom:5px;">
+                    <el-input v-model="state.qry.hotelCode" placeholder="酒店编码" ></el-input>
+                </el-form-item>
+                   <el-form-item label="酒店名称" style="margin-bottom:5px;">
+                    <el-input v-model="state.qry.hotelName" placeholder="酒店名称" ></el-input>
+                </el-form-item>
+                <el-form-item label="状态"  style="margin-bottom:5px;">
+                    <el-select v-model="state.qry.status" placeholder="不限" style="width:220px;" clearable filterable>
+                       <el-option v-for="item in state.saleTypeData" :key="item.value" :label="item.describe" :value="item.value"/>
+                    </el-select>
+                </el-form-item>
+
+
+                <el-form-item prop="desc" style="margin-bottom:5px;">
+                    <el-button type="primary" v-on:click="pageIndex=1;loadData()" id="query">查询</el-button>
+                    <el-button v-on:click="resetQueryForm">重置</el-button>
+                </el-form-item>
+            </div>
+        </el-form>
+        <el-form label-width="100px" :inline="true" style="margin-top:30px;">
+            <el-form-item prop="desc" style="margin-bottom:5px;">
+                <el-button type="primary" v-on:click="add">添加酒店</el-button>
+            </el-form-item>
+        </el-form>
+        <el-table :data="state.dataList"
+                  border
+                  height="100%"
+                  v-loading="state.dataloading">
+            <el-table-column label="#" width="60" align="center">
+                <template #default="scope">
+                    <div style="text-align:left">
+                        <span>{{ (state.qry.pageIndex-1) * state.qry.pageSize + scope.$index +1   }}</span>
+                    </div>
+                </template>
+            </el-table-column>
+            <el-table-column label="酒店编码" width="180px" align="center" show-overflow-tooltip="true">
+                <template #default="scope">
+                    {{ scope.row.hotelCode }}
+                </template>
+            </el-table-column>
+            <el-table-column label="酒店名称" width="300px"  align="left" show-overflow-tooltip="true">
+                <template #default="scope">
+                    <p style="margin:5px 0px">{{ scope.row.hotelName }}</p>
+                    <p>{{ scope.row.hotelNameEn }}</p>
+                </template>
+            </el-table-column>
+               <el-table-column label="酒店地址" width="auto" max-width="200px" align="left" show-overflow-tooltip="true">
+                <template #default="scope">
+                    <p style="margin:5px 0px">{{ scope.row.address }}</p>
+
+                     <p>{{ scope.row.addressEn }}</p>
+                </template>
+            </el-table-column>
+            <el-table-column label="联系电话" width="200px" align="center" show-overflow-tooltip="true">
+                <template #default="scope" align="right">
+                    {{ scope.row.telPhone }}
+                </template>
+            </el-table-column>
+
+             <el-table-column label="销售状态" width="120px" align="center">
+                <template #default="scope">
+                    <div style="text-align:center">
+                        <span>{{  scope.row.statusName }}</span>
+                    </div>
+                </template>
+            </el-table-column>
+
+            <el-table-column label="操作" prop="opt" width="140px" align="center">
+                <template #default="scope">
+                    <div style="text-align:center">
+                        <el-button size="small" v-on:click="editHotel(scope.row)">编辑</el-button>
+                        <el-button size="small" type="danger" v-on:click="deleteItem(scope.row.id)">删除 </el-button>
+                    </div>
+                </template>
+            </el-table-column>
+
+        </el-table>
+        <div style=" height:35px;padding: 10px 0px 0px 20px; ">
+            <el-pagination v-model:current-page="state.qry.pageIndex"
+                           v-model:page-size="state.qry.pageSize"
+                           :page-sizes="[20, 50, 100,500]"
+                           layout="total, sizes, prev, pager, next, jumper"
+                           :total="state.qry.totalCount"
+                           v-on:size-change="handleSizeChange"
+                           v-on:current-change="handleCurrentChange" style="float:right;"></el-pagination>
+
+        </div>
+    </el-main>
+</el-container>
+
+<!-- 添加酒店 -->
+<el-dialog v-model="dialog.openAddDialog" :title="dialog.title" close="dialog.openAddDialog=false" :close-on-click-modal="false" draggable width="90%" >
+
+    <el-main>
+        <el-form label-width="auto" :inline="true">
+            <div>
+                   
+                <el-form-item label="国家"  style="margin-bottom:5px;">
+                      <el-select v-model="dialog.qry.countryId" placeholder="不限" style="width:220px;" clearable filterable>
+                       <el-option v-for="item in dialog.countryData" :key="item.value" :label="item.label" :value="item.value"/>
+                    </el-select>
+                </el-form-item>
+                <el-form-item label="酒店编码" style="margin-bottom:5px;">
+                    <el-input v-model="dialog.qry.hotelCode" placeholder="酒店编码" ></el-input>
+                </el-form-item>
+                   <el-form-item label="酒店名称" style="margin-bottom:5px;">
+                    <el-input v-model="dialog.qry.hotelName" placeholder="酒店名称" ></el-input>
+                </el-form-item>
+                <el-form-item prop="desc" style="margin-bottom:5px;">
+                    <el-button type="primary" v-on:click="pageIndex=1;dialogTableData()" >查询</el-button>
+                    <el-button v-on:click="dialogResetQueryForm">重置</el-button>
+                </el-form-item>
+            </div>
+        </el-form>
+        <el-form label-width="100px" :inline="true" style="margin:10px 0px;">
+          
+        </el-form>
+        <el-table :data="dialog.dataList"
+                  border
+                  height="500px"
+                  v-loading="dialog.dataloading">
+            <el-table-column label="酒店名称" width="300px" max-width="280px" align="left" show-overflow-tooltip="true">
+                <template #default="scope">
+                   <p> {{ scope.row.hotelName }}</p>
+                   <p> {{ scope.row.hotelNameEn }}</p>
+                   <el-rate v-model="scope.row.starLevel" disabled></el-rate>
+                </template>
+            </el-table-column>
+               <el-table-column label="酒店地址" width="auto" max-width="200px" align="left" show-overflow-tooltip="true">
+                <template #default="scope">
+                    <p style="margin:5px 0px;">{{ scope.row.countryName }}({{scope.row.countryNameEn}}) - {{scope.row.areaName}}({{scope.row.areaNameEn}})</p>
+                    <p style="margin:5px 0px;">{{ scope.row.address }}</p>
+                    <p>{{ scope.row.addressEn }}</p>
+                </template>
+            </el-table-column>
+            <el-table-column label="联系电话" width="180px" align="right" show-overflow-tooltip="true">
+                <template #default="scope" align="right">
+                   <p> {{ scope.row.telPhone }}</p>
+                </template>
+            </el-table-column>
+            <el-table-column label="操作" prop="opt" width="120px" align="center">
+                <template #default="scope">
+                    <div style="text-align:center">
+                        <el-button size="small" type="primary" v-on:click="addHotel(scope.row)">确认添加 </el-button>
+                    </div>
+                </template>
+            </el-table-column>
+
+        </el-table>
+        <div style=" height:35px;padding: 10px 0px 0px 20px; ">
+            <el-pagination v-model:current-page="dialog.qry.pageIndex"
+                           v-model:page-size="dialog.qry.pageSize"
+                           :page-sizes="[20, 50, 100,500]"
+                           layout="total, sizes, prev, pager, next, jumper"
+                           :total="dialog.qry.totalCount"
+                           v-on:size-change="handleDialogSizeChange"
+                           v-on:current-change="handleDialogCurrentChange" style="float:right;"></el-pagination>
+
+        </div>
+    </el-main>
+
+</el-dialog>
+
+
+<!-- 更新/编辑已发布酒店 -->
+  <el-dialog v-model="upHotelState.openAddDialog"  :title="upHotelState.title"  close="upHotelState.openAddDialog=false" :close-on-click-modal="false" draggable width="960px">
+    <el-form :model="upHotelState.formData"  label-width="auto" :rules="FormDataRules" ref="FormDataRef">
+      <el-form-item label="酒店编码" >
+        <el-input v-model="upHotelState.formData.hotelCode" autocomplete="off" clearable placeholder="酒店编码" disabled  ></el-input>
+      </el-form-item>
+      <el-form-item label="酒店名称">
+        <el-input v-model="upHotelState.formData.hotelName" autocomplete="off" clearable placeholder="酒店名称" disabled ></el-input>
+      </el-form-item>
+       <el-form-item label="酒店名称英文">
+        <el-input v-model="upHotelState.formData.hotelNameEn" autocomplete="off"  clearable placeholder="酒店名称英文" disabled ></el-input>
+      </el-form-item>
+       <el-form-item label="酒店地址" >
+        <el-input v-model="upHotelState.formData.address" autocomplete="off"  clearable placeholder="酒店地址" disabled ></el-input>
+      </el-form-item>
+      <el-form-item label="酒店地址英文" label-width="auto" >
+        <el-input v-model="upHotelState.formData.addressEn" autocomplete="off"  clearable placeholder="酒店地址英文" disabled ></el-input>
+      </el-form-item>
+       <el-form-item label="联系电话" label-width="auto" >
+        <el-input v-model="upHotelState.formData.telPhone" autocomplete="off"  clearable placeholder="联系电话"  disabled ></el-input>
+      </el-form-item>
+          <el-form-item label="最低价" label-width="auto"  required prop="lowestPrice">
+        <el-input v-model="upHotelState.formData.lowestPrice" autocomplete="off"  clearable placeholder="最低价、为0不限制" ></el-input>
+      </el-form-item>
+       <el-form-item label="销售状态" label-width="auto">
+        <el-radio-group v-model="upHotelState.formData.status">
+             <el-radio v-for="item in state.saleTypeData" :key="item.value" :label="item.describe" :value="item.value">{{item.describe}}</el-radio>
+          </el-radio-group>
+      </el-form-item>
+    </el-form>
+    <template #footer>
+      <div class="dialog-footer">
+        <el-button  v-on:click="upHotelState.openAddDialog=false" >关闭 </el-button>
+        <el-button type="primary" v-on:click="save" >保存 </el-button>
+      </div>
+    </template>
+  </el-dialog>
+
+
+
+@section scripts {
+    <script type="text/javascript">
+        const app = Vue.createApp({
+        setup() {
+           const state = Vue.reactive({
+                dataLoading: false,
+                qry: {
+                    hotelName: ``,
+                    hotelCode:``,
+                    status: null,
+                    pageIndex: 0,
+                    pageSize: 20,
+                    totalCount: 0,
+                },
+                saleTypeData:@(Html.Raw(ViewBag.HotelSaleTypeData)),
+                dataList: []
+
+            });
+
+        const dialog = Vue.reactive({
+                    title: '新增',
+                    openAddDialog: false,
+                    countryData:@(Html.Raw(ViewBag.CountryData)),
+                    qry: {
+                    countryId:null,
+                    hotelCode:'',
+                    hotelName:'',
+                    pageIndex: 0,
+                    pageSize: 20,
+                    totalCount: 0,
+                    },
+                    dataList: []
+                });
+      
+
+           Vue.onMounted(() => { loadData()  });
+            const loadData = () => {
+                state.dataLoading = true;
+                axios.post(`/hotel/HotelPublishListData`, {...state.qry}).then(response => {
+                    let {data,status}=response;
+                    Object.assign(state,
+                                {dataList:data.data.list,
+                            qry:{
+                                    pageIndex:data.data.pageIndex,
+                                    pageSize:data.data.pageSize,
+                                    totalCount:data.data.total,
+                                    hotelName:state.qry.hotelName,
+                                    hotelCode:state.qry.hotelCode,
+                                    status:state.qry.status
+                                }
+                    });
+                })
+                state.dataLoading = false;
+                };
+            const handleSizeChange = (val) => {
+                    state.qry.pageIndex = 1;
+                    state.qry.pageSize = val;
+                    loadData();
+                        };
+            const handleCurrentChange = (val) => {
+                        state.qry.pageIndex = val;
+                        loadData();
+                    };
+            const deleteItem =  (id) => {
+
+              ElMessageBox.confirm('您确定删除吗?', { confirmButtonText: '确定', cancelButtonText: '取消', type: 'warning', })
+              .then(() => {
+                    state.dataLoading = true;
+                     axios.delete(`/sysuser/${id}/delete`)
+                    .then(response => {
+                        let {data,status}=response;
+                        if (status == 200&&data.isSuccess ){
+                            ElMessage({ message: `删除成功!`,  type: `success` });
+                             loadData();
+                            return;
+                        }
+                        ElMessage.error(data.message);
+                    })
+                    state.dataLoading = false;
+                    })
+                    .catch(() => { console.log('取消删除'); });
+              }
+            //重置查询表单
+            const resetQueryForm=()=>{
+                 state.qry  = {...state.qry,   hotelName: ``,hotelCode:``, status: null };
+                };
+
+       
+
+        const add = () => {
+            dialog.title = "添加酒店";
+            dialog.openAddDialog = true;
+        };
+
+
+        
+  
+
+        const dialogTableData = () => {
+            axios.post(`/Hotel/HotelPageList`, { ...dialog.qry }).then(response => {
+                let { data, status } = response;
+                Object.assign(dialog,
+                    {
+                        dataList: data.data.list,
+                        qry: {
+                            pageIndex: data.data.pageIndex,
+                            pageSize: data.data.pageSize,
+                            totalCount: data.data.total,
+                            countryId: dialog.qry.countryId,
+                            hotelCode: dialog.qry.hotelCode,
+                            hotelName: dialog.qry.hotelName,
+                        }
+                    });
+            });
+        };
+        const handleDialogSizeChange = (val) => {
+            dialog.qry.pageIndex = 1;
+            dialog.qry.pageSize = val;
+            dialogTableData();
+        };
+        const handleDialogCurrentChange = (val) => {
+            dialog.qry.pageIndex = val;
+            dialogTableData();
+        };
+        const dialogResetQueryForm = () => { 
+            dialog.qry  = {...dialog.qry,   countryId: null, hotelCode: ``,hotelName:`` };
+        };
+
+        const addHotel = (row) => {
+
+              ElMessageBox.confirm('您确定添加吗?', { confirmButtonText: '确定', cancelButtonText: '取消', type: 'warning', })
+              .then(() => {
+                    state.dataLoading = true;
+                     axios.post(`/Hotel/PublishHotel`, {...row})
+                    .then(response => {
+                        let {data,status}=response;
+                        if (status == 200&&data.isSuccess ){
+                            ElMessage({ message: `添加成功!`,  type: `success` });
+                             loadData();
+                            return;
+                        }
+                        ElMessage.error(data.message);
+                    })
+                    state.dataLoading = false;
+                    })
+                    .catch(() => { console.log('取消添加'); });
+        };
+
+
+
+        /*=======================更新/编辑已发布酒店========================*/
+                const upHotelState = Vue.reactive({
+                    title: '编辑酒店',
+                    openAddDialog: false,
+                    countryData:@(Html.Raw(ViewBag.CountryData)),
+                    formData: {
+                            hotelCode: ``,
+                            hotelName:``,
+                            hotelNameEn:``,
+                            address:``, 
+                            addressEn:``,
+                            telPhone:``,
+                            lowestPrice:``,
+                            status: null
+                      }
+                });
+              const id=Vue.ref(null);
+              const FormDataRef = Vue.ref(null);
+            const editHotel = (row) => {
+            upHotelState.title = `编辑酒店【${row.hotelCode}】`;
+            upHotelState.openAddDialog = true;
+            FormDataRef.value?.resetFields();
+            axios.get(`/Hotel/${row.id}/detail`).then(response => {
+                if (response.status == 200) {
+                    upHotelState.formData = { ...response.data.data };
+                    id.value = row.id;
+                }
+            });
+        };  
+            const FormDataRules = {
+                    lowestPrice: [{ required: true, message: '最低价必填!', trigger: 'blur' }]
+                };
+
+             const save = async () => {
+            let isValid = await FormDataRef.value.validate();
+            if (!isValid) return ElMessage({ message: "请完善表单信息!", type: "error" });
+            let requestData = { ...dialog.formData, isEnabled: dialog.formData.isEnabled ? 1 : 0 };
+            let url = id.value ? `/SysUser/${id.value}/update` : '/SysUser/create';
+            let method = id.value ? 'put' : 'post';
+            let response = await axios[method](url, requestData);
+            if (response.status === 200) {
+                ElMessage({ message: "保存成功!", type: "success" });
+                dialog.openAddDialog = false;
+                loadData();
+            }
+        };
+
+
+       return {state,loadData,handleSizeChange,handleCurrentChange,deleteItem,resetQueryForm,dialog,add,FormDataRules,FormDataRef,save,edit,
+               dialogTableData,handleDialogSizeChange,handleDialogCurrentChange,dialogResetQueryForm,addHotel,upHotelState,editHotel}
+            }});
+            app.use(ElementPlus,{ locale: ElementPlusLocaleZhCn });
+            app.mount('#app');
+    </script>
+
+}

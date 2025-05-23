@@ -211,6 +211,130 @@ public class YueJiaEbkInfrastructureModule : AbpModule
            });
             return sqlSugar;
         });
+
+
+
+
+        var hotelMatchConnectionConfigs = configuration.GetSection("YueJiaSysConnectionConfigs").Get<IocConfig>();
+        //考虑当前从库只用了部分表，创建新的数据库上下文,如果
+        context.Services.AddKeyedScoped<ISqlSugarClient>(DbConst.YueJiaSysDb, (sp, _) =>
+        {
+            SqlSugarScope sqlSugar = new SqlSugarScope(new SqlSugar.ConnectionConfig()
+            {
+                DbType = DbType.SqlServer,
+                ConnectionString = hotelMatchConnectionConfigs?.ConnectionString ?? "",
+                IsAutoCloseConnection = true,
+
+                MoreSettings = new ConnMoreSettings()
+                {
+                    IsAutoRemoveDataCache = true, // 启用自动删除缓存，所有增删改会自动调用.RemoveDataCache()
+                    IsAutoDeleteQueryFilter = true, // 启用删除查询过滤器
+                    IsAutoUpdateQueryFilter = true, // 启用更新查询过滤器
+                    SqlServerCodeFirstNvarchar = true // 采用Nvarchar
+                },
+                ConfigureExternalServices = new ConfigureExternalServices
+                {
+                    EntityNameService = (type, entity) => // 处理表
+                    {
+                        entity.IsDisabledDelete = true; // 禁止删除非 sqlsugar 创建的列
+                                                        // 只处理贴了特性[SugarTable]表
+                        if (!type.GetCustomAttributes<SugarTable>().Any())
+                            return;
+                        if (!entity.DbTableName.Contains('_'))
+                            entity.DbTableName = UtilMethods.ToUnderLine(entity.DbTableName); // 驼峰转下划线
+                    },
+                    EntityService = (type, column) => // 处理列
+                    {
+                        // 只处理贴了特性[SugarColumn]列
+                        if (!type.GetCustomAttributes<SugarColumn>().Any())
+                            return;
+                        if (new NullabilityInfoContext().Create(type).WriteState is NullabilityState.Nullable)
+                            column.IsNullable = true;
+                        if (!column.IsIgnore && !column.DbColumnName.Contains('_'))
+                            column.DbColumnName = UtilMethods.ToUnderLine(column.DbColumnName); // 驼峰转下划线
+                    }
+                }
+
+
+            },
+              db =>
+              {
+
+                  db.QueryFilter.AddTableFilter<IDeletedFilter>(it => !it.IsDelete);
+
+                  if (_accesssor.Value?.HttpContext?.User?.FindFirst(ClaimAttributes.AccountType)?.Value != ((int)AccountTypeEnum.SuperAdmin).ToString())
+                  {
+                      var tenantId = _accesssor.Value?.HttpContext?.User?.FindFirst(ClaimAttributes.TenantId)?.Value;
+                      if (!string.IsNullOrWhiteSpace(tenantId))
+                          db.QueryFilter.AddTableFilter<ITenantIdFilter>(u => u.TenantId == long.Parse(tenantId));
+                  }
+                  if (true)
+                  {
+                      db.Aop.OnLogExecuting = (sql, pars) =>
+                      {
+                          var Strsql = new KeyValuePair<string, SugarParameter[]>(sql, pars);
+                      };
+                      db.Aop.OnLogExecuting = (sql, pars) =>
+                      {
+                          //// 若参数值超过100个字符则进行截取
+                          //foreach (var par in pars)
+                          //{
+                          //    if (par.DbType != System.Data.DbType.String || par.Value == null) continue;
+                          //    if (par.Value.ToString().Length > 100)
+                          //        par.Value = string.Concat(par.Value.ToString()[..100], "......");
+                          //}
+
+                          var log = $"【{DateTime.Now}——执行SQL】\r\n{UtilMethods.GetNativeSql(sql, pars)}\r\n";
+                          var originColor = Console.ForegroundColor;
+                          if (sql.StartsWith("SELECT", StringComparison.OrdinalIgnoreCase))
+                              Console.ForegroundColor = ConsoleColor.Green;
+                          if (sql.StartsWith("UPDATE", StringComparison.OrdinalIgnoreCase) || sql.StartsWith("INSERT", StringComparison.OrdinalIgnoreCase))
+                              Console.ForegroundColor = ConsoleColor.Yellow;
+                          if (sql.StartsWith("DELETE", StringComparison.OrdinalIgnoreCase))
+                              Console.ForegroundColor = ConsoleColor.Red;
+                          Console.WriteLine(log);
+                          Console.ForegroundColor = originColor;
+                          Console.Write(log);
+                          //App.PrintToMiniProfiler("SqlSugar", "Info", log);
+                      };
+                      db.Aop.OnError = ex =>
+                      {
+                          if (ex.Parametres == null) return;
+                          var log = $"【{DateTime.Now}——错误SQL】\r\n{UtilMethods.GetNativeSql(ex.Sql, (SugarParameter[])ex.Parametres)}\r\n";
+
+                          Console.ForegroundColor = ConsoleColor.Red;
+                          Console.Write(log);
+                          // Log.Error(log, ex);
+                          //App.PrintToMiniProfiler("SqlSugar", "Error", log);
+                      };
+                      db.Aop.OnLogExecuted = (sql, pars) =>
+                      {
+                          //// 若参数值超过100个字符则进行截取
+                          //foreach (var par in pars)
+                          //{
+                          //    if (par.DbType != System.Data.DbType.String || par.Value == null) continue;
+                          //    if (par.Value.ToString().Length > 100)
+                          //        par.Value = string.Concat(par.Value.ToString()[..100], "......");
+                          //}
+                          // 执行时间超过5秒时
+                          if (db.Ado.SqlExecutionTime.TotalSeconds > 5)
+                          {
+                              var fileName = db.Ado.SqlStackTrace.FirstFileName; // 文件名
+                              var fileLine = db.Ado.SqlStackTrace.FirstLine; // 行号
+                              var firstMethodName = db.Ado.SqlStackTrace.FirstMethodName; // 方法名
+                              var log = $"【{DateTime.Now}——超时SQL】\r\n【所在文件名】：{fileName}\r\n【代码行数】：{fileLine}\r\n【方法名】：{firstMethodName}\r\n" + $"【SQL语句】：{UtilMethods.GetNativeSql(sql, pars)}";
+                              Console.ForegroundColor = ConsoleColor.Yellow;
+                              Console.Write(log);
+                              //Log.Warning(log);
+                              //App.PrintToMiniProfiler("SqlSugar", "Slow", log);
+                          }
+                      };
+                  }
+
+              }
+            );
+            return sqlSugar;
+        });
         context.Services.AddScoped(typeof(ISimpleClient<>), typeof(SimpleClient<>)); // 仓储注册
 
 
