@@ -1,5 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
-
+﻿
 namespace YueJia.Ebk.Application.Contracts.SysUserApp.Commands;
 
 /// <summary>

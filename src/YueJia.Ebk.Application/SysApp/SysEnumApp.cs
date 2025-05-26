@@ -1,7 +1,6 @@
 ﻿using YueJia.Ebk.Application.Contracts.SysApp;
 using YueJia.Ebk.Application.Contracts.SysApp.Dto;
 using YueJia.Ebk.Domain.Shared;
-using YueJia.Ebk.Domain.Shared.Utils;
 
 namespace YueJia.Ebk.Application.SysApp;
 

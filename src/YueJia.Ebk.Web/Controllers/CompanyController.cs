@@ -1,11 +1,7 @@
-﻿using Microsoft.AspNetCore.Authorization;
-using Newtonsoft.Json;
-using YueJia.Ebk.Application.Contracts.CompanyApp;
+﻿using YueJia.Ebk.Application.Contracts.CompanyApp;
 using YueJia.Ebk.Application.Contracts.CompanyApp.Commands;
 using YueJia.Ebk.Application.Contracts.CompanyApp.Query;
 using YueJia.Ebk.Application.Contracts.SysApp;
-using YueJia.Ebk.Domain.Shared.Enums;
-using YueJia.Ebk.Domain.Shared.Utils;
 using YueJia.Ebk.Web.ViewModels.Company;
 
 namespace YueJia.Ebk.Web.Controllers;

@@ -1,9 +1,7 @@
-﻿using Newtonsoft.Json;
-using YueJia.Ebk.Application.Contracts.DeptApp;
+﻿using YueJia.Ebk.Application.Contracts.DeptApp;
 using YueJia.Ebk.Application.Contracts.DeptApp.Commands;
 using YueJia.Ebk.Application.Contracts.DeptApp.Dto;
 using YueJia.Ebk.Application.Contracts.DeptApp.Query;
-using YueJia.Ebk.Domain.Shared.Utils;
 
 namespace YueJia.Ebk.Web.Controllers
 {

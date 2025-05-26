@@ -1,13 +1,9 @@
-﻿using Newtonsoft.Json;
-using Newtonsoft.Json.Serialization;
-using YueJia.Ebk.Application.Contracts.HotelApp;
+﻿using YueJia.Ebk.Application.Contracts.HotelApp;
 using YueJia.Ebk.Application.Contracts.HotelApp.Commands;
 using YueJia.Ebk.Application.Contracts.HotelApp.Query;
 using YueJia.Ebk.Application.Contracts.OuterServiceApp;
 using YueJia.Ebk.Application.Contracts.OuterServiceApp.Qry;
 using YueJia.Ebk.Application.Contracts.SysApp;
-using YueJia.Ebk.Domain.Shared.Enums;
-using YueJia.Ebk.Domain.Shared.Utils;
 namespace YueJia.Ebk.Web.Controllers;
 
 public class HotelController : AbpController

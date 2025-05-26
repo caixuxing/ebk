@@ -1,14 +1,11 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿namespace YueJia.Ebk.Application.Contracts.CompanyApp.Commands;
 
-namespace YueJia.Ebk.Application.Contracts.CompanyApp.Commands
+public record AssignChannelCmd
 {
-    public record AssignChannelCmd
-    {
 
-        /// <summary>
-        /// 渠道集合
-        /// </summary>
-        [Required]
-        public List<int> ChannelData { get; set; } = default!;
-    }
+    /// <summary>
+    /// 渠道集合
+    /// </summary>
+    [Required]
+    public List<int> ChannelData { get; set; } = default!;
 }

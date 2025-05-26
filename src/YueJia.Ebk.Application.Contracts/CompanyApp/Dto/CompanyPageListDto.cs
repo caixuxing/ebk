@@ -1,7 +1,4 @@
-﻿
-
-namespace YueJia.Ebk.Application.Contracts.CompanyApp.Dto;
-
+﻿namespace YueJia.Ebk.Application.Contracts.CompanyApp.Dto;
 public record CompanyPageListDto
 {
 

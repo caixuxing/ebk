@@ -1,6 +1,5 @@
 ﻿using JiebaNet.Segmenter;
 using Microsoft.Extensions.DependencyInjection;
-using System.Text;
 using YueJia.Ebk.Application.Contracts.OuterServiceApp;
 using YueJia.Ebk.Application.Contracts.OuterServiceApp.Dto;
 using YueJia.Ebk.Application.Contracts.OuterServiceApp.Entity;

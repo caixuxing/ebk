@@ -1,7 +1,7 @@
 ﻿using YueJia.Ebk.Application.Contracts.SysUserApp.Commands;
 using YueJia.Ebk.Application.Contracts.SysUserApp.Dto;
 using YueJia.Ebk.Application.Contracts.SysUserApp.Query;
-using YueJia.Ebk.Domain.Shared.Response;
+
 
 namespace YueJia.Ebk.Application.Contracts.SysUserApp;
 

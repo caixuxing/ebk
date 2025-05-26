@@ -1,14 +1,11 @@
-using Microsoft.AspNetCore.Authorization;
+namespace YueJia.Ebk.Web.Controllers;
 
-namespace YueJia.Ebk.Web.Controllers
+[Authorize]
+public class HomeController : AbpController
 {
-    [Authorize]
-    public class HomeController : AbpController
-    {
 
-        public IActionResult Index()
-        {
-            return View();
-        }
+    public IActionResult Index()
+    {
+        return View();
     }
 }

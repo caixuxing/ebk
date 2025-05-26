@@ -4,7 +4,7 @@ using YueJia.Ebk.Application.Contracts.HotelApp.Dto;
 using YueJia.Ebk.Application.Contracts.HotelApp.Query;
 using YueJia.Ebk.Application.Contracts.SysUserApp;
 using YueJia.Ebk.Domain.Hotel;
-using YueJia.Ebk.Domain.Shared.Enums;
+
 
 namespace YueJia.Ebk.Application.HotelApp;
 

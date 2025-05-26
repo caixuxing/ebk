@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 using YueJia.Ebk.Application.Contracts.SysUserApp;
 using YueJia.Ebk.Domain.Shared.Const;
-using YueJia.Ebk.Domain.Shared.Enums;
 
 namespace YueJia.Ebk.Application.SysUserApp;
 

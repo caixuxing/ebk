@@ -1,6 +1,4 @@
-﻿using YueJia.Ebk.Domain.Shared.Utils;
-
-namespace YueJia.Ebk.Domain.SysUser;
+﻿namespace YueJia.Ebk.Domain.SysUser;
 
 
 /// <summary>

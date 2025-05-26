@@ -1,10 +1,7 @@
-﻿using Newtonsoft.Json;
-using Newtonsoft.Json.Serialization;
-using YueJia.Ebk.Application.Contracts.DeptApp;
+﻿using YueJia.Ebk.Application.Contracts.DeptApp;
 using YueJia.Ebk.Application.Contracts.SysUserApp;
 using YueJia.Ebk.Application.Contracts.SysUserApp.Commands;
 using YueJia.Ebk.Application.Contracts.SysUserApp.Query;
-using YueJia.Ebk.Domain.Shared.Utils;
 
 namespace YueJia.Ebk.Web.Controllers
 {

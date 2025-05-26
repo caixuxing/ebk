@@ -3,7 +3,6 @@ using YueJia.Ebk.Application.Contracts.CompanyApp.Commands;
 using YueJia.Ebk.Application.Contracts.CompanyApp.Dto;
 using YueJia.Ebk.Application.Contracts.CompanyApp.Query;
 using YueJia.Ebk.Application.Contracts.SysUserApp;
-using YueJia.Ebk.Application.Utils;
 using YueJia.Ebk.Domain.Company;
 using YueJia.Ebk.Domain.Shared.Enums;
 using YueJia.Ebk.Domain.SysUser;

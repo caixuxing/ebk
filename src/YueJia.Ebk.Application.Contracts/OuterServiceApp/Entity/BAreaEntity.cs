@@ -1,6 +1,4 @@
-﻿using SqlSugar;
-
-namespace YueJia.Ebk.Application.Contracts.OuterServiceApp.Entity;
+﻿namespace YueJia.Ebk.Application.Contracts.OuterServiceApp.Entity;
 
 
 [SugarTable("b_area")]

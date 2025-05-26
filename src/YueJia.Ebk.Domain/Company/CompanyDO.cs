@@ -1,6 +1,4 @@
-﻿using YueJia.Ebk.Domain.Shared.Utils;
-
-namespace YueJia.Ebk.Domain.Company;
+﻿namespace YueJia.Ebk.Domain.Company;
 
 
 /// <summary>
