@@ -194,7 +194,7 @@
         <el-input v-model="upHotelState.formData.telPhone" autocomplete="off"  clearable placeholder="联系电话"  disabled ></el-input>
       </el-form-item>
           <el-form-item label="最低价" label-width="auto"  required prop="lowestPrice">
-        <el-input v-model="upHotelState.formData.lowestPrice" autocomplete="off"  clearable placeholder="最低价、为0不限制" ></el-input>
+        <el-input v-model="upHotelState.formData.lowestPrice" autocomplete="off"  clearable placeholder="最低价、为0不限制"  maxlength="10" ></el-input>
       </el-form-item>
        <el-form-item label="销售状态" label-width="auto">
         <el-radio-group v-model="upHotelState.formData.status">
@@ -374,7 +374,7 @@
                             address:``, 
                             addressEn:``,
                             telPhone:``,
-                            lowestPrice:``,
+                            lowestPrice:0,
                             status: null
                       }
                 });
@@ -398,19 +398,17 @@
              const save = async () => {
             let isValid = await FormDataRef.value.validate();
             if (!isValid) return ElMessage({ message: "请完善表单信息!", type: "error" });
-            let requestData = { ...dialog.formData, isEnabled: dialog.formData.isEnabled ? 1 : 0 };
-            let url = id.value ? `/SysUser/${id.value}/update` : '/SysUser/create';
-            let method = id.value ? 'put' : 'post';
-            let response = await axios[method](url, requestData);
+            let requestData = { ...upHotelState.formData,lowestPrice:Number(upHotelState.formData.lowestPrice) };
+            let response = await axios.put(`/Hotel/${id.value}/UpdatePublishHotel`, requestData);
             if (response.status === 200) {
                 ElMessage({ message: "保存成功!", type: "success" });
-                dialog.openAddDialog = false;
+                upHotelState.openAddDialog = false;
                 loadData();
             }
         };
 
 
-       return {state,loadData,handleSizeChange,handleCurrentChange,deleteItem,resetQueryForm,dialog,add,FormDataRules,FormDataRef,save,edit,
+       return {state,loadData,handleSizeChange,handleCurrentChange,deleteItem,resetQueryForm,dialog,add,FormDataRules,FormDataRef,save,
                dialogTableData,handleDialogSizeChange,handleDialogCurrentChange,dialogResetQueryForm,addHotel,upHotelState,editHotel}
             }});
             app.use(ElementPlus,{ locale: ElementPlusLocaleZhCn });

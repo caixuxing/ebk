@@ -46,8 +46,8 @@ public class HotelController : AbpController
     public async Task<IResult> PublishHotel([FromBody] CreateOrUpHotelPublishCmd cmd) => ApiResult.HandleLongResult(await HotelPublishApp.PublishHotelAsync(cmd));
 
 
-    [HttpPut, Route("[controller]/UpdatePublishHotel")]
-    public async Task<IResult> UpdatePublishHotel([FromBody] CreateOrUpHotelPublishCmd cmd, string id) => ApiResult.HandleBoolResult(await HotelPublishApp.UpdatePublishHotelAsync(cmd, id.ToLong()));
+    [HttpPut, Route("[controller]/{id}/UpdatePublishHotel")]
+    public async Task<IResult> UpdatePublishHotel([FromBody] CreateOrUpHotelPublishCmd cmd, [FromRoute] string id) => ApiResult.HandleBoolResult(await HotelPublishApp.UpdatePublishHotelAsync(cmd, id.ToLong()));
 
 
     [HttpGet, Route("[controller]/{id}/Detail")]
