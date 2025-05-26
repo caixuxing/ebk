@@ -7,8 +7,6 @@ namespace YueJia.Ebk.Web.Controllers;
 
 public class LoginController : AbpController
 {
-
-
     private IAuthApp AuthApp => LazyServiceProvider.LazyGetRequiredService<IAuthApp>();
 
     public IActionResult Index()
@@ -29,12 +27,13 @@ public class LoginController : AbpController
     [HttpPost, Route("login")]
     public async Task<IResult> Login([FromBody] LoginQry qry)
     {
-        var result = await AuthApp.LoginAsync(qry);
-        if (result is not null)
+        var Result = ApiResult.HandleResult("/", "登录失败");
+        var LoginResult = await AuthApp.LoginAsync(qry);
+        if (LoginResult is not null)
         {
-            await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, result);
-            return ApiResult.HandleResult("/Main/Index", "登录成功!");
+            await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, LoginResult);
+            Result = ApiResult.HandleResult("/Main/Index", "登录成功!");
         }
-        return ApiResult.HandleResult("/", "登录失败");
+        return Result;
     }
 }
