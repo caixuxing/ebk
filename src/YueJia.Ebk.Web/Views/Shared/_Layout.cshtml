@@ -1,6 +1,12 @@
-﻿<!DOCTYPE html>
+﻿@using YueJia.Ebk.Application.Contracts.SysUserApp
+<!DOCTYPE html>
+@inject IHostEnvironment env
+@inject ICurrentUserApp CurrentUserApp
 <html lang="en">
 <head>
+    <title>
+        EBK  @string.Format("{0}{1}", $"{(env.EnvironmentName != "Development" ? "" : "-【Development】")}", $"{(CurrentUserApp.Id == "" ? "" : "-【" + CurrentUserApp.Id + "】")}")
+    </title>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <!-- Import style -->

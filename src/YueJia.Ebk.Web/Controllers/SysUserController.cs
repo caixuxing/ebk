@@ -15,6 +15,8 @@ namespace YueJia.Ebk.Web.Controllers
 
         public async Task<IActionResult> Index()
         {
+
+            ///de
             ViewBag.DeptData = JsonConvert.SerializeObject(await DeptApp.GetDeptTreeSelectData(), new JsonSerializerSettings { ContractResolver = new CamelCasePropertyNamesContractResolver() });
             return View();
         }
