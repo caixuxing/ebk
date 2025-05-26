@@ -1,0 +1,119 @@
+﻿@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+@section head {
+    <title>添加酒店房间</title>
+}
+<el-container style="height:100vh;overflow: hidden;">
+    <el-main>
+        <el-form :model="state.formData" label-width="auto" >
+             <el-alert type="primary" show-icon :closable="false" >
+             <p>[feiheng] / Pimalai Resort And Spa(皮马莱度假村和水疗中心) / 房间与价格计划 / 库存与价格 / 促销</p>
+             </el-alert>
+            <el-divider content-position="left">房间信息</el-divider>
+            <el-form-item label="酒店名称">
+                <el-input v-model="state.formData.hotelCode" autocomplete="off" clearable placeholder="酒店编码" disabled></el-input>
+            </el-form-item>
+            <el-form-item label="房型名称">
+                <el-input v-model="state.formData.hotelName" autocomplete="off" clearable placeholder="酒店名称" disabled></el-input>
+            </el-form-item>
+            <el-form-item label="床型">
+                <el-input v-model="state.formData.hotelNameEn" autocomplete="off" clearable placeholder="酒店名称英文" disabled></el-input>
+            </el-form-item>
+            <el-form-item label="人数上限">
+               <el-input-number v-model="state.inventory.tableData.One" controls-position="right" style="width:100%" ></el-input-number>
+            </el-form-item>
+            <el-form-item label="成人上限" label-width="auto">
+               <el-input-number v-model="state.inventory.tableData.One" controls-position="right" style="width:100%" ></el-input-number>
+            </el-form-item>
+            <el-form-item label="儿童上限" label-width="auto">
+               <el-input-number v-model="state.inventory.tableData.One" controls-position="right" style="width:100%" ></el-input-number>
+            </el-form-item>
+            <el-form-item label="最低价" label-width="auto" required prop="lowestPrice">
+                <el-input v-model="state.formData.lowestPrice" autocomplete="off" clearable placeholder="最低价、为0不限制" maxlength="10"></el-input>
+            </el-form-item>
+          
+         <el-divider content-position="left">库存设置</el-divider>
+
+              <el-form-item label="日期范围" label-width="auto">
+              <el-date-picker v-model="state.inventory.dateRange" type="daterange" start-placeholder="开始日期" end-placeholder="结束日期"
+                      :default-value="[new Date(2025, 05, 26), new Date(2025, 05, 26)]"></el-date-picker>
+            </el-form-item>
+              <el-form-item label="房间库存" label-width="auto">
+                  <div class="el-table--fit el-table--border el-table--scrollable-y el-table--enable-row-hover el-table el-table--layout-fixed is-scrolling-none" data-prefix="el" style="width: 100%; height: 100px;">
+                      <div class="el-table__inner-wrapper">
+                          <div class="el-table__header-wrapper">
+                          <table class="el-table__header" border="0" cellpadding="0" cellspacing="0" style="width: 100%;">
+                              <thead>
+                                <tr>
+                                      <th class="el-table_1_column_1 is-leaf el-table__cell" colspan="1" rowspan="1"><div class="cell">星期一</div></th>
+                                      <th class="el-table_1_column_2 is-leaf el-table__cell" colspan="1" rowspan="1"><div class="cell">星期二</div></th>
+                                      <th class="el-table_1_column_3 is-leaf el-table__cell" colspan="1" rowspan="1"><div class="cell">星期三</div></th>
+                                      <th class="el-table_1_column_4 is-leaf el-table__cell" colspan="1" rowspan="1"><div class="cell">星期四</div></th>
+                                      <th class="el-table_1_column_5 is-leaf el-table__cell" colspan="1" rowspan="1"><div class="cell">星期五</div></th>
+                                      <th class="el-table_1_column_6 is-leaf el-table__cell" colspan="1" rowspan="1"><div class="cell">星期六</div></th>
+                                      <th class="el-table_1_column_7 is-leaf el-table__cell" colspan="1" rowspan="1"><div class="cell">星期日</div></th>
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                    <tr class="el-table__row">
+                                        <td class="el-table__cell" colspan="1" rowspan="1">
+                                            <div class="cell">
+                                              <el-input-number v-model="state.inventory.tableData.One" controls-position="right" style="width:100%" ></el-input-number>
+                                            </div>
+                                        </td>
+                                        <td class="el-table__cell" colspan="1" rowspan="1"><div class="cell"><el-input-number v-model="state.inventory.tableData.One" controls-position="right" style="width:100%" ></el-input-number></div></td>
+                                        <td class="el-table__cell" colspan="1" rowspan="1"><div class="cell"><el-input-number v-model="state.inventory.tableData.One" controls-position="right" style="width:100%"></el-input-number></div></td>
+                                        <td class="el-table__cell" colspan="1" rowspan="1"><div class="cell"><el-input-number v-model="state.inventory.tableData.One" controls-position="right" style="width:100%"></el-input-number></div></td>
+                                        <td class="el-table__cell" colspan="1" rowspan="1"><div class="cell"><el-input-number v-model="state.inventory.tableData.One" controls-position="right" style="width:100%"></el-input-number></div></td>
+                                        <td class="el-table__cell" colspan="1" rowspan="1"><div class="cell"><el-input-number v-model="state.inventory.tableData.One" controls-position="right" style="width:100%"></el-input-number></div></td>
+                                        <td class="el-table__cell" colspan="1" rowspan="1"><div class="cell"><el-input-number v-model="state.inventory.tableData.One" controls-position="right" style="width:100%"></el-input-number></div></td>
+                                    </tr>
+                                    </tbody>
+                                  </table>
+                               </div>
+                           </div>
+                   </div>
+            </el-form-item>
+            </el-form>
+
+    </el-main>
+</el-container>
+@section scripts {
+    <script type="text/javascript">
+        const app = Vue.createApp({
+        setup() {
+
+                const state = Vue.reactive({
+                    formData: {
+                        hotelCode: '',
+                        hotelName: '',
+                        hotelNameEn: '',
+                        address: '',
+                        addressEn: '',
+                        telPhone: '',
+                        lowestPrice: 0,
+                        status: 1,
+                    },
+                    inventory:{
+                    
+                        dateRange:["",""],
+                        tableData:{
+                        
+                            One:1
+                        }
+
+                    
+                    }
+
+                });
+
+                return {state }
+        }
+        });
+        app.use(ElementPlus);
+        app.mount('#app');
+    </script>
+}
+
+

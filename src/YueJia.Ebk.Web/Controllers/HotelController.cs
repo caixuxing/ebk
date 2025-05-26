@@ -57,4 +57,13 @@ public class HotelController : AbpController
     /// <returns></returns>
     [HttpPost, Route("[controller]/HotelPageList")]
     public async Task<IResult> GetHotelList([FromBody] HotelPageListFilterQry requestQry) => ApiResult.HandleResult(await YueJiaSysServiceApp.GetHotelPageListAsync(requestQry));
+
+
+
+
+    public async Task<IActionResult> AddHotelRoom()
+    {
+
+        return View();
+    }
 }

@@ -84,13 +84,10 @@
 		<h2 class="login-title">Ebk-登录</h2>
 		<el-form :model="state" ref="loginRef" :rules="loginRules">
 			<el-form-item prop="AccountNo">
-				<el-input v-model="state.AccountNo" autocomplete="off" :prefix-icon="User" placeholder="账户" clearable />
+				<el-input v-model="state.AccountNo" autocomplete="off"  placeholder="账户" clearable />
 			</el-form-item>
 			<el-form-item prop="AccountPwd">
-				<el-input v-model="state.AccountPwd" type="password"
-				show-password
-				clearable
-				auto-complete="new-password" :prefix-icon="Lock" placeholder="密码"  />
+				<el-input v-model="state.AccountPwd" type="password" show-password clearable auto-complete="new-password"  placeholder="密码"  />
 			</el-form-item>
 			<el-form-item>
 				<el-button type="primary" v-on:click="handleLogin" :loading="isLoginLoading">登录</el-button>
@@ -101,7 +98,7 @@
 </div>
 
 @section scripts {
-	<script type="text/javascript">
+	<script setup type="text/javascript">
 		const app = Vue.createApp({
 			setup() {
 				const state = Vue.reactive({

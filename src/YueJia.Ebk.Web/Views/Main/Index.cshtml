@@ -96,7 +96,7 @@
                 </a>
             </div>
             <div>
-                <h1 style="margin: auto;font-size: 20px;margin-left: 20px;font-weight: 400;">{{state.activeTitle}}</h1>
+                <h1 style="margin: auto;font-size: 20px;margin-left: 20px;font-weight: 400;" id="activeTitle">{{state.activeTitle}}</h1>
             </div>
             <div style="display:flex;justify-content: flex-end; margin-left:auto;margin-right:20px;">
              @*    <el-text>
@@ -112,7 +112,6 @@
     <el-container>
         <el-aside width="200px" style="border: #ebeef5 1px solid; border-top: none;border-bottom: none;border-left:none;background:#303b57">
             <el-menu :default-active="state.activeIndex" v-on:select="handleSelectAddTab"
-                     :collapse="isCollapse"
                      open="handleOpen"
                      close="handleClose">
                 <template v-for="item in formatMenuMap" :key="state.menuMap.pageIndex">
@@ -128,7 +127,7 @@
             </el-menu>
         </el-aside>
         <el-container>
-            <iframe :src="state.currentIframeUrl" style="width:100%;border:none;height:100%"></iframe>
+            <iframe :src="state.currentIframeUrl" style="width:100%;border:none;height:100%" id="mainFrame"></iframe>
             <el-footer style="border: #ebeef5 1px solid;">
                 <div class="footer-div">
                     <span class="footer-span">&copy; Darcy</span>
@@ -147,6 +146,19 @@
 @section scripts {
     <script src="https://unpkg.com/dayjs@1.8.21/dayjs.min.js"></script>
     <script src="https://unpkg.com/dayjs@1.8.21/plugin/utc.js"></script>
+
+   <script type="text/javascript">
+     function mainFrame(url)
+       { 
+            if (window.vueState)  { 
+                window.vueState.activeIndex="",
+                //window.vueState.activeTitle=breadcrumbName,
+                window.vueState.currentIframeUrl=url;
+            } 
+       }
+   </script>
+
+
     <script type="text/javascript">
         const layoutApp = Vue.createApp({
             setup() {
@@ -261,12 +273,15 @@
                 });
             Vue.onMounted(() => {
 				window.onpageshow  = function(event) {
-    if (event.persisted)  {
-        window.location.reload(); 
-    }
-};
+                    if (event.persisted)  {
+                        window.location.reload(); 
+                    }
+                 };
 
 				});
+
+                // 将 state 对象暴露到全局 
+                window.vueState  = state; 
 
 
                 return {

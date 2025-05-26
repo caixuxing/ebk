@@ -41,22 +41,22 @@
                     </div>
                 </template>
             </el-table-column>
-            <el-table-column label="用户名" width="180px"align="left" show-overflow-tooltip="true">
+            <el-table-column label="用户名" width="180px"align="left" >
                 <template #default="scope">
                     {{ scope.row.realName }}
                 </template>
             </el-table-column>
-               <el-table-column label="登录账户" width="auto" max-width="200px" align="center" show-overflow-tooltip="true">
+               <el-table-column label="登录账户" width="auto" max-width="200px" align="center"  >
                 <template #default="scope">
                     {{ scope.row.accountName }}
                 </template>
             </el-table-column>
-               <el-table-column label="联系电话" width="140px" align="center" show-overflow-tooltip="true">
+               <el-table-column label="联系电话" width="140px" align="center"  >
                 <template #default="scope" align="right">
                     {{ scope.row.contactPhone }}
                 </template>
             </el-table-column>
-               <el-table-column label="部门" width="auto" max-width="120px" align="center" show-overflow-tooltip="true">
+               <el-table-column label="部门" width="auto" max-width="120px" align="center"  >
                 <template #default="scope">
                     {{ scope.row.deptName }}
                 </template>

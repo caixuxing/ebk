@@ -30,6 +30,7 @@
         <el-form label-width="100px" :inline="true" style="margin-top:30px;">
             <el-form-item prop="desc" style="margin-bottom:5px;">
                 <el-button type="primary" v-on:click="add">添加酒店</el-button>
+                <el-button type="primary" v-on:click="TestFunc">调用主架构方法</el-button>
             </el-form-item>
         </el-form>
         <el-table :data="state.dataList"
@@ -43,25 +44,25 @@
                     </div>
                 </template>
             </el-table-column>
-            <el-table-column label="酒店编码" width="180px" align="center" show-overflow-tooltip="true">
+            <el-table-column label="酒店编码" width="180px" align="center"  >
                 <template #default="scope">
                     {{ scope.row.hotelCode }}
                 </template>
             </el-table-column>
-            <el-table-column label="酒店名称" width="300px"  align="left" show-overflow-tooltip="true">
+            <el-table-column label="酒店名称" width="300px"  align="left"  >
                 <template #default="scope">
                     <p style="margin:5px 0px">{{ scope.row.hotelName }}</p>
                     <p>{{ scope.row.hotelNameEn }}</p>
                 </template>
             </el-table-column>
-               <el-table-column label="酒店地址" width="auto" max-width="200px" align="left" show-overflow-tooltip="true">
+               <el-table-column label="酒店地址" width="auto" max-width="200px" align="left"  >
                 <template #default="scope">
                     <p style="margin:5px 0px">{{ scope.row.address }}</p>
 
                      <p>{{ scope.row.addressEn }}</p>
                 </template>
             </el-table-column>
-            <el-table-column label="联系电话" width="200px" align="center" show-overflow-tooltip="true">
+            <el-table-column label="联系电话" width="200px" align="center"  >
                 <template #default="scope" align="right">
                     {{ scope.row.telPhone }}
                 </template>
@@ -129,21 +130,21 @@
                   border
                   height="500px"
                   v-loading="dialog.dataloading">
-            <el-table-column label="酒店名称" width="300px" max-width="280px" align="left" show-overflow-tooltip="true">
+            <el-table-column label="酒店名称" width="300px" max-width="280px" align="left"  >
                 <template #default="scope">
                    <p> {{ scope.row.hotelName }}</p>
                    <p> {{ scope.row.hotelNameEn }}</p>
                    <el-rate v-model="scope.row.starLevel" disabled></el-rate>
                 </template>
             </el-table-column>
-               <el-table-column label="酒店地址" width="auto" max-width="200px" align="left" show-overflow-tooltip="true">
+               <el-table-column label="酒店地址" width="auto" max-width="200px" align="left"  >
                 <template #default="scope">
                     <p style="margin:5px 0px;">{{ scope.row.countryName }}({{scope.row.countryNameEn}}) - {{scope.row.areaName}}({{scope.row.areaNameEn}})</p>
                     <p style="margin:5px 0px;">{{ scope.row.address }}</p>
                     <p>{{ scope.row.addressEn }}</p>
                 </template>
             </el-table-column>
-            <el-table-column label="联系电话" width="180px" align="right" show-overflow-tooltip="true">
+            <el-table-column label="联系电话" width="180px" align="right"  >
                 <template #default="scope" align="right">
                    <p> {{ scope.row.telPhone }}</p>
                 </template>
@@ -408,8 +409,13 @@
         };
 
 
+       const TestFunc=()=>{
+           window.parent.mainFrame(`/Hotel/AddHotelRoom`,` `);
+       };
+
+
        return {state,loadData,handleSizeChange,handleCurrentChange,deleteItem,resetQueryForm,dialog,add,FormDataRules,FormDataRef,save,
-               dialogTableData,handleDialogSizeChange,handleDialogCurrentChange,dialogResetQueryForm,addHotel,upHotelState,editHotel}
+               dialogTableData,handleDialogSizeChange,handleDialogCurrentChange,dialogResetQueryForm,addHotel,upHotelState,editHotel,TestFunc}
             }});
             app.use(ElementPlus,{ locale: ElementPlusLocaleZhCn });
             app.mount('#app');

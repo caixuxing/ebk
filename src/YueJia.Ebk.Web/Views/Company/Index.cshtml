@@ -52,27 +52,27 @@
                     </div>
                 </template>
             </el-table-column>
-            <el-table-column label="公司名称" width="auto" max-width="200" align="left" show-overflow-tooltip="true">
+            <el-table-column label="公司名称" width="auto" max-width="200" align="left"  >
                 <template #default="scope">
                     {{ scope.row.name }}
                 </template>
             </el-table-column>
-               <el-table-column label="责任人" width="120px" align="center" show-overflow-tooltip="true">
+               <el-table-column label="责任人" width="120px" align="center"  >
                 <template #default="scope">
                     {{ scope.row.responsible }}
                 </template>
             </el-table-column>
-               <el-table-column label="联系电话" width="140px" align="center" show-overflow-tooltip="true">
+               <el-table-column label="联系电话" width="140px" align="center"  >
                 <template #default="scope" align="right">
                     {{ scope.row.contactPhone }}
                 </template>
             </el-table-column>
-               <el-table-column label="邮箱" width="auto" max-width="120" align="center" show-overflow-tooltip="true">
+               <el-table-column label="邮箱" width="auto" max-width="120" align="center"  >
                 <template #default="scope">
                     {{ scope.row.email }}
                 </template>
             </el-table-column>
-             <el-table-column label="是否渠道管理" width="115px" align="center" show-overflow-tooltip="true">
+             <el-table-column label="是否渠道管理" width="115px" align="center"  >
                 <template #default="scope">
                     {{ scope.row.isChannelManageName }}
                 </template>
