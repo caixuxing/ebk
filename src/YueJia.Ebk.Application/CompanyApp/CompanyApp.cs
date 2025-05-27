@@ -20,19 +20,28 @@ public class CompanyApp : ApplicationService, ICompanyApp
 
     private ICurrentUserApp CurrentUserApp => LazyServiceProvider.LazyGetRequiredService<ICurrentUserApp>();
 
+    private ISimpleClient<SysUserDo> SysUserRepo => LazyServiceProvider.LazyGetRequiredService<ISimpleClient<SysUserDo>>();
+
+
     public async Task<long> CreateCompanyAsync([NotNull] CreateOrUpdateCommpanyCmd cmd)
     {
         //验证
         await LazyServiceProvider.LazyGetRequiredService<FluentValidation.IValidator<CreateOrUpdateCommpanyCmd>>().ValidateAndThrowAsync(cmd);
 
 
-        if (CurrentUserApp.AccountType != AccountTypeEnum.SuperAdmin) throw new InvalidOperationException("当前用户无权创建公司！");
-
+        if (CurrentUserApp.AccountType != AccountTypeEnum.SuperAdmin) { 
+            throw new InvalidOperationException("当前用户无权创建公司！");
+        }
 
         //校验唯一性
-        if (await CompanyRepo.IsAnyAsync(x => x.ContactPhone == cmd.ContactPhone)) throw new InvalidOperationException("公司联系电话已存在！");
-        if (!string.IsNullOrWhiteSpace(cmd.Email))
-            if (await CompanyRepo.IsAnyAsync(x => x.Email == cmd.Email)) throw new InvalidOperationException("公司邮箱已存在！");
+        if (await CompanyRepo.IsAnyAsync(x => x.ContactPhone == cmd.ContactPhone)) { 
+            throw new InvalidOperationException("公司联系电话已存在！");
+        }
+
+        if (!string.IsNullOrWhiteSpace(cmd.Email) && await CompanyRepo.IsAnyAsync(x => x.Email == cmd.Email))
+        {
+            throw new InvalidOperationException("公司邮箱已存在！");
+        }
 
         //创建公司
         var entity = CompanyDO.Create(name: cmd.Name,
@@ -45,7 +54,6 @@ public class CompanyApp : ApplicationService, ICompanyApp
                                     ) ?? throw new InvalidOperationException("公司创建失败！");
 
         // var DeptEntity = DepartmentDo.Create("默认部门", -1, entity.Id, YesOrNoType.Yes, entity.TenantId.GetValueOrDefault(0)) ?? throw new InvalidOperationException("部门创建失败！");
-
 
 
         var UserEntity = SysUserDo.Create(cmd.ContactPhone, cmd.Responsible, AccountTypeEnum.SysAdmin, YesOrNoType.Yes, null, cmd.ContactPhone);
@@ -61,23 +69,30 @@ public class CompanyApp : ApplicationService, ICompanyApp
 
             return entity.Id;
         });
-
-
-
     }
 
-
-
+    /// <summary>
+    /// 删除公司
+    /// </summary>
+    /// <param name="id"></param>
+    /// <returns></returns>
+    /// <exception cref="InvalidOperationException"></exception>
     public async Task<bool> DeleteCompanyAsync([NotNull] long id)
     {
-        var entity = await CompanyRepo.GetByIdAsync(id) ?? throw new InvalidOperationException($"公司ID:{id}资源不存在！");
+        var entity = await CompanyRepo.GetByIdAsync(id);
+        if (entity == null) {
+            throw new InvalidOperationException($"数据未找到");
+        }
+
         var delEntity = entity with { };
         delEntity.IsDelete = true;
-        if (entity.Equals(delEntity)) return true;
-        var affectedRows = await CompanyRepo.AsUpdateable(entity)
-         .UpdateColumns(it => new { it.IsDelete, it.Version, it.LastModifiedbyId, it.LastModifiedbyName, it.LastModifiedTime })
-         .ExecuteCommandWithOptLockAsync();
-        if (affectedRows is not 1) throw new InvalidOperationException($"公司信息删除失败!");
+        if (entity.Equals(delEntity))
+        { 
+            return true;
+        }
+       await CompanyRepo.AsUpdateable(delEntity)
+                                            .UpdateColumns(it => new { it.IsDelete, it.Version, it.LastModifiedbyId, it.LastModifiedbyName, it.LastModifiedTime })
+                                            .ExecuteCommandWithOptLockAsync();
         return true;
     }
 
@@ -87,12 +102,21 @@ public class CompanyApp : ApplicationService, ICompanyApp
         await LazyServiceProvider.LazyGetRequiredService<FluentValidation.IValidator<CreateOrUpdateCommpanyCmd>>().ValidateAndThrowAsync(cmd);
 
         //校验唯一性 排除自己
-        if (await CompanyRepo.IsAnyAsync(x => x.ContactPhone == cmd.ContactPhone && x.Id != id)) throw new InvalidOperationException("公司联系电话已存在！");
-        if (!string.IsNullOrWhiteSpace(cmd.Email))
-            if (await CompanyRepo.IsAnyAsync(x => x.Email == cmd.Email && x.Id != id)) throw new InvalidOperationException("公司邮箱已存在！");
+        if (await CompanyRepo.IsAnyAsync(x => x.ContactPhone == cmd.ContactPhone && x.Id != id))
+        {
+            throw new InvalidOperationException("公司联系电话已存在！");
+        }
+        if (!string.IsNullOrWhiteSpace(cmd.Email) && await CompanyRepo.IsAnyAsync(x => x.Email == cmd.Email && x.Id != id)) {
+            throw new InvalidOperationException("公司邮箱已存在！");
+        }
 
         //读取公司原始信息
-        var entity = await CompanyRepo.GetByIdAsync(id) ?? throw new InvalidOperationException($"公司ID:{id}资源不存在！");
+        var entity = await CompanyRepo.GetByIdAsync(id);
+        if (entity == null)
+        {
+            throw new InvalidOperationException($"数据未找到");
+        }
+
         //Copy更新信息
         var upEntity = entity with { };
         upEntity.SetName(cmd.Name)
@@ -106,23 +130,22 @@ public class CompanyApp : ApplicationService, ICompanyApp
         if (entity.Equals(upEntity)) return true;
 
         //指定更新列并返回受影响行数
-        var affectedRows = await CompanyRepo.AsUpdateable(upEntity)
-           .UpdateColumns(it => new
-           {
-               it.Name,
-               it.Responsible,
-               it.ContactPhone,
-               it.Email,
-               it.CompanyAddr,
-               it.IsChannelManage,
-               it.Status,
-               it.Version,
-               it.LastModifiedbyId,
-               it.LastModifiedbyName,
-               it.LastModifiedTime
-           })
-           .ExecuteCommandWithOptLockAsync();
-        if (affectedRows is not 1) throw new InvalidOperationException($"用户信息更新失败!");
+        await CompanyRepo.AsUpdateable(upEntity)
+                         .UpdateColumns(it => new
+                         {
+                               it.Name,
+                               it.Responsible,
+                               it.ContactPhone,
+                               it.Email,
+                               it.CompanyAddr,
+                               it.IsChannelManage,
+                               it.Status,
+                               it.Version,
+                               it.LastModifiedbyId,
+                               it.LastModifiedbyName,
+                               it.LastModifiedTime
+                           })
+                           .ExecuteCommandWithOptLockAsync();
         return true;
     }
 

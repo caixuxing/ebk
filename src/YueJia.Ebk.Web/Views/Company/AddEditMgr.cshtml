@@ -1,0 +1,145 @@
+﻿@model YueJia.Ebk.Application.Contracts.CompanyApp.Commands.CreateOrUpdateCommpanyCmd
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<el-container style="height:100vh;overflow: hidden; padding-top:20px; text-align:center ">
+    <el-main>
+        <el-form label-width="auto" style="width:100%;" :model="model" :rules="FormDataRules" ref="FormDataRef">
+            <el-form-item label="公司名称" required prop="name">
+                <el-input v-model="model.name" autocomplete="off" clearable placeholder="请输入公司名称" maxlength="30"></el-input>
+            </el-form-item>
+            <el-form-item label="责任人" required prop="responsible">
+                <el-input v-model="model.responsible" autocomplete="off" clearable placeholder="请输入责任人" maxlength="8"></el-input>
+            </el-form-item>
+            <el-form-item label="联系电话" required prop="contactPhone">
+                <el-input v-model="model.contactPhone" autocomplete="off" clearable placeholder="请输入联系电话" maxlength="15"></el-input>
+            </el-form-item>
+            <el-form-item label="邮箱" prop="email">
+                <el-input v-model="model.email" autocomplete="off" clearable placeholder="邮箱" maxlength="30"></el-input>
+            </el-form-item>
+
+            <el-form-item label="公司地址" label-width="auto" prop="companyAddr">
+                <el-input v-model="model.companyAddr" autocomplete="off" clearable placeholder="公司地址" maxlength="80"></el-input>
+            </el-form-item>
+            <el-form-item label="是否渠道管理" label-width="auto">
+                <el-switch v-model="model.V_IsChannelManage" inline-prompt active-text="是" inactive-text="否" />
+            </el-form-item>
+            <el-form-item label="是否启用" label-width="auto">
+                <el-switch v-model="model.V_Status" inline-prompt active-text="是" inactive-text="否" />
+            </el-form-item>
+        </el-form>
+    </el-main>
+    <el-footer>
+        @if (ViewBag.id > 0 ) {
+            <el-button type="primary" v-on:click="onEditSave">保存 </el-button>
+        }
+        else {
+            <el-button type="primary" v-on:click="onNewSave">保存 </el-button>
+        }
+
+
+    </el-footer>
+</el-container>
+
+@section scripts {
+    <script type="text/javascript">
+
+        var frameIndex = parent.layer.getFrameIndex(window.name);
+        const app = Vue.createApp({
+            setup() {
+
+               const model =  Vue.reactive(
+                     @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model, new System.Text.Json.JsonSerializerOptions() { PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase }))
+                );
+                const id = '@ViewBag.id';
+
+                Vue.onMounted(() => {
+                     model.V_IsChannelManage = model.isChannelManage==1;
+                     model.V_Status = model.status==1;
+                 });
+
+                 const FormDataRef = Vue.ref(null);
+                 const FormDataRules = {
+                        name: [{ required: true, message: '公司名称必填!', trigger: 'blur' }],
+                        responsible: [{ required: true, message: '责任人必填!', trigger: 'blur' }],
+                        contactPhone: [{ required: true, message: '联系电话必填!', trigger: 'blur' },
+                        { pattern: /^1[3456789]\d{9}$/, message: '手机号码格式不正确', trigger: 'blur' }
+                        ],
+                       email: [
+                            { required: false },
+                            {
+                                pattern: /^[a-zA-Z0-9_-]+@@[a-zA-Z0-9_-]+(\.[a-zA-Z0-9_-]+)+$/,
+                                message: '邮箱格式不正确',
+                                trigger: 'blur',
+                                validator: (rule, value, callback) => {
+                                    if (!value || value.trim()  === '') callback();
+                                    else rule.pattern.test(value)  ? callback() : callback(new Error(rule.message));
+                                }
+                            }
+                        ]
+                 };
+
+                /*
+                * 编辑=> 保存
+                */
+                const onEditSave =  () => {
+
+                     let isValid =  FormDataRef.value.validate();
+                     if(!isValid) 
+                     {
+                          ElMessage({ message: "请完善表单信息!", type: "error" });
+                          return
+                     }
+
+                     let reqData = { ...model };
+                     reqData.isChannelManage = model.V_IsChannelManage?1:0
+                     reqData.status = model.V_Status ?1:0
+
+                         axios['put'](`/Company/${id}/update`, reqData).then(res=>{
+                             top.window.vueElMessage({ message: res.data. message , type:  res.data.isSuccess?'success':'info' })
+                             if(res.data.isSuccess){
+                                parent.layer.close(frameIndex); // 关闭当前弹框
+                             }
+                         })
+                 }
+
+                /*
+                * 新增=> 保存
+                */
+                const onNewSave =  () => {
+
+                     let isValid =  FormDataRef.value.validate();
+                     if(!isValid)
+                     {
+                          ElMessage({ message: "请完善表单信息!", type: "error" });
+                          return
+                     }
+
+                     let reqData = { ...model };
+                     reqData.isChannelManage = model.V_IsChannelManage?1:0
+                     reqData.status = model.V_Status ?1:0
+
+                         axios['post'](`/Company/create`, reqData).then(res=>{
+                             top.window.vueElMessage({ message: res.data. message , type:  res.data.isSuccess?'success':'info' })
+                             if(res.data.isSuccess){
+                                parent.layer.close(frameIndex); // 关闭当前弹框
+                             }
+                         })
+                 }
+
+                 return {
+                       model,
+                       FormDataRules,
+                       FormDataRef,
+                       onEditSave,
+                       onNewSave,
+                 };
+
+            }
+        });
+        app.use(ElementPlus, { locale: ElementPlusLocaleZhCn });
+        app.mount('#app');
+    </script>
+
+}

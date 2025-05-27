@@ -67,7 +67,7 @@ public class CreateCommpanyCmdValidator : AbstractValidator<CreateOrUpdateCommpa
 
         RuleFor(x => x.Name)
             .Cascade(CascadeMode.Stop)
-            .NotNull().WithMessage("公司名称不能为空！")
+            .NotEmpty().WithMessage("公司名称不能为空！")
             .MaximumLength(30).WithMessage("公司名称长度不能超过30个字符！");
         RuleFor(x => x.Responsible)
             .Cascade(CascadeMode.Stop)

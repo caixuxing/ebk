@@ -1,5 +1,6 @@
 ﻿using YueJia.Ebk.Application.Contracts.CompanyApp;
 using YueJia.Ebk.Application.Contracts.CompanyApp.Commands;
+using YueJia.Ebk.Application.Contracts.CompanyApp.Dto;
 using YueJia.Ebk.Application.Contracts.CompanyApp.Query;
 using YueJia.Ebk.Application.Contracts.SysApp;
 using YueJia.Ebk.Web.ViewModels.Company;
@@ -25,6 +26,34 @@ public class CompanyController : AbpController
     {
         return View();
     }
+
+    /// <summary>
+    /// 新增编辑
+    /// </summary>
+    /// <param name="id"></param>
+    /// <returns></returns>
+    public async Task<IActionResult> AddEditMgr(long id)
+    {
+        var model = new CompanyDetailsDto() { IsChannelManage= YesOrNoType.No,Status= YesOrNoType.Yes  };
+        if (id>0) {
+            model = await CompanyApp.GetCompanyById(id);
+            if (model==null) { 
+              return View("../Home/ErrorMgr");
+            }
+        }
+        ViewBag.id = id;
+        return View(new CreateOrUpdateCommpanyCmd()
+        {
+            CompanyAddr = model.CompanyAddr,
+            ContactPhone = model.ContactPhone,
+            Email = model.Email,
+            IsChannelManage = model.IsChannelManage,
+            Name = model.Name,
+            Responsible = model.Responsible,
+            Status = model.Status
+        });
+    }
+
 
     public async Task<IActionResult> AssignChannel(long id)
     {

@@ -73,9 +73,35 @@
 <script src="//unpkg.com/layui@2.11.2/dist/layui.js"></script>
 
 <script type="text/javascript">
-     axios.interceptors.response.use(
-        response => response,
+
+    /*
+    * 发送前    
+    */
+    axios.interceptors.request.use(function (config) {
+        
+        layer.load();
+
+        return config;
+    }, function (error) {
+        // 对请求错误做些什么
+        return Promise.reject(error);
+    });
+
+
+    /*
+    * 返回
+    */
+         axios.interceptors.response.use(function (response) {
+
+            layer.closeAll('loading'); //关闭加载层
+
+             // 对响应数据做点什么
+             return response;
+        },
         error => {
+
+              layer.closeAll('loading'); //关闭加载层
+
             if (error.response  && !error.response.data.isSuccess  && [400, 500].includes(error.response.status))  {
                 ElMessage.error(error.response.data.message); 
                 return;

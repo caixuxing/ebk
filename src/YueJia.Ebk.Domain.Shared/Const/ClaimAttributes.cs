@@ -41,6 +41,14 @@
         /// <summary>
         /// 公司ID
         /// </summary>
+        public const string CompanyId = "";
+
+        /// <summary>
+        /// 公司名称
+        /// </summary>
+        public const string CompanyName = "";
+
+        
         public const string CompanyId = "CompanyId";
 
         /// <summary>
