@@ -1,14 +1,7 @@
-﻿using System.Text.Json.Serialization;
-
-namespace YueJia.Ebk.Web.ViewModels.Hotel;
+﻿namespace YueJia.Ebk.Web.ViewModels.Hotel;
 
 public class AddHotelRoomVo
 {
-    /// <summary>
-    /// 房间ID
-    /// </summary>
-    [JsonNumberHandling(JsonNumberHandling.WriteAsString)]
-    public long RoomId { get; set; }
     /// <summary>
     /// 酒店代码
     /// </summary>
@@ -39,16 +32,6 @@ public class AddHotelRoomVo
     /// 儿童上限
     /// </summary>
     public int? ChildLimit { get; set; }
-
-    /// <summary>
-    /// 房型Json字符串
-    /// </summary>
-    public string? SelectRoomTypeJosn { get; set; }
-    /// <summary>
-    /// 床型Json字符串
-    /// </summary>
-    public string? SelectBedTypeJosn { get; set; }
-
 
     /// <summary>
     /// 库存

@@ -26,6 +26,7 @@ public class HotelController : AbpController
     {
         ViewBag.CountryData = JsonConvert.SerializeObject(await YueJiaSysServiceApp.GetDropDownCountryListAsync(), new JsonSerializerSettings { ContractResolver = new CamelCasePropertyNamesContractResolver() });
         ViewBag.HotelSaleTypeData = JsonConvert.SerializeObject(SysEnumApp.GetEnumDataList(nameof(HotelSaleTypeMnum)), new JsonSerializerSettings { ContractResolver = new CamelCasePropertyNamesContractResolver() });
+        await Task.Delay(1);
         return View();
     }
 
@@ -99,8 +100,30 @@ public class HotelController : AbpController
     {
         AddHotelRoomVo vm = new AddHotelRoomVo()
         {
-            SelectRoomTypeJosn = JsonConvert.SerializeObject(await YueJiaSysServiceApp.GetDropDownRoomTypeByHotelCodeAsync(hotelCode)),
-            SelectBedTypeJosn = JsonConvert.SerializeObject(SysEnumApp.GetEnumDataList(nameof(BedTypeEnum)))
+            HotelCode = hotelCode,
+            AdultLimit = 2,
+            BedType = "1212",
+            ChildLimit = 0,
+            RoomType = "3323",
+            HotelName = "测试酒店",
+            MaximumNumberOfPeople = 5,
+            Stock = new StockVo()
+            {
+
+                EndDate = DateTime.Now,
+                StartDate = DateTime.Now.AddDays(-1),
+                Stock = new Dictionary<WeekTypeMnum, int>() {
+                    { WeekTypeMnum.Monday, 1 },
+                    { WeekTypeMnum.Tuesday, 2 },
+                    { WeekTypeMnum.Wednesday, 3 },
+                    { WeekTypeMnum.Thursday, 4 },
+                    { WeekTypeMnum.Friday, 5 },
+                    { WeekTypeMnum.Saturday, 6 },
+                    { WeekTypeMnum.Sunday, 7 }
+                }
+
+            }
+
         };
         return View(vm);
     }
