@@ -75,10 +75,10 @@ public class SysUserApp : ApplicationService, ISysUserApp
         RefAsync<int> total = 0;
 
         var query = SysUserRepo.AsQueryable()
-              .LeftJoin<DepartmentDo>((t, t1) => t.DeptId == t1.Id).With(SqlWith.NoLock)
-               .WhereIF(!string.IsNullOrWhiteSpace(qry.AccountName), x => SqlFunc.Like(x.AccountName, $"{qry.AccountName}%"))
-               .WhereIF(!string.IsNullOrWhiteSpace(qry.RealName), x => SqlFunc.Like(x.RealName, $"{qry.RealName}%"))
-               .WhereIF(qry.IsEnabled.HasValue, (t, t1) => t.IsEnabled.Equals(qry.IsEnabled))
+                               .LeftJoin<DepartmentDo>((t, t1) => t.DeptId == t1.Id).With(SqlWith.NoLock)
+                               .WhereIF(!string.IsNullOrWhiteSpace(qry.AccountName), (t, t1) => SqlFunc.Like(t.AccountName, $"{qry.AccountName}%"))
+                               .WhereIF(!string.IsNullOrWhiteSpace(qry.RealName), (t, t1) => SqlFunc.Like(t.RealName, $"{qry.RealName}%"))
+                               .WhereIF(qry.IsEnabled.HasValue, (t, t1) => t.IsEnabled.Equals(qry.IsEnabled))
                .Select((t, t1) => new SysUserPageListDto()
                {
                    Id = t.Id,

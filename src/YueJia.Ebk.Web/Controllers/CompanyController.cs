@@ -24,6 +24,7 @@ public class CompanyController : AbpController
     /// <returns></returns>
     public IActionResult Index()
     {
+        ViewBag.YesOrNoTypeList = SysEnumApp.GetEnumDataList(nameof(YesOrNoType));
         return View();
     }
 
@@ -127,17 +128,6 @@ public class CompanyController : AbpController
 
 
 
-    /// <summary>
-    /// 获取公司详情
-    /// </summary>
-    /// <param name="id"></param>
-    /// <returns></returns>
-    [HttpGet, Route("[controller]/{id}/details")]
-    public async Task<IResult> GetCompanyById([FromRoute] string id)
-    {
-        var result = await CompanyApp.GetCompanyById(id.ToLong());
-        return ApiResult.HandleResult(result);
-    }
 
 
 
@@ -152,3 +142,17 @@ public class CompanyController : AbpController
 
 
 }
+
+
+
+    ///// <summary>
+    ///// 获取公司详情
+    ///// </summary>
+    ///// <param name="id"></param>
+    ///// <returns></returns>
+    //[HttpGet, Route("[controller]/{id}/details")]
+    //public async Task<IResult> GetCompanyById([FromRoute] string id)
+    //{
+    //    var result = await CompanyApp.GetCompanyById(id.ToLong());
+    //    return ApiResult.HandleResult(result);
+    //}

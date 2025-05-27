@@ -1,7 +1,14 @@
-﻿using YueJia.Ebk.Application.Contracts.DeptApp;
+﻿using YueJia.Ebk.Application.CompanyApp;
+using YueJia.Ebk.Application.Contracts.CompanyApp.Commands;
+using YueJia.Ebk.Application.Contracts.CompanyApp.Dto;
+using YueJia.Ebk.Application.Contracts.DeptApp;
+using YueJia.Ebk.Application.Contracts.SysApp;
 using YueJia.Ebk.Application.Contracts.SysUserApp;
 using YueJia.Ebk.Application.Contracts.SysUserApp.Commands;
+using YueJia.Ebk.Application.Contracts.SysUserApp.Dto;
 using YueJia.Ebk.Application.Contracts.SysUserApp.Query;
+using YueJia.Ebk.Application.SysApp;
+using YueJia.Ebk.Application.SysUserApp;
 
 namespace YueJia.Ebk.Web.Controllers
 {
@@ -12,12 +19,45 @@ namespace YueJia.Ebk.Web.Controllers
 
         private IDeptApp DeptApp => LazyServiceProvider.LazyGetRequiredService<IDeptApp>();
 
+        private ISysEnumApp SysEnumApp => LazyServiceProvider.LazyGetRequiredService<ISysEnumApp>();
+
+
 
         public async Task<IActionResult> Index()
         {
+            ViewBag.YesOrNoTypeList = SysEnumApp.GetEnumDataList(nameof(YesOrNoType));
 
-            ///de
+            return View();
+        }
+
+
+        /// <summary>
+        /// 新增编辑
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        public async Task<IActionResult> AddEditMgr(long id)
+        {
             ViewBag.DeptData = JsonConvert.SerializeObject(await DeptApp.GetDeptTreeSelectData(), new JsonSerializerSettings { ContractResolver = new CamelCasePropertyNamesContractResolver() });
+
+            var model = new SysUserDetailsDto() { IsEnabled = YesOrNoType.Yes };
+            if (id > 0)
+            {
+                model = await SysUserApp.GetByIdAsync(id);
+                if (model == null)
+                {
+                    return View("../Home/ErrorMgr");
+                }
+            }
+            ViewBag.id = id;
+            ViewBag.model = new CreateOrUpdateSysUserCmd()
+            {
+                AccountName = model.AccountName,
+                RealName = model.RealName,
+                DeptId = model.DeptId == null ? "" : model.DeptId.ToString(),
+                ContactPhone = model.ContactPhone,
+                IsEnabled = model.IsEnabled,
+            };
             return View();
         }
 
@@ -62,17 +102,7 @@ namespace YueJia.Ebk.Web.Controllers
             return ApiResult.HandleBoolResult(result);
         }
 
-        /// <summary>
-        /// 获取用户详情
-        /// </summary>
-        /// <param name="id"></param>
-        /// <returns></returns>
-        [HttpGet, Route("[controller]/{id}/details")]
-        public async Task<IResult> GetById([FromRoute] string id)
-        {
-            var result = await SysUserApp.GetByIdAsync(id.ToLong());
-            return ApiResult.HandleResult(result);
-        }
+
 
         /// <summary>
         /// 获取用户列表
@@ -83,3 +113,18 @@ namespace YueJia.Ebk.Web.Controllers
         public async Task<IResult> GetPageList([FromBody] SysUserPageFilterQry requestQry) => ApiResult.HandleResult(await SysUserApp.GetPageListAsync(requestQry));
     }
 }
+
+
+
+
+///// <summary>
+///// 获取用户详情
+///// </summary>
+///// <param name="id"></param>
+///// <returns></returns>
+//[HttpGet, Route("[controller]/{id}/details")]
+//public async Task<IResult> GetById([FromRoute] string id)
+//{
+//    var result = await SysUserApp.GetByIdAsync(id.ToLong());
+//    return ApiResult.HandleResult(result);
+//}
