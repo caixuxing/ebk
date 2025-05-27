@@ -1,0 +1,105 @@
+﻿@model YueJia.Ebk.Web.ViewModels.Hotel.ViewHotelVo
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+@section head {
+    <title>查看酒店</title>
+}
+<el-container style="height:100vh;overflow: hidden;">
+    <el-main>
+         <el-form :model="state.formData"  label-width="auto" :rules="FormDataRules" ref="FormDataRef">
+            <el-alert type="primary" show-icon :closable="false" >
+             <p>[我的酒店] / @Html.Raw($"{Model.HotelName}({Model.HotelNameEn})") / <el-link type="primary" v-on:click="openRoomAndPricePlan">房间与价格计划</el-link> / 库存与价格 / 促销</p>
+             </el-alert>
+            <el-divider content-position="left">酒店</el-divider>
+      <el-form-item label="酒店编码" >
+         <el-text class="mx-1">{{state.formData.hotelCode}}</el-text>
+      </el-form-item>
+      <el-form-item label="酒店名称">
+          <el-text class="mx-1">{{state.formData.hotelName}}</el-text>
+      </el-form-item>
+       <el-form-item label="酒店名称英文">
+          <el-text class="mx-1">{{state.formData.hotelNameEn}}</el-text>
+      </el-form-item>
+       <el-form-item label="酒店地址" >
+            <el-text class="mx-1">{{state.formData.address}}</el-text>
+      </el-form-item>
+      <el-form-item label="酒店地址英文" label-width="auto" >
+         <el-text class="mx-1">{{state.formData.addressEn}}</el-text>
+      </el-form-item>
+       <el-form-item label="联系电话" label-width="auto" >
+         <el-text class="mx-1">{{state.formData.telPhone}}</el-text>
+      </el-form-item>
+          <el-form-item label="最低价" label-width="auto"  required prop="lowestPrice">
+        <el-input v-model="state.formData.lowestPrice" autocomplete="off"  clearable placeholder="最低价、为0不限制"  maxlength="10"  ></el-input>
+      </el-form-item>
+       <el-form-item label="销售状态" label-width="auto">
+        <el-radio-group v-model="state.formData.status">
+             <el-radio v-for="item in state.saleTypeData" :key="item.value" :label="item.describe" :value="item.value">{{item.describe}}</el-radio>
+          </el-radio-group>
+      </el-form-item>
+    </el-form>
+        <el-form-item>
+            <div class="dialog-footer" style="text-align: center; width: 100%;">
+                <el-button v-on:click="cancel">返回 </el-button>
+                <el-button type="primary" v-on:click="save">保存 </el-button>
+            </div>
+        </el-form-item>
+    </el-main>
+</el-container>
+@section scripts {
+    <script type="text/javascript">
+        const app = Vue.createApp({
+        setup() {
+              const state = Vue.reactive({
+                    saleTypeData:@(Html.Raw(Model.HotelSaleTypeJson)),
+                    formData: {
+                            hotelCode:`@Html.Raw(Model.HotelCode)`,
+                            hotelName:`@Html.Raw(Model.HotelName)`,
+                            hotelNameEn:`@Html.Raw(Model.HotelNameEn)`,
+                            address:`@Html.Raw(Model.Address)`, 
+                            addressEn:`@Html.Raw(Model.AddressEn)`,
+                            telPhone:`@Html.Raw(Model.TelPhone)`,
+                            lowestPrice:@Model.LowestPrice,
+                            status: @Model.Status.GetHashCode()
+                      }
+                });
+              const id=Vue.ref(`@Html.Raw(Model.Id)`);
+              const FormDataRef = Vue.ref(null);
+ 
+            const FormDataRules = {
+                    lowestPrice: [{ required: true, message: '最低价必填!', trigger: 'blur' }]
+                };
+
+             const save = async () => {
+            let isValid = await FormDataRef.value.validate();
+            if (!isValid) return ElMessage({ message: "请完善表单信息!", type: "error" });
+            let requestData = { ...state.formData,lowestPrice:Number(state.formData.lowestPrice) };
+            let response = await axios.put(`/Hotel/${id.value}/UpdatePublishHotel`, requestData);
+            if (response.status === 200) {
+                ElMessage({ message: "保存成功!", type: "success" });
+                state.openAddDialog = false;
+                window.parent.mainFrame(`/Hotel/HotelPublishList`,`我的酒店`,`page3-1`);
+            }
+        };
+
+
+           const cancel=()=>{
+                   window.parent.mainFrame(`/Hotel/HotelPublishList`,`我的酒店`,`page3-1`);
+                 };
+
+       const openRoomAndPricePlan=()=>{
+           window.parent.mainFrame(`/Hotel/RoomAndPricePlan?id=${id.value}&hotelCode=${state.formData.hotelCode}`,``,``);
+       };
+
+
+
+                return {state,save,cancel,FormDataRules,FormDataRef,openRoomAndPricePlan}
+        }
+        });
+        app.use(ElementPlus);
+        app.mount('#app');
+    </script>
+}
+
+

@@ -1,5 +1,8 @@
 ﻿using Microsoft.AspNetCore.Http;
 using YueJia.Ebk.Application.Contracts.SysUserApp;
+using YueJia.Ebk.Application.Contracts.SysUserApp.Dto;
+using YueJia.Ebk.Domain.Company;
+using YueJia.Ebk.Domain.Dept;
 using YueJia.Ebk.Domain.Shared.Const;
 
 namespace YueJia.Ebk.Application.SysUserApp;
@@ -7,6 +10,10 @@ namespace YueJia.Ebk.Application.SysUserApp;
 public class CurrentUserApp : ApplicationService, ICurrentUserApp
 {
     private readonly IHttpContextAccessor _accessor;
+
+    private ISimpleClient<CompanyDO> CompanyRepo => LazyServiceProvider.LazyGetRequiredService<ISimpleClient<CompanyDO>>();
+
+    private ISimpleClient<DepartmentDo> DepartmentRepo => LazyServiceProvider.LazyGetRequiredService<ISimpleClient<DepartmentDo>>();
 
     /// <summary>
     ///
@@ -75,12 +82,63 @@ public class CurrentUserApp : ApplicationService, ICurrentUserApp
         }
     }
 
-    public string CompanyId
+    private string CompanyId
     {
         get
         {
             var companyId = _accessor?.HttpContext?.User?.FindFirst(ClaimAttributes.CompanyId);
             return companyId?.Value ?? string.Empty;
         }
+    }
+    private long? DeptId
+    {
+        get
+        {
+            var deptId = _accessor?.HttpContext?.User?.FindFirst(ClaimAttributes.DeptId);
+            return deptId?.Value.ToLong() ?? null;
+        }
+    }
+
+    public CurrentAccountCompanyDto Company
+    {
+
+        get
+        {
+
+            if (this.AccountType != AccountTypeEnum.SuperAdmin)
+            {
+                long companyId = this.CompanyId.ToLong();
+                var model = CompanyRepo.GetSingle(x => x.Id == companyId);
+                return new CurrentAccountCompanyDto()
+                {
+                    CompanyId = model?.Id.ToString(),
+                    CompanyName = model?.Name
+                };
+            }
+            return new();
+        }
+    }
+
+    public CurrentAccountDeptDto Dept
+    {
+        get
+        {
+            if (this.AccountType != AccountTypeEnum.SuperAdmin)
+            {
+                var data = DepartmentRepo.AsQueryable().Where(x => x.Id == DeptId || x.ParentId == DeptId)
+                    .OrderByDescending(x => x.Id)
+                    .ToList();
+                var first = data.FirstOrDefault();
+                return new CurrentAccountDeptDto()
+                {
+                    DeptId = first?.Id,
+                    DeptName = first?.Name,
+                    ParentDeptId = first?.ParentId,
+                    ChildDeptIds = data.Select(x => x.Id).ToList()
+                };
+            }
+            return new();
+        }
+
     }
 }

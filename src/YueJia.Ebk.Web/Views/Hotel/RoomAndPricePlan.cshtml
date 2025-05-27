@@ -1,0 +1,48 @@
+﻿@model YueJia.Ebk.Web.ViewModels.Hotel.RoomAndPricePlanVo
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+@section head {
+    <title>房间与价格计划</title>
+}
+<el-container style="height:100vh;overflow: hidden;">
+    <el-main>
+  
+            <el-alert type="primary" show-icon :closable="false" >
+             <p>[我的酒店] / axxxxxxx / <el-link type="primary" v-on:click="">房间与价格计划</el-link> / 库存与价格 / 促销</p>
+             </el-alert>
+
+           <el-form label-width="100px" :inline="true" style="margin-top:30px;">
+                <el-form-item prop="desc" style="margin-bottom:5px;">
+                    <el-button type="primary" v-on:click="openAddHotelRoom">新增房间</el-button>
+                </el-form-item>
+            </el-form>
+            <el-divider content-position="">房间与价格计划</el-divider>
+    </el-main>
+</el-container>
+@section scripts {
+    <script type="text/javascript">
+        const app = Vue.createApp({
+        setup() {
+        const state = Vue.reactive({
+            tableData: {
+
+                }
+        });
+       const id=Vue.ref(`@Html.Raw(Model.Id)`);
+       const code=Vue.ref(`@Html.Raw(Model.HotelCode)`);
+
+        const openAddHotelRoom=()=>{
+           window.parent.mainFrame(`/Hotel/AddHotelRoom?hotelCode=${code.value}`,``,``);
+       };
+
+
+       return {openAddHotelRoom}
+        }
+        });
+        app.use(ElementPlus);
+        app.mount('#app');
+    </script>
+}
+
+

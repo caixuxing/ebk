@@ -126,5 +126,13 @@ public class YueJiaSysServiceApp : ApplicationService, IYueJiaSysServiceApp
                                                                                  .Where(x => !string.IsNullOrWhiteSpace(x))
                                                                                  .ToList();
 
-
+    public async Task<List<SelectDataDto<string>>> GetDropDownRoomTypeByHotelCodeAsync(string hotelCode)
+    {
+        return await SqlSugarClient.Queryable<OtaRoomEntity>().Where(q => q.status == 1 && q.pfcode == "D" && q.hotelcode == hotelCode)
+            .Select(t => new SelectDataDto<string>()
+            {
+                Value = t.roomcode.ToString(),
+                Label = $"{t.roomname}({t.roomnameen})"
+            }).ToListAsync();
+    }
 }

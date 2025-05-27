@@ -4,6 +4,7 @@ using YueJia.Ebk.Application.Contracts.HotelApp.Query;
 using YueJia.Ebk.Application.Contracts.OuterServiceApp;
 using YueJia.Ebk.Application.Contracts.OuterServiceApp.Qry;
 using YueJia.Ebk.Application.Contracts.SysApp;
+using YueJia.Ebk.Web.ViewModels.Hotel;
 namespace YueJia.Ebk.Web.Controllers;
 
 public class HotelController : AbpController
@@ -15,6 +16,8 @@ public class HotelController : AbpController
 
     private ISysEnumApp SysEnumApp => LazyServiceProvider.LazyGetRequiredService<ISysEnumApp>();
 
+
+
     /// <summary>
     /// 酒店发布管理View
     /// </summary>
@@ -22,7 +25,6 @@ public class HotelController : AbpController
     public async Task<IActionResult> HotelPublishList()
     {
         ViewBag.CountryData = JsonConvert.SerializeObject(await YueJiaSysServiceApp.GetDropDownCountryListAsync(), new JsonSerializerSettings { ContractResolver = new CamelCasePropertyNamesContractResolver() });
-
         ViewBag.HotelSaleTypeData = JsonConvert.SerializeObject(SysEnumApp.GetEnumDataList(nameof(HotelSaleTypeMnum)), new JsonSerializerSettings { ContractResolver = new CamelCasePropertyNamesContractResolver() });
         return View();
     }
@@ -61,9 +63,57 @@ public class HotelController : AbpController
 
 
 
-    public async Task<IActionResult> AddHotelRoom()
+    /// <summary>
+    /// 酒店详情
+    /// </summary>
+    /// <param name="id"></param>
+    /// <returns></returns>
+    public async Task<IActionResult> ViewHotel(string id)
     {
+        var hotelPublishDetail = await HotelPublishApp.GetHotelPublishDetailAsync(id.ToLong());
+        ViewHotelVo mv = new ViewHotelVo()
+        {
+            Id = id.ToLong(),
+            HotelName = hotelPublishDetail.HotelName,
+            HotelNameEn = hotelPublishDetail.HotelNameEn,
+            HotelCode = hotelPublishDetail.HotelCode,
+            Address = hotelPublishDetail.Address,
+            AddressEn = hotelPublishDetail.AddressEn,
+            LowestPrice = hotelPublishDetail.LowestPrice,
+            Status = hotelPublishDetail.Status,
+            TelPhone = hotelPublishDetail.TelPhone,
+            HotelSaleTypeJson = JsonConvert.SerializeObject(SysEnumApp.GetEnumDataList(nameof(HotelSaleTypeMnum)),
+                                                             new JsonSerializerSettings { ContractResolver = new CamelCasePropertyNamesContractResolver() })
+        };
+        return View(mv);
+    }
 
-        return View();
+
+
+    /// <summary>
+    /// 添加酒店房间
+    /// </summary>
+    /// <param name="hotelCode"></param>
+    /// <returns></returns>
+    public async Task<IActionResult> AddHotelRoom(string hotelCode)
+    {
+        AddHotelRoomVo vm = new AddHotelRoomVo()
+        {
+            SelectRoomTypeJosn = JsonConvert.SerializeObject(await YueJiaSysServiceApp.GetDropDownRoomTypeByHotelCodeAsync(hotelCode)),
+            SelectBedTypeJosn = JsonConvert.SerializeObject(SysEnumApp.GetEnumDataList(nameof(BedTypeEnum)))
+        };
+        return View(vm);
+    }
+
+
+    public IActionResult RoomAndPricePlan(string id, string hotelCode)
+    {
+        RoomAndPricePlanVo vm = new RoomAndPricePlanVo()
+        {
+            Id = id,
+            HotelCode = hotelCode,
+
+        };
+        return View(vm);
     }
 }
