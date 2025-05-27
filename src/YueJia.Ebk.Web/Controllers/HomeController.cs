@@ -8,4 +8,10 @@ public class HomeController : AbpController
     {
         return View();
     }
+
+
+    public IActionResult ErrorMgr() {
+        return View();
+    }
+
 }

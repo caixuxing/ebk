@@ -1,12 +1,12 @@
-﻿<div class="login-container">
+﻿<div class="login-container" v-loading="pageLoading">
 	<el-card class="login-card">
 		<h2 class="login-title">Ebk-登录</h2>
 		<el-form :model="state" ref="loginRef" :rules="loginRules">
 			<el-form-item prop="AccountNo">
-				<el-input v-model="state.AccountNo" autocomplete="off"  placeholder="账户" clearable />
+				<el-input v-model="state.AccountNo" autocomplete="off" placeholder="账户" clearable v-on:keyup.enter=" setPwdFocus"  />
 			</el-form-item>
 			<el-form-item prop="AccountPwd">
-				<el-input v-model="state.AccountPwd" type="password" show-password clearable auto-complete="new-password"  placeholder="密码"  />
+				<el-input v-model="state.AccountPwd" type="password" show-password clearable placeholder="密码" class="AccountPwd" v-on:keyup.enter=" setSubmit"  />
 			</el-form-item>
 			<el-form-item>
 				<el-button type="primary" v-on:click="handleLogin" :loading="isLoginLoading">登录</el-button>
@@ -23,12 +23,26 @@
 					AccountNo: "@ViewBag.UserNmae",
 					AccountPwd: "@ViewBag.Password"
 				});
+			   const isLoginLoading = Vue.ref(false)
+			   const pageLoading = Vue.ref(false);
+
 				const loginRef = Vue.ref(null);
 				const loginRules = {
 					AccountNo: [{ required: true, message: '登录账户必填', trigger: 'blur' }],
 					AccountPwd: [{ required: true, message: '登录密码必填', trigger: 'blur' }]
 				};
-              const isLoginLoading = Vue.ref(false)
+
+				const setPwdFocus  =() => {
+				  if(state.AccountNo){
+					  $(".AccountPwd input").focus()
+				  }
+				}
+
+				const setSubmit =() => {
+					  if(state.AccountPwd){
+						   handleLogin();
+					  }
+				}
 
 				const handleLogin =() => {
 					loginRef.value.validate((valid) => {
@@ -40,7 +54,8 @@
 						.then((response) => {
 							isLoginLoading.value = false;
 							if (response.status == 200&&response.data.isSuccess) {
-						        ElMessage({ message: `登录成功!`,  type: `success` });
+
+								pageLoading .value=  true;
 								window.location.href = `${response.data.data}`;
 								return;
 							}
@@ -56,11 +71,14 @@
 					loginRef.value?.resetFields();
 				});
 				return {
+					pageLoading,
 					state,
 					handleLogin,
 					loginRules,
 					loginRef,
-					isLoginLoading
+					isLoginLoading,
+					setPwdFocus,
+					setSubmit
 				};
 			}
 		});

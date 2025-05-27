@@ -43,7 +43,8 @@ public record ServiceResult<T> : ServiceResult
 		return new ServiceResult<T>
 		{
 			IsSuccess = true,
-			Data = data
+			Data = data,
+			Message = "操作成功"
 		};
 	}
 

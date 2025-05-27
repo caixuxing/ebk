@@ -156,6 +156,8 @@
                 window.vueState.currentIframeUrl=url;
             } 
        }
+
+         window.vueElMessage ;
    </script>
 
 
@@ -272,7 +274,9 @@
                   });
                 });
             Vue.onMounted(() => {
-				window.onpageshow  = function(event) {
+
+                 window.vueElMessage = ElMessage;
+                window.onpageshow  = function(event) {
                     if (event.persisted)  {
                         window.location.reload(); 
                     }
