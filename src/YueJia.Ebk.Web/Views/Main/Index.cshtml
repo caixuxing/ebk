@@ -148,13 +148,18 @@
     <script src="https://unpkg.com/dayjs@1.8.21/plugin/utc.js"></script>
 
    <script type="text/javascript">
-     function mainFrame(url)
+     function mainFrame(url,itle,index)
        { 
             if (window.vueState)  { 
-                window.vueState.activeIndex="",
-                //window.vueState.activeTitle=breadcrumbName,
-                window.vueState.currentIframeUrl=url;
-            } 
+                if(url!=null&&url!=""){
+                      window.vueState.currentIframeUrl=url;
+                }
+                window.vueState.activeIndex=index;
+                if(itle!=null&&itle!="")
+                {
+                  window.vueState.activeTitle=itle;
+                }
+            }
        }
 
          window.vueElMessage ;
