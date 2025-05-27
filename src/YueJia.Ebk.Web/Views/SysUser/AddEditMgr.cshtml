@@ -1,0 +1,121 @@
+﻿
+<el-container style="height:100vh;overflow: hidden; padding-top:20px; text-align:center ">
+    <el-main>
+        <el-form label-width="auto" :model="model" :rules="FormDataRules" ref="FormDataRef">
+            <el-form-item label="用户名" required prop="realName">
+                <el-input v-model="model.realName" autocomplete="off" clearable placeholder="请输入姓名(昵称)" maxlength="30"></el-input>
+            </el-form-item>
+            <el-form-item label="登录账户" required prop="accountName">
+                <el-input v-model="model.accountName" autocomplete="off" clearable placeholder="请输入登录账户" maxlength="8"></el-input>
+            </el-form-item>
+            <el-form-item label="联系电话" required prop="contactPhone">
+                <el-input v-model="model.contactPhone" autocomplete="off" clearable placeholder="请输入联系电话" maxlength="15"></el-input>
+            </el-form-item>
+             <el-form-item label="部门" prop="deptId">
+                <el-tree-select v-model="model.deptId" :data="deptData" check-strictly :render-after-expand="false"></el-tree-select>
+            </el-form-item>
+            <el-form-item label="是否启用" label-width="auto">
+                <el-switch v-model="model.V_isEnabled" inline-prompt active-text="是" inactive-text="否" />
+            </el-form-item>
+        </el-form>
+    </el-main>
+    <el-footer>
+        @if (ViewBag.id > 0)
+        {
+            <el-button type="primary" v-on:click="onEditSave">保存 </el-button>
+        }
+        else
+        {
+            <el-button type="primary" v-on:click="onNewSave">保存 </el-button>
+        }
+    </el-footer>
+</el-container>
+
+@section scripts {
+    <script type="text/javascript">
+
+        var frameIndex = parent.layer.getFrameIndex(window.name);
+        const app = Vue.createApp({
+            setup() {
+
+                const model =  Vue.reactive(
+                      @Html.Raw(System.Text.Json.JsonSerializer.Serialize(ViewBag.model, new System.Text.Json.JsonSerializerOptions() { PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase }))
+                );
+                const id = '@ViewBag.id';
+                var deptData= @Html.Raw(ViewBag.DeptData);
+
+                Vue.onMounted(() => {
+                     model.V_isEnabled = model.isEnabled==1;
+                 });
+
+                 const FormDataRef = Vue.ref(null);
+                 const FormDataRules = {
+                    realName: [{ required: true, message: '用户名必填!', trigger: 'blur' }],
+                    accountName: [{ required: true, message: '登录账户必填!', trigger: 'blur' }],
+                    contactPhone: [{ required: true, message: '联系电话必填!', trigger: 'blur' },
+                                   { pattern: /^1[3456789]\d{9}$/, message: '手机号码格式不正确', trigger: 'blur' }],
+                    //deptId: [{ required: true, message: '部门必填!', trigger: 'blur' }]
+                };
+
+                /*
+                * 编辑=> 保存
+                */
+                const onEditSave =  () => {
+
+                     let isValid =  FormDataRef.value.validate();
+                     if(!isValid)
+                     {
+                          ElMessage({ message: "请完善表单信息!", type: "error" });
+                          return
+                     }
+
+                     let reqData = { ...model };
+                     reqData.isEnabled = model.V_isEnabled ?1:0
+
+                         axios['put'](`/SysUser/${id}/update`, reqData).then(res=>{
+                             top.window.vueElMessage({ message: res.data. message , type:  res.data.isSuccess?'success':'info' })
+                             if(res.data.isSuccess){
+                                parent.layer.close(frameIndex); // 关闭当前弹框
+                             }
+                         })
+                 }
+
+                /*
+                * 新增=> 保存
+                */
+                const onNewSave =  () => {
+
+                     let isValid =  FormDataRef.value.validate();
+                     if(!isValid)
+                     {
+                          ElMessage({ message: "请完善表单信息!", type: "error" });
+                          return
+                     }
+
+                     let reqData = { ...model };
+                      reqData.isEnabled = model.V_isEnabled ?1:0
+
+
+                         axios['post'](`/SysUser/create`, reqData).then(res=>{
+                             top.window.vueElMessage({ message: res.data. message , type:  res.data.isSuccess?'success':'info' })
+                             if(res.data.isSuccess){
+                                parent.layer.close(frameIndex); // 关闭当前弹框
+                             }
+                         })
+                 }
+
+                return {
+                       model,
+                       deptData,
+                       FormDataRules,
+                       FormDataRef,
+                       onEditSave,
+                       onNewSave,
+                 };
+            }
+        });
+        app.use(ElementPlus, { locale: ElementPlusLocaleZhCn });
+        app.mount('#app');
+    </script>
+
+}

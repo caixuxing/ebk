@@ -6,17 +6,19 @@
         <el-form label-width="100px" :inline="true">
             <div>
                 <el-form-item label="公司名称" prop="desc" style="margin-bottom:5px;">
-                    <el-input v-model="state.qry.name" placeholder="公司名称" clearable  style="width:200px"  ></el-input>
+                    <el-input v-model="state.qry.name"  clearable  style="width:200px"  ></el-input>
                 </el-form-item>
                 <el-form-item label="责任人" prop="desc" style="margin-bottom:5px;" >
-                    <el-input v-model="state.qry.responsible" placeholder="责任人" clearable style="width:200px" ></el-input>
+                    <el-input v-model="state.qry.responsible"  clearable style="width:200px" ></el-input>
                 </el-form-item>
-              
-                 <el-form-item label="状态" prop="desc" style="margin-bottom:5px;">
-                      <el-select v-model="state.qry.status" placeholder="不限" clearable style="width:200px" >
-                        <el-option label="是" value="1"></el-option>
-                        <el-option label="否" value="2"></el-option>
-                      </el-select>
+
+                <el-form-item label="状态" prop="desc" style="margin-bottom:5px;">
+                    <el-select v-model="state.qry.status" placeholder="不限" clearable style="width:200px" >
+                        @foreach (YueJia.Ebk.Application.Contracts.SysApp.Dto.EnumDto ele in ViewBag.YesOrNoTypeList)
+                        {
+                            <el-option label="@ele.Describe" value="@ele.Value"></el-option>
+                        }
+                    </el-select>
                 </el-form-item>
                 <el-form-item prop="desc" style="margin-bottom:5px;">
                     <el-button type="primary" v-on:click="pageIndex=1;loadData()" >查询</el-button>
@@ -193,7 +195,7 @@
                   ElMessageBox.confirm('您确定删除吗?', { confirmButtonText: '确定', cancelButtonText: '取消', type: 'warning', }) .then(() => {
 
                              axios.delete(`/Company/${row.id}/delete`).then(res => {
-                                      top.window.vueElMessage({ message: res.data. message ,icon:'' })
+                                      top.window.vueElMessage({ message: res.data. message , type:  res.data.isSuccess?'success':'info' })
                                       if(res.data.isSuccess){
                                          loadData();
                                       }
