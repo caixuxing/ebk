@@ -1,4 +1,6 @@
-﻿namespace YueJia.Ebk.Application.Contracts.SysUserApp;
+﻿using YueJia.Ebk.Application.Contracts.SysUserApp.Dto;
+
+namespace YueJia.Ebk.Application.Contracts.SysUserApp;
 
 public interface ICurrentUserApp
 {
@@ -28,5 +30,9 @@ public interface ICurrentUserApp
     /// <summary>
     /// 公司Id
     /// </summary>
-    string CompanyId { get; }
+    CurrentAccountCompanyDto Company { get; }
+
+
+    CurrentAccountDeptDto Dept { get; }
+
 }

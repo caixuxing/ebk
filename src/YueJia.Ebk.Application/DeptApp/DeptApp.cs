@@ -25,9 +25,9 @@ public class DeptApp : ApplicationService, IDeptApp
         //验证
         await LazyServiceProvider.LazyGetRequiredService<FluentValidation.IValidator<CreateOrUpdateDeptCmd>>().ValidateAndThrowAsync(cmd);
 
-        if (string.IsNullOrWhiteSpace(CurrentUserApp.CompanyId)) throw new InvalidOperationException("当前用户无公司,无法创建部门！");
+        if (string.IsNullOrWhiteSpace(CurrentUserApp.Company.CompanyId)) throw new InvalidOperationException("当前用户无公司,无法创建部门！");
 
-        long companyId = long.Parse(CurrentUserApp.CompanyId);
+        long companyId = long.Parse(CurrentUserApp.Company.CompanyId);
 
         //校验唯一性
         if (await DepartmentRepo.IsAnyAsync(x => x.Name == cmd.Name && x.CompanyId == companyId)) throw new InvalidOperationException($"部门【{cmd.Name}】已存在，请更换！");

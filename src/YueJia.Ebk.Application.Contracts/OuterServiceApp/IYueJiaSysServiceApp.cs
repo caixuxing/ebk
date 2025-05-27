@@ -1,6 +1,5 @@
 ﻿using YueJia.Ebk.Application.Contracts.OuterServiceApp.Dto;
 using YueJia.Ebk.Application.Contracts.OuterServiceApp.Qry;
-using YueJia.Ebk.Domain.Shared.Response;
 
 namespace YueJia.Ebk.Application.Contracts.OuterServiceApp
 {
@@ -18,6 +17,14 @@ namespace YueJia.Ebk.Application.Contracts.OuterServiceApp
         /// <param name="qry"></param>
         /// <returns></returns>
         Task<PageData<IEnumerable<HotelPageListDto>>> GetHotelPageListAsync(HotelPageListFilterQry qry);
+
+        /// <summary>
+        /// 获取下拉房型集合列表
+        /// </summary>
+        /// <returns></returns>
+        Task<List<SelectDataDto<string>>> GetDropDownRoomTypeByHotelCodeAsync(string hotelCode);
+
+
     }
 }
 

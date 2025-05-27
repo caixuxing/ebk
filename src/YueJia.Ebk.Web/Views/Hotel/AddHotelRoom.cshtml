@@ -1,4 +1,5 @@
-﻿@{
+﻿@model  YueJia.Ebk.Web.ViewModels.Hotel.AddHotelRoomVo
+@{
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 @section head {
@@ -99,7 +100,6 @@
     <script type="text/javascript">
         const app = Vue.createApp({
         setup() {
-
                 const state = Vue.reactive({
                     formData: {
                         hotelCode: '',
@@ -115,22 +115,16 @@
                     
                         dateRange:["",""],
                         tableData:{
-                        
                             One:1
                         }
-
-                    
                     }
-
                 });
-
                  const save=()=>{
                    window.parent.mainFrame(`/Hotel/HotelPublishList`,`我的酒店`,`page3-1`);
                  };
                 const cancel=()=>{
                    window.parent.mainFrame(`/Hotel/HotelPublishList`,`我的酒店`,`page3-1`);
                  };
-
                 return {state,save,cancel }
         }
         });

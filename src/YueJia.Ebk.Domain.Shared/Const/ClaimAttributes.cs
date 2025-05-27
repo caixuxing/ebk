@@ -41,6 +41,12 @@
         /// <summary>
         /// 公司ID
         /// </summary>
-        public const string CompanyId = "";
+        public const string CompanyId = "CompanyId";
+
+        /// <summary>
+        /// 部门ID
+        /// </summary>
+        public const string DeptId = "DeptId";
+
     }
 }
