@@ -55,17 +55,37 @@ public class HotelPublishApp : ApplicationService, IHotelPublishApp
                   Status = x.Status,
                   CreateTime = x.CreateTime,
                   LowestPrice = x.LowestPrice,
-                  TelPhone = x.TelPhone
-              });
+                  TelPhone = x.TelPhone,
+                  CountryIosCode = x.CountryIosCode,
+                  CountryName = x.CountryName,
+                  CityName = x.CityName,
+              }).OrderByDescending( x=>x.Id );
 
         var data = await query.ToPageListAsync(qry.PageIndex, qry.PageSize, total);
 
         return new PageData<IEnumerable<HotelPublishPageListDto>>(total, qry.PageSize, qry.PageIndex, data);
     }
 
-    public async Task<long> PublishHotelAsync(CreateOrUpHotelPublishCmd cmd)
+    public async Task<bool> PublishHotelAsync(CreateOrUpHotelPublishCmd cmd)
     {
         await LazyServiceProvider.LazyGetRequiredService<FluentValidation.IValidator<CreateOrUpHotelPublishCmd>>().ValidateAndThrowAsync(cmd);
+        if (await HotelPublishRepo.IsAnyAsync(x => x.HotelCode == cmd.HotelCode && x.CreatedbyId == CurrentUserApp.Id))
+        {
+            throw new InvalidOperationException($"当前酒店已存在");
+        }
+        var entity = HotelPublishDo.Create(cmd.HotelCode,
+                                           cmd.HotelName,
+                                           cmd.HotelNameEn,
+                                           HotelSaleTypeMnum.Down,
+                                           cmd.Address,
+                                           cmd.AddressEn,
+                                           cmd.TelPhone,
+                                           cmd.LowestPrice);
+        entity.CountryIosCode = cmd.CountryIosCode;
+        entity.CountryName = cmd.CountryName;
+        entity.CityName = cmd.AreaName;
+         await HotelPublishRepo.InsertReturnSnowflakeIdAsync(entity);
+        return true;
 
         if (await HotelPublishRepo.IsAnyAsync(x => x.HotelCode == cmd.HotelCode && x.CreatedbyId == CurrentUserApp.Id)) throw new InvalidOperationException($"酒店【{cmd.HotelName}({cmd.HotelCode})】已存在,无须重复添加！");
 

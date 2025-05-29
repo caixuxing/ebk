@@ -1,18 +1,12 @@
-﻿@{
-    Layout = "~/Views/Shared/_Layout.cshtml";
-}
-@section head {
-    <title>酒店发布管理</title>
-}
-<el-container style="height:100vh;overflow: hidden;">
+﻿<el-container style="height:100vh;overflow: hidden;">
     <el-main>
         <el-form label-width="auto" :inline="true">
             <div>
                 <el-form-item label="酒店编码" style="margin-bottom:5px;">
-                    <el-input v-model="state.qry.hotelCode" placeholder="酒店编码" ></el-input>
+                    <el-input v-model="state.qry.hotelCode" clearable style="width:200px"></el-input>
                 </el-form-item>
                    <el-form-item label="酒店名称" style="margin-bottom:5px;">
-                    <el-input v-model="state.qry.hotelName" placeholder="酒店名称" ></el-input>
+                    <el-input v-model="state.qry.hotelName" clearable style="width:200px"></el-input>
                 </el-form-item>
                 <el-form-item label="状态"  style="margin-bottom:5px;">
                     <el-select v-model="state.qry.status" placeholder="不限" style="width:220px;" clearable filterable>
@@ -29,7 +23,7 @@
         </el-form>
         <el-form label-width="100px" :inline="true" style="margin-top:30px;">
             <el-form-item prop="desc" style="margin-bottom:5px;">
-                <el-button type="primary" v-on:click="add">添加酒店</el-button>
+                <el-button type="primary" v-on:click="userAddHotel">添加酒店</el-button>
             </el-form-item>
         </el-form>
         <el-table :data="state.dataList"
@@ -48,22 +42,28 @@
                     {{ scope.row.hotelCode }}
                 </template>
             </el-table-column>
-            <el-table-column label="酒店名称" width="300px"  align="left"  >
+            <el-table-column label="酒店名称" width="300px" align="center">
                 <template #default="scope">
-                    <p style="margin:5px 0px">{{ scope.row.hotelName }}</p>
-                    <p>{{ scope.row.hotelNameEn }}</p>
+                    <div style="text-align:left" >
+                        <p style="margin:5px 0px">{{ scope.row.hotelName }}</p>
+                        <p>{{ scope.row.hotelNameEn }}</p>
+                    </div>
+             
                 </template>
             </el-table-column>
-               <el-table-column label="酒店地址" width="auto" max-width="200px" align="left"  >
+            <el-table-column label="酒店地址" width="auto" max-width="200px" align="center">
                 <template #default="scope">
-                    <p style="margin:5px 0px">{{ scope.row.address }}</p>
-
-                     <p>{{ scope.row.addressEn }}</p>
+                    <div style="text-align:left" >
+                        <p>[{{scope.row.countryIosCode}}]{{scope.row.countryName}},{{scope.row.cityName}}</p>
+                        <p>{{ scope.row.addressEn }}</p>
+                    </div>
                 </template>
             </el-table-column>
             <el-table-column label="联系电话" width="200px" align="center"  >
-                <template #default="scope" align="right">
-                    {{ scope.row.telPhone }}
+                <template #default="scope" >
+                    <div style="text-align:left" >
+                        {{ scope.row.telPhone }}
+                    </div>
                 </template>
             </el-table-column>
 
@@ -210,28 +210,21 @@
     </template>
   </el-dialog>
 
-
-
 @section scripts {
     <script type="text/javascript">
         const app = Vue.createApp({
         setup() {
+
+           let qry = {  hotelCode: '',hotelName: '',status: null,pageIndex: 1,pageSize: 50,totalCount: 0 }
+
            const state = Vue.reactive({
                 dataLoading: false,
-                qry: {
-                    hotelName: ``,
-                    hotelCode:``,
-                    status: null,
-                    pageIndex: 0,
-                    pageSize: 20,
-                    totalCount: 0,
-                },
+                qry:  JSON.parse(JSON.stringify( qry)),
                 saleTypeData:@(Html.Raw(ViewBag.HotelSaleTypeData)),
                 dataList: []
-
             });
 
-        const dialog = Vue.reactive({
+          const dialog = Vue.reactive({
                     title: '新增',
                     openAddDialog: false,
                     countryData:@(Html.Raw(ViewBag.CountryData)),
@@ -247,34 +240,27 @@
                 });
       
 
-           Vue.onMounted(() => { loadData()  });
+            Vue.onMounted(() => { loadData()  });
+
             const loadData = () => {
-                state.dataLoading = true;
-                axios.post(`/hotel/HotelPublishListData`, {...state.qry}).then(response => {
-                    let {data,status}=response;
-                    Object.assign(state,
-                                {dataList:data.data.list,
-                            qry:{
-                                    pageIndex:data.data.pageIndex,
-                                    pageSize:data.data.pageSize,
-                                    totalCount:data.data.total,
-                                    hotelName:state.qry.hotelName,
-                                    hotelCode:state.qry.hotelCode,
-                                    status:state.qry.status
-                                }
-                    });
-                })
-                state.dataLoading = false;
-                };
-            const handleSizeChange = (val) => {
-                    state.qry.pageIndex = 1;
-                    state.qry.pageSize = val;
-                    loadData();
-                        };
-            const handleCurrentChange = (val) => {
-                        state.qry.pageIndex = val;
-                        loadData();
-                    };
+                       axios.post(`/hotel/HotelPublishListData`, {...state.qry}).then(response => {
+                         let {data,status}=response;
+                         state.dataList = data.data.list;
+                          state.qry.totalCount = data.data.total;
+                     })
+             };
+
+             const handleSizeChange = (val) => {
+                     state.qry.pageIndex = 1;
+                     state.qry.pageSize = val;
+                     loadData();
+             };
+             const handleCurrentChange = (val) => {
+                     state.qry.pageIndex = val;
+                     loadData();
+            };
+
+
             const deleteItem =  (id) => {
 
               ElMessageBox.confirm('您确定删除吗?', { confirmButtonText: '确定', cancelButtonText: '取消', type: 'warning', })
@@ -294,17 +280,38 @@
                     })
                     .catch(() => { console.log('取消删除'); });
               }
-            //重置查询表单
-            const resetQueryForm=()=>{
-                 state.qry  = {...state.qry,   hotelName: ``,hotelCode:``, status: null };
-                };
 
-       
 
-        const add = () => {
-            dialog.title = "添加酒店";
-            dialog.openAddDialog = true;
-        };
+             //重置查询表单
+             const resetQueryForm=()=>{
+                 state.qry  = JSON.parse(JSON.stringify( qry))
+              };
+
+
+              /**
+               * 添加酒店
+               */
+             const userAddHotel=()=>{
+
+                    layer.open({
+                         type: 2,
+                         title: '添加酒店',
+                           area: ['90%', '80%'],
+                         fix: false,
+                         maxmin: true,
+                         content:  "/Hotel/UserAddHotelMgr",
+                         end: function () {
+                            state.qry.pageIndex = 1;
+                            loadData();
+                         }
+                     });
+               }
+
+
+            // const add = () => {
+            //     dialog.title = "添加酒店";
+            //     dialog.openAddDialog = true;
+            // };
 
 
         
@@ -413,7 +420,7 @@
        };
 
 
-       return {state,loadData,handleSizeChange,handleCurrentChange,deleteItem,resetQueryForm,dialog,add,FormDataRules,FormDataRef,save,
+        return {state,loadData,handleSizeChange,handleCurrentChange,deleteItem,resetQueryForm,dialog,FormDataRules,FormDataRef,save,userAddHotel,
                dialogTableData,handleDialogSizeChange,handleDialogCurrentChange,dialogResetQueryForm,addHotel,upHotelState,editHotel,ViewHotel}
             }});
             app.use(ElementPlus,{ locale: ElementPlusLocaleZhCn });

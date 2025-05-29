@@ -41,13 +41,33 @@ public partial record HotelPublishDo : EntityTenant
     /// <summary>
     /// 联系电话
     /// </summary>
-    [SugarColumn(ColumnDescription = "联系电话", Length = 15)]
+    [SugarColumn(ColumnDescription = "联系电话", Length = 100)]
     public string TelPhone { get; set; } = default!;
     /// <summary>
     /// 最低价
     /// </summary>
     [SugarColumn(ColumnDescription = "最低价", ColumnDataType = "decimal(18,2)")]
     public decimal LowestPrice { get; set; }
+
+
+    /// <summary>
+    /// 国家IosCode
+    /// </summary>
+    [SugarColumn(ColumnDescription = "国家IosCode", Length = 2, DefaultValue = "", IsNullable = true)]
+    public string CountryIosCode { get; set; } = default!;
+
+    /// <summary>
+    /// 国家名称
+    /// </summary>
+    [SugarColumn(ColumnDescription = "国家名称", Length = 50, DefaultValue = "", IsNullable = true)]
+    public string CountryName { get; set; } = default!;
+
+    /// <summary>
+    /// 城市名称
+    /// </summary>
+    [SugarColumn(ColumnDescription = "城市名称", Length = 50,DefaultValue ="",IsNullable =true)]
+    public string CityName { get; set; } = default!;
+
 }
 
 public partial record HotelPublishDo

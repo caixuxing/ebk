@@ -33,7 +33,7 @@ namespace YueJia.Ebk.Web
                       new MenuModel(){
                          pageIndex ="page2",
                          title = "系统管理",
-                         isShow = new List<AccountTypeEnum>(){  AccountTypeEnum.SuperAdmin, AccountTypeEnum.SysAdmin,AccountTypeEnum.NormalUser }.Contains(userAccountType),
+                         isShow = new List<AccountTypeEnum>(){  AccountTypeEnum.SuperAdmin, AccountTypeEnum.SysAdmin}.Contains(userAccountType),
                          children = new List<MenuModel>(){
                              new MenuModel(){
                                  pageIndex = "page2-1" ,

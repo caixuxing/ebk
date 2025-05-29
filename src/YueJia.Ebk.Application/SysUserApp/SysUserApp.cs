@@ -1,4 +1,5 @@
-﻿using YueJia.Ebk.Application.Contracts.SysUserApp;
+﻿using YueJia.Ebk.Application.Contracts.SysApp;
+using YueJia.Ebk.Application.Contracts.SysUserApp;
 using YueJia.Ebk.Application.Contracts.SysUserApp.Commands;
 using YueJia.Ebk.Application.Contracts.SysUserApp.Dto;
 using YueJia.Ebk.Application.Contracts.SysUserApp.Query;
@@ -14,6 +15,10 @@ public class SysUserApp : ApplicationService, ISysUserApp
     private ISimpleClient<SysUserDo> SysUserRepo => LazyServiceProvider.LazyGetRequiredService<ISimpleClient<SysUserDo>>();
 
     private ISqlSugarClient db => LazyServiceProvider.LazyGetRequiredService<ISqlSugarClient>();
+
+
+    private ICurrentUserApp CurrentUserApp => LazyServiceProvider.LazyGetRequiredService<ICurrentUserApp>();
+
 
 
     public async Task<long> CreateAsync(CreateOrUpdateSysUserCmd cmd)
@@ -65,16 +70,16 @@ public class SysUserApp : ApplicationService, ISysUserApp
         return true;
     }
 
-    public async Task<bool> UpdatePassWordAsync(long id, string oldPassword, string newPassword)
-    {
-        //读取公司原始信息
-        var entity = await SysUserRepo.GetByIdAsync(id) ?? throw new InvalidOperationException($"用户ID:{id}资源不存在！");
-        if (EncryptUtils.MD5Encrypt(oldPassword) != entity.Password) throw new InvalidOperationException($"旧密码错误!");
-        entity.SetPassword(EncryptUtils.MD5Encrypt(newPassword));
-        var affectedRows = await SysUserRepo.AsUpdateable(entity).ExecuteCommandWithOptLockAsync();
-        if (affectedRows is not 1) throw new InvalidOperationException($"用户信息更新失败!");
-        return true;
-    }
+    //public async Task<bool> UpdatePassWordAsync(long id, string oldPassword, string newPassword)
+    //{
+    //    //读取公司原始信息
+    //    var entity = await SysUserRepo.GetByIdAsync(id) ?? throw new InvalidOperationException($"用户ID:{id}资源不存在！");
+    //    if (EncryptUtils.MD5Encrypt(oldPassword) != entity.Password) throw new InvalidOperationException($"旧密码错误!");
+    //    entity.SetPassword(EncryptUtils.MD5Encrypt(newPassword));
+    //    var affectedRows = await SysUserRepo.AsUpdateable(entity).ExecuteCommandWithOptLockAsync();
+    //    if (affectedRows is not 1) throw new InvalidOperationException($"用户信息更新失败!");
+    //    return true;
+    //}
 
     public async Task<PageData<IEnumerable<SysUserPageListDto>>> GetPageListAsync(SysUserPageFilterQry qry)
     {
@@ -118,14 +123,40 @@ public class SysUserApp : ApplicationService, ISysUserApp
         };
     }
 
-    public async Task<bool> ResetPassword(long id)
+    public async Task<bool> ResetPasswordAsync(long id)
     {
-        //读取公司原始信息
         var entity = await SysUserRepo.GetByIdAsync(id);
-        if (entity==null) { 
+        if (entity == null)
+        {
             throw new InvalidOperationException($"数据未发现");
         }
         entity.Password = EncryptUtils.MD5Encrypt("123456");
+        await SysUserRepo.AsUpdateable(entity).ExecuteCommandWithOptLockAsync();
+        return true;
+    }
+
+    public async Task<bool> UpdatePasswordAsync(UpdatePasswordSysUserCmd requestCmd)
+    {
+        var entity = await SysUserRepo.GetByIdAsync(CurrentUserApp.Id);
+        if (entity == null)
+        {
+            throw new InvalidOperationException($"数据未发现");
+        }
+
+        if (EncryptUtils.MD5Encrypt(requestCmd.OldPassword) != entity.Password)
+        {
+            throw new InvalidOperationException($"当前密码错误!");
+        }
+        if (string.IsNullOrEmpty(requestCmd.NewFirstPassword) || string.IsNullOrEmpty(requestCmd.NewConfirmPassword))
+        {
+            throw new InvalidOperationException($"请输入密码!");
+        }
+        if (requestCmd.NewFirstPassword != requestCmd.NewConfirmPassword)
+        {
+            throw new InvalidOperationException($"两次输入密码不一致!");
+        }
+
+        entity.SetPassword(EncryptUtils.MD5Encrypt(requestCmd.NewFirstPassword));
         await SysUserRepo.AsUpdateable(entity).ExecuteCommandWithOptLockAsync();
         return true;
     }

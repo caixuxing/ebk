@@ -99,7 +99,7 @@
                 <h1 style="margin: auto;font-size: 20px;margin-left: 20px;font-weight: 400;" id="activeTitle">{{state.activeTitle}}</h1>
             </div>
             <div style="display:flex;justify-content: flex-end; margin-left:auto;margin-right:20px;">
-                <el-text style="margin-right:15px;cursor: pointer;">修改密码</el-text>
+                <el-text style="margin-right:15px;cursor: pointer;" v-on:click="onUpdatePassword()">修改密码</el-text>
                 <el-text style="margin-right:15px;cursor: pointer;" v-on:click="handleSignOut()">退出登录</el-text>
             </div>
         </el-row>
@@ -178,10 +178,14 @@
                     if(targetIndex ==state.activeIndex){
                         return;
                     }
+                    console.log(targetIndex);
+
                     var obj = menuList.find(vv=> vv.pageIndex ==targetIndex ) || state.menuMap.find(vv=> vv.pageIndex ==targetIndex) ;
                     state.activeIndex = obj.pageIndex;
                     state.activeTitle=obj.title;
                     state.currentIframeUrl=obj.url;
+
+                    console.log(obj.url);
                 }
     
                 /*
@@ -199,6 +203,19 @@
                         })
                 };
 
+                /**
+                 * 修改密码
+                 */
+                 const onUpdatePassword= ()=>{
+                    layer.open({
+                        type: 2,
+                        title: '修改密码',
+                        area: ['600px', '480px'],
+                        fix: false,
+                        maxmin: true,
+                        content:  "/SysUser/UpdatePasswordMgr"
+                    });
+                 }
 
                 Vue.onMounted(() => {
                     window.vueElMessage = ElMessage;
@@ -211,6 +228,7 @@
                     state,
                     handleSelectAddTab,
                     handleSignOut,
+                    onUpdatePassword
                 };
             }
         });
