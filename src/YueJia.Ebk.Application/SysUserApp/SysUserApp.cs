@@ -21,8 +21,13 @@ public class SysUserApp : ApplicationService, ISysUserApp
         await LazyServiceProvider.LazyGetRequiredService<FluentValidation.IValidator<CreateOrUpdateSysUserCmd>>().ValidateAndThrowAsync(cmd);
         if (await SysUserRepo.IsAnyAsync(x => x.ContactPhone == cmd.ContactPhone)) throw new InvalidOperationException("联系电话已存在！");
         if (await SysUserRepo.IsAnyAsync(x => x.AccountName == cmd.AccountName)) throw new InvalidOperationException("账户已存在！");
-        var entity = SysUserDo.Create(cmd.AccountName, cmd.RealName, AccountTypeEnum.NormalUser, cmd.IsEnabled, cmd.DeptId?.ToLong(), cmd.ContactPhone) ?? throw new InvalidOperationException("系统用户创建失败！");
-
+        var entity = SysUserDo.Create(cmd.AccountName,
+                                      cmd.RealName,
+                                      AccountTypeEnum.NormalUser,
+                                      cmd.IsEnabled,
+                                      cmd.DeptId?.ToLong(),
+                                      cmd.ContactPhone);
+        entity.DeptAdmin = cmd.DeptAdmin;
         return await SysUserRepo.InsertReturnSnowflakeIdAsync(entity);
     }
 
@@ -50,7 +55,8 @@ public class SysUserApp : ApplicationService, ISysUserApp
              .SetRealName(cmd.RealName)
              .SetContactPhone(cmd.ContactPhone)
              .SetDeptId(cmd.DeptId?.ToLong())
-             .SetIsEnabled(cmd.IsEnabled);
+             .SetIsEnabled(cmd.IsEnabled)
+            .SetDeptAdmin(cmd.DeptAdmin);
 
         if (entity.Equals(upEntity)) return true;
 
@@ -108,6 +114,19 @@ public class SysUserApp : ApplicationService, ISysUserApp
             IsEnabled = entity.IsEnabled,
             ContactPhone = entity.ContactPhone,
             DeptId = entity.DeptId,
+            DeptAdmin = entity.DeptAdmin,
         };
+    }
+
+    public async Task<bool> ResetPassword(long id)
+    {
+        //读取公司原始信息
+        var entity = await SysUserRepo.GetByIdAsync(id);
+        if (entity==null) { 
+            throw new InvalidOperationException($"数据未发现");
+        }
+        entity.Password = EncryptUtils.MD5Encrypt("123456");
+        await SysUserRepo.AsUpdateable(entity).ExecuteCommandWithOptLockAsync();
+        return true;
     }
 }

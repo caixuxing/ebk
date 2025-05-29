@@ -1,4 +1,5 @@
-﻿using YueJia.Ebk.Application.Contracts.DeptApp;
+﻿using YueJia.Ebk.Application.Contracts.CompanyApp.Dto;
+using YueJia.Ebk.Application.Contracts.DeptApp;
 using YueJia.Ebk.Application.Contracts.DeptApp.Commands;
 using YueJia.Ebk.Application.Contracts.DeptApp.Dto;
 using YueJia.Ebk.Application.Contracts.DeptApp.Query;
@@ -25,16 +26,17 @@ public class DeptApp : ApplicationService, IDeptApp
         //验证
         await LazyServiceProvider.LazyGetRequiredService<FluentValidation.IValidator<CreateOrUpdateDeptCmd>>().ValidateAndThrowAsync(cmd);
 
-        if (string.IsNullOrWhiteSpace(CurrentUserApp.Company.CompanyId)) throw new InvalidOperationException("当前用户无公司,无法创建部门！");
-
+        if (string.IsNullOrWhiteSpace(CurrentUserApp.Company.CompanyId)) {
+            throw new InvalidOperationException("当前用户无公司,无法创建部门！");
+        }
         long companyId = long.Parse(CurrentUserApp.Company.CompanyId);
 
         //校验唯一性
-        if (await DepartmentRepo.IsAnyAsync(x => x.Name == cmd.Name && x.CompanyId == companyId)) throw new InvalidOperationException($"部门【{cmd.Name}】已存在，请更换！");
+        if (await DepartmentRepo.IsAnyAsync(x => x.Name == cmd.Name && x.CompanyId == companyId)) { 
+            throw new InvalidOperationException($"部门【{cmd.Name}】已存在，请更换！");
+        }
 
 
-
-        //创建公司
         var entity = DepartmentDo.Create(name: cmd.Name,
                                     parentId: long.Parse(cmd.ParentDeptId),
                                     companyId: companyId,
@@ -48,45 +50,15 @@ public class DeptApp : ApplicationService, IDeptApp
 
     public async Task<bool> DeleteDeptAsync(long id)
     {
-
-
-
-        // 使用递归CTE查询 
-        //var entityList = await db.Ado.SqlQueryAsync<DepartmentDo>(@"
-        //                        WITH cte AS (
-        //                            SELECT 
-        //                                id, name, parent_id, company_id, status, 
-        //                                create_time, createdby_id, createdby_name, 
-        //                                last_modified_time, last_modifiedby_id, last_modifiedby_name, 
-        //                                is_delete, version 
-        //                            FROM 
-        //                                department 
-        //                            WHERE 
-        //                                id = @DepartmentId AND is_delete = 0 
-        //                            UNION ALL 
-        //                            SELECT 
-        //                                d.id,  d.name,  d.parent_id,  d.company_id,  d.status,  
-        //                                d.create_time,  d.createdby_id,  d.createdby_name,  
-        //                                d.last_modified_time,  d.last_modifiedby_id,  d.last_modifiedby_name,  
-        //                                d.is_delete,  d.version  
-        //                            FROM 
-        //                                department d 
-        //                            INNER JOIN 
-        //                                cte dh ON d.parent_id  = dh.id  
-        //                            WHERE 
-        //                                d.is_delete  = 0 
-        //                        )
-        //                        SELECT * FROM cte ", new { DepartmentId = id }) ?? throw new InvalidOperationException($"部门ID:{id}资源不存在！");
-        // var entity = await DepartmentRepo.GetByIdAsync(id) ?? throw new InvalidOperationException($"部门ID:{id}资源不存在！");
-
-
-        var entityList = await DepartmentRepo.GetListAsync(x => x.Id == id || x.ParentId == id) ?? throw new InvalidOperationException($"部门ID:{id}资源不存在！");
-
-        entityList.ForEach(item => item.IsDelete = true);
-        var affectedRows = await DepartmentRepo.AsUpdateable(entityList)
+        var entity = await DepartmentRepo.GetFirstAsync(x => x.Id == id );
+           if(entity == null) {
+            throw new InvalidOperationException($"数据未找到！");
+        }
+        entity.IsDelete = true;
+     
+        var affectedRows = await DepartmentRepo.AsUpdateable(entity)
          .UpdateColumns(it => new { it.IsDelete, it.Version, it.LastModifiedbyId, it.LastModifiedbyName, it.LastModifiedTime })
          .ExecuteCommandAsync();
-        if (affectedRows < 1) throw new InvalidOperationException($"部门信息删除失败!");
         return true;
     }
 
@@ -116,53 +88,29 @@ public class DeptApp : ApplicationService, IDeptApp
         return result;
     }
 
-    public async Task<PageData<IEnumerable<DeptPageListDto>>> GetPageListDeptAsync(DeptPageListQry qry)
+    public async Task<PageData<IEnumerable<DeptPageListBaseDto>>> GetPageListDeptAsync(DeptPageListQry qry)
     {
         RefAsync<int> total = 0;
 
         var query = DepartmentRepo.AsQueryable().With(SqlWith.NoLock)
-               .LeftJoin<CompanyDO>((t, t1) => t.CompanyId == t1.Id).With(SqlWith.NoLock)
-               .WhereIF(!string.IsNullOrWhiteSpace(qry.Name), (t, t1) => SqlFunc.Like(t.Name, $"{qry.Name}%"))
-               .WhereIF(qry.Status.HasValue, (t, t1) => t.Status.Equals(qry.Status))
-               .Where((t, t1) => t.ParentId == -1)
-               .Select((t, t1) => new DeptPageListDto()
-               {
-                   DeptId = t.Id,
-                   DeptName = t.Name,
-                   ParentDeptId = t.ParentId,
-                   CompanyName = t1.Name,
-                   CompanyId = t1.Id,
-                   Status = t.Status,
-                   CreateTime = t.CreateTime,
-               });
+                                   .LeftJoin<CompanyDO>((t, t1) => t.CompanyId == t1.Id).With(SqlWith.NoLock)
+                                   .WhereIF(!string.IsNullOrWhiteSpace(qry.Name), (t, t1) => SqlFunc.Like(t.Name, $"{qry.Name}%"))
+                                   .WhereIF(qry.Status.HasValue, (t, t1) => t.Status.Equals(qry.Status))
+                                   .Where((t, t1) => t.ParentId == -1)
+                                   .Select((t, t1) => new DeptPageListBaseDto()
+                                   {
+                                       DeptId = t.Id,
+                                       DeptName = t.Name,
+                                       ParentDeptId = t.ParentId,
+                                       CompanyName = t1.Name,
+                                       CompanyId = t1.Id,
+                                       Status = t.Status,
+                                       CreateTime = t.CreateTime,
+                                   });
         var data = await query.ToPageListAsync(qry.PageIndex, qry.PageSize, total);
 
 
-        var ids = data.Select(x => x.DeptId).ToList();
-
-        var ChildData = await DepartmentRepo.AsQueryable().With(SqlWith.NoLock)
-               .LeftJoin<CompanyDO>((t, t1) => t.CompanyId == t1.Id).With(SqlWith.NoLock)
-               .WhereIF(!string.IsNullOrWhiteSpace(qry.Name), (t, t1) => SqlFunc.Like(t.Name, $"{qry.Name}%"))
-               .WhereIF(qry.Status.HasValue, (t, t1) => t.Status.Equals(qry.Status))
-               .Where((t, t1) => t.ParentId != -1 && ids.Contains(t.ParentId))
-               .Select((t, t1) => new DeptPageListBaseDto()
-               {
-                   DeptId = t.Id,
-                   DeptName = t.Name,
-                   ParentDeptId = t.ParentId,
-                   CompanyName = t1.Name,
-                   CompanyId = t1.Id,
-                   Status = t.Status,
-                   CreateTime = t.CreateTime,
-               }).ToListAsync();
-
-        data = data.Select(item =>
-        {
-            item.Children = ChildData.Where(q => q.ParentDeptId == item.DeptId).ToList();
-            return item;
-        })
-        .ToList();
-        return new PageData<IEnumerable<DeptPageListDto>>(total, qry.PageSize, qry.PageIndex, data);
+        return new PageData<IEnumerable<DeptPageListBaseDto>>(total, qry.PageSize, qry.PageIndex, data);
     }
 
     public async Task<bool> UpdateDeptAsync(CreateOrUpdateDeptCmd cmd, long id)

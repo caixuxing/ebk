@@ -32,6 +32,11 @@ public class CreateOrUpdateSysUserCmd
     /// </summary>
     public string? ContactPhone { get; set; }
 
+    /// <summary>
+    /// 部门管理
+    /// </summary>
+    public bool DeptAdmin { get; set; }
+
 }
 
 /// <summary>

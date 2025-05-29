@@ -37,7 +37,7 @@ namespace YueJia.Ebk.Application.Contracts.DeptApp
         /// </summary>
         /// <param name="qry"></param>
         /// <returns></returns>
-        Task<PageData<IEnumerable<DeptPageListDto>>> GetPageListDeptAsync(DeptPageListQry qry);
+        Task<PageData<IEnumerable<DeptPageListBaseDto>>> GetPageListDeptAsync(DeptPageListQry qry);
 
 
         /// <summary>

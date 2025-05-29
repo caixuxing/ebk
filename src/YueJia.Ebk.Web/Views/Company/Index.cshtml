@@ -217,10 +217,7 @@
                             title: " 分配渠道",
                             fix: true,
                             maxmin: false,
-                            shade: 0.6, //遮罩透明度
-                            shadeClose: false,//点击遮罩关闭
-                            anim: 0,
-                            content: `Company/AssignChannel/${row.id}`,
+                            content: `/Company/AssignChannel?id=${row.id}`,
                             resize:false
                         });
                     });

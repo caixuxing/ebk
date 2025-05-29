@@ -22,6 +22,10 @@ public interface ISysUserApp
 
     Task<bool> DeleteAsync(long id);
 
+    Task<bool> ResetPassword(long id);
+
+    
+
 
     Task<PageData<IEnumerable<SysUserPageListDto>>> GetPageListAsync(SysUserPageFilterQry qry);
 
