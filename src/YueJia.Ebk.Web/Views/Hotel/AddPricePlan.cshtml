@@ -1,0 +1,45 @@
+﻿@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+<el-container style="height:100vh;overflow: hidden;">
+    <el-main>
+        <el-form :model="state.formData" label-width="auto" >
+
+            <el-alert type="primary" show-icon :closable="false">
+                <p>[我的酒店] / <el-link type="primary" v-on:click="openViewHotel">1111111111111111")</el-link> / <el-link type="primary" v-on:click="openRoomAndPricePlan">房间与价格计划</el-link> / 库存与价格 / 促销</p>
+            </el-alert>
+
+            <el-form-item style="margin-top:30px">
+                <h1>新增价格计划</h1>
+            </el-form-item>
+            <el-divider content-position="left">房间信息</el-divider>
+            </el-form>
+
+
+
+    </el-main>
+</el-container>
+@section scripts {
+    <script type="text/javascript">
+        const app = Vue.createApp({
+        setup() {
+
+                const state = Vue.reactive({
+                    formData: {
+                        roomTypeId: '',
+                        roomTypeName: '',
+                    }
+                });
+
+
+                return {
+                    state
+                }
+        }
+        });
+        app.use(ElementPlus);
+        app.mount('#app');
+    </script>
+}
+
+

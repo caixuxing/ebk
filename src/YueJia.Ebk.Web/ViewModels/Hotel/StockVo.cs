@@ -14,6 +14,6 @@
         /// <summary>
         /// 库存
         /// </summary>
-        public Dictionary<WeekTypeMnum, int> Stock { get; set; } = new Dictionary<WeekTypeMnum, int>();
+        public Dictionary<DayOfWeek, int> Stock { get; set; } = new();
     }
 }
