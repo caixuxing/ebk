@@ -16,16 +16,11 @@ public interface ISysUserApp
 
     Task<SysUserDetailsDto> GetByIdAsync(long id);
 
-
-    Task<bool> UpdatePassWordAsync(long id, string oldPassword, string newPassword);
-
-
     Task<bool> DeleteAsync(long id);
 
-    Task<bool> ResetPassword(long id);
+    Task<bool> ResetPasswordAsync(long id);
 
-    
-
+    Task<bool> UpdatePasswordAsync(UpdatePasswordSysUserCmd requestCmd);
 
     Task<PageData<IEnumerable<SysUserPageListDto>>> GetPageListAsync(SysUserPageFilterQry qry);
 

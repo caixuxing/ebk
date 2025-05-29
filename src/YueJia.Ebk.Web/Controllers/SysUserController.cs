@@ -63,14 +63,13 @@ namespace YueJia.Ebk.Web.Controllers
         }
 
 
-        ///// <summary>
-        ///// 密码修改
-        ///// </summary>
-        ///// <returns></returns>
-        //public async Task<IActionResult> UpdatePasswordMgr() { 
-
-
-        //}
+        /// <summary>
+        /// 密码修改
+        /// </summary>
+        /// <returns></returns>
+        public async Task<IActionResult> UpdatePasswordMgr() {
+            return View();
+        }
 
 
 
@@ -119,14 +118,23 @@ namespace YueJia.Ebk.Web.Controllers
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
-        [HttpPut, Route("[controller]/{id}/resetPassword")]
+        [HttpPut, Route("[controller]/resetPassword")]
         public async Task<IResult> ResetPassword([FromRoute] string id)
         {
-            var result = await SysUserApp.ResetPassword(id.ToLong());
+            var result = await SysUserApp.ResetPasswordAsync(id.ToLong());
             return ApiResult.HandleBoolResult(result);
         }
 
-
+        /// <summary>
+        /// 密码修改
+        /// </summary>
+        /// <returns></returns>
+        [HttpPut, Route("[controller]/updatePassword")]
+        public async Task<IResult> UpdatePassword([FromBody] UpdatePasswordSysUserCmd requestCmd)
+        {
+            var result = await SysUserApp.UpdatePasswordAsync(requestCmd);
+            return ApiResult.HandleBoolResult(result);
+        }
 
         /// <summary>
         /// 获取用户列表
