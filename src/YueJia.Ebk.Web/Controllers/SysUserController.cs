@@ -38,7 +38,7 @@ namespace YueJia.Ebk.Web.Controllers
         /// <returns></returns>
         public async Task<IActionResult> AddEditMgr(long id)
         {
-            ViewBag.DeptData = JsonConvert.SerializeObject(await DeptApp.GetDeptTreeSelectData(), new JsonSerializerSettings { ContractResolver = new CamelCasePropertyNamesContractResolver() });
+            ViewBag.DeptData = (await DeptApp.GetPageListDeptAsync(new Application.Contracts.DeptApp.Query.DeptPageListQry() { PageIndex = 1, PageSize = int.MaxValue }) ).List.ToList() ;
 
             var model = new SysUserDetailsDto() { IsEnabled = YesOrNoType.Yes };
             if (id > 0)
@@ -54,12 +54,24 @@ namespace YueJia.Ebk.Web.Controllers
             {
                 AccountName = model.AccountName,
                 RealName = model.RealName,
-                DeptId = model.DeptId == null ? "" : model.DeptId.ToString(),
+                DeptId = model.DeptId == null ? "0" : model.DeptId.ToString(),
                 ContactPhone = model.ContactPhone,
                 IsEnabled = model.IsEnabled,
+                DeptAdmin = model.DeptAdmin,
             };
             return View();
         }
+
+
+        ///// <summary>
+        ///// 密码修改
+        ///// </summary>
+        ///// <returns></returns>
+        //public async Task<IActionResult> UpdatePasswordMgr() { 
+
+
+        //}
+
 
 
         /// <summary>
@@ -99,6 +111,18 @@ namespace YueJia.Ebk.Web.Controllers
         public async Task<IResult> Update([FromRoute] string id, [FromBody] CreateOrUpdateSysUserCmd requestCmd)
         {
             var result = await SysUserApp.UpdateAsync(requestCmd, id.ToLong());
+            return ApiResult.HandleBoolResult(result);
+        }
+
+        /// <summary>
+        /// 重置密码
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        [HttpPut, Route("[controller]/{id}/resetPassword")]
+        public async Task<IResult> ResetPassword([FromRoute] string id)
+        {
+            var result = await SysUserApp.ResetPassword(id.ToLong());
             return ApiResult.HandleBoolResult(result);
         }
 

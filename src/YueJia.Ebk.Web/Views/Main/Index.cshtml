@@ -190,8 +190,7 @@
                 const handleSignOut = () => {
                     axios.post(`/main/logout`)
                         .then(response => {
-                            if (response.status == 200&&response.data.isSuccess) {
-                                 ElMessage({ message: `退出成功!`,  type: `success` });
+                            if (response.data.isSuccess) {
                                 window.location.href = response.data.data;
                                 return;
                             }

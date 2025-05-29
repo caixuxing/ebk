@@ -12,7 +12,17 @@
                 <el-input v-model="model.contactPhone" autocomplete="off" clearable placeholder="请输入联系电话" maxlength="15"></el-input>
             </el-form-item>
              <el-form-item label="部门" prop="deptId">
-                <el-tree-select v-model="model.deptId" :data="deptData" check-strictly :render-after-expand="false"></el-tree-select>
+                <el-select v-model="model.deptId"   style="width:200px">
+                    <el-option label="--不限--" value="0"></el-option>
+                    @foreach (YueJia.Ebk.Application.Contracts.DeptApp.Dto.DeptPageListBaseDto ele in ViewBag.DeptData)
+                    {
+                        <el-option label="@ele.DeptName" value="@ele.DeptId"></el-option>
+                    }
+                </el-select>
+            </el-form-item>
+
+            <el-form-item label="管理部门" label-width="auto">
+                <el-switch v-model="model.deptAdmin" inline-prompt active-text="是" inactive-text="否" />
             </el-form-item>
             <el-form-item label="是否启用" label-width="auto">
                 <el-switch v-model="model.V_isEnabled" inline-prompt active-text="是" inactive-text="否" />
@@ -42,10 +52,10 @@
                       @Html.Raw(System.Text.Json.JsonSerializer.Serialize(ViewBag.model, new System.Text.Json.JsonSerializerOptions() { PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase }))
                 );
                 const id = '@ViewBag.id';
-                var deptData= @Html.Raw(ViewBag.DeptData);
 
                 Vue.onMounted(() => {
                      model.V_isEnabled = model.isEnabled==1;
+                     console.log(model);
                  });
 
                  const FormDataRef = Vue.ref(null);
@@ -106,7 +116,6 @@
 
                 return {
                        model,
-                       deptData,
                        FormDataRules,
                        FormDataRef,
                        onEditSave,

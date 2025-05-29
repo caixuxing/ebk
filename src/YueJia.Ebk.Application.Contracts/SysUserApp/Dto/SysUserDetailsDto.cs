@@ -33,4 +33,9 @@ public record SysUserDetailsDto
     /// 联系电话
     /// </summary>
     public string? ContactPhone { get; set; }
+
+    /// <summary>
+    /// 部门管理
+    /// </summary>
+    public bool DeptAdmin { get; set; }
 }

@@ -12,7 +12,7 @@ public class LoginController : AbpController
     public IActionResult Index()
     {
 #if DEBUG
-        ViewBag.UserNmae = "admin";
+        ViewBag.UserNmae = "15580808032";//"admin";
         ViewBag.Password = "123456";
 #endif
         return View();

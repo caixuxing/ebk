@@ -81,7 +81,8 @@
             <el-table-column label="操作" prop="opt" width="240px" align="center">
                 <template #default="scope">
                     <div style="text-align:center">
-                         <el-button size="small" v-on:click="onEdit(scope.row)">编辑</el-button>
+                        <el-button size="small" v-on:click="onResetPassword(scope.row)">重置密码</el-button>
+                        <el-button size="small" v-on:click="onEdit(scope.row)">编辑</el-button>
                         <el-button size="small" type="danger" v-on:click="onDelete(scope.row)">删除 </el-button>
                     </div>
                 </template>
@@ -169,6 +170,19 @@
             }
 
 
+            /**
+             * 重置密码
+             */
+            const onResetPassword = (row)=>{
+                 ElMessageBox.confirm('您确定重置密码吗?', { confirmButtonText: '确定', cancelButtonText: '取消', type: 'warning', }).then(() => {
+
+                         axios.put(`/sysuser/${row.id}/resetPassword`).then(res  => {
+                                      top.window.vueElMessage({ message: res.data. message , type:  res.data.isSuccess?'success':'info' })
+                        })
+                 })
+            }
+
+
             const onDelete =  (row) => {
 
                   ElMessageBox.confirm('您确定删除吗?', { confirmButtonText: '确定', cancelButtonText: '取消', type: 'warning', }).then(() => {
@@ -196,6 +210,7 @@
                 ,resetQueryForm
                 ,onNew
                 ,onEdit
+                ,onResetPassword
                 };
                }
             });
