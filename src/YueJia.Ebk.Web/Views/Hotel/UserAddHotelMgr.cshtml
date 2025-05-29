@@ -1,0 +1,140 @@
+﻿<el-container style="height:100vh;overflow: hidden;">
+    <el-main>
+        <el-form label-width="auto" :inline="true">
+            <div>
+                <el-form-item label="国家" style="margin-bottom:5px;">
+                    <el-select v-model="state.qry.countryId" placeholder="不限" style="width:220px;" clearable filterable>
+                        <el-option label="--不限--" :value="0"></el-option>
+                        @foreach (YueJia.Ebk.Application.Contracts.Comm.BaseObj.SelectDataDto<int> ele in ViewBag.CountryList)
+                        {
+                            <el-option label="@ele.Label" :value="@ele.Value"></el-option>
+                        }
+                    </el-select>
+                </el-form-item>
+
+                <el-form-item label="酒店名称" style="margin-bottom:5px;">
+                    <el-input v-model="state.qry.hotelName" clearable style="width:200px;" ></el-input>
+                </el-form-item>
+                <el-form-item prop="desc" style="margin-bottom:5px;">
+                    <el-button type="primary" v-on:click="state.qry.pageIndex=1;loadData()">查询</el-button>
+                </el-form-item>
+            </div>
+        </el-form>
+
+        <el-table :data="state.dataList"
+                  border
+                  height="100%">
+            <el-table-column label="#" width="60" align="center">
+                <template #default="scope">
+                    <div style="text-align:left">
+                        <span>{{ (state.qry.pageIndex-1) * state.qry.pageSize + scope.$index +1   }}</span>
+                    </div>
+                </template>
+            </el-table-column>
+            <el-table-column label="酒店名称" width="300px" max-width="280px" align="center">
+                <template #default="scope">
+                    <div style="text-align:left"  >
+                        <p> {{ scope.row.hotelName }}</p>
+                        <p> {{ scope.row.hotelNameEn }}</p>
+                        <el-rate v-model="scope.row.starLevel" disabled></el-rate>
+                    </div>
+                </template>
+            </el-table-column>
+            <el-table-column label="酒店地址" width="auto" max-width="200px" align="center">
+                <template #default="scope">
+                    <div style="text-align:left">
+                        <p style="margin:5px 0px;">{{ scope.row.countryName }}({{scope.row.countryNameEn}}) - {{scope.row.areaName}}({{scope.row.areaNameEn}})</p>
+                        <p>{{ scope.row.addressEn }}</p>
+                    </div>
+                </template>
+            </el-table-column>
+            <el-table-column label="联系电话" width="180px" align="center">
+                <template #default="scope" align="right">
+                    <div style="text-align:left">
+                         <p> {{ scope.row.telPhone }}</p>
+                    </div>
+                </template>
+            </el-table-column>
+            <el-table-column label="操作" prop="opt" width="120px" align="center">
+                <template #default="scope">
+                    <div style="text-align:center">
+                        <el-button size="small" type="primary" v-on:click="onAddHotel(scope.row)">确认添加 </el-button>
+                    </div>
+                </template>
+            </el-table-column>
+
+        </el-table>
+        <div style=" height:35px;padding: 10px 0px 0px 20px; ">
+            <el-pagination v-model:current-page="state.qry.pageIndex"
+                           v-model:page-size="state.qry.pageSize"
+                           :page-sizes="[20, 50, 100,500]"
+                           layout="total, sizes, prev, pager, next, jumper"
+                           :total="state.qry.totalCount"
+                           v-on:size-change="handleSizeChange"
+                           v-on:current-change="handleCurrentChange" style="float:right;"></el-pagination>
+
+        </div>
+
+
+    </el-main>
+</el-container>
+
+@section scripts {
+    <script type="text/javascript">
+
+        var frameIndex = parent.layer.getFrameIndex(window.name);
+        const app = Vue.createApp({
+            setup() {
+
+               let qry = { countryId:0, hotelName: '',status: null,pageIndex: 1,pageSize: 50,totalCount: 0 }
+
+               const state = Vue.reactive({
+                    qry:  JSON.parse(JSON.stringify( qry)),
+                    dataList: []
+                });
+
+               const loadData = () => {
+                    axios.post(`/Hotel/HotelPageList`, {...state.qry}).then(response => {
+                        let {data,status}=response;
+                        state.dataList = data.data.list;
+                        state.qry.totalCount = data.data.total;
+                    })
+                };
+
+
+               const handleSizeChange = (val) => {
+                    state.qry.pageIndex = 1;
+                    state.qry.pageSize = val;
+                    loadData();
+               };
+
+               const handleCurrentChange = (val) => {
+                    state.qry.pageIndex = val;
+                    loadData();
+               };
+
+              const onAddHotel = (row) => {
+                      ElMessageBox.confirm('您确定添加吗?', { confirmButtonText: '确定', cancelButtonText: '取消', type: 'warning', }).then(() => {
+                             axios.post(`/Hotel/PublishHotel`, {...row}).then(res => {
+                                 top.window.vueElMessage({ message: res.data. message , type:  res.data.isSuccess?'success':'info' })
+                                 if(res.data.isSuccess){
+                                    parent.layer.close(frameIndex); // 关闭当前弹框
+                                 }
+                            })
+                      })
+                };
+
+                return {
+                     state
+                     ,loadData
+                     ,handleSizeChange
+                     ,handleCurrentChange
+                     ,onAddHotel
+                 };
+            }
+        });
+        app.use(ElementPlus, { locale: ElementPlusLocaleZhCn });
+        app.mount('#app');
+    </script>
+
+}

@@ -47,6 +47,23 @@ public class CreateOrUpHotelPublishCmd
     public decimal LowestPrice { get; set; } = 0;
 
 
+    /// <summary>
+    /// 国家二位码
+    /// </summary>
+    public string CountryIosCode { get; set; }
+
+
+    /// <summary>
+    /// 国家名称
+    /// </summary>
+    public string CountryName { get; set; } = default!;
+
+    /// <summary>
+    /// 城市名称
+    /// </summary>
+    public string AreaName { get; set; } = default!;
+
+
 }
 
 /// <summary>

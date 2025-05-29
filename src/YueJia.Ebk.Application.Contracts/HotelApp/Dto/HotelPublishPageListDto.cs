@@ -60,4 +60,20 @@ public record HotelPublishPageListDto
     /// 创建时间
     /// </summary>
     public DateTime CreateTime { get; set; }
+
+
+    /// <summary>
+    /// 国家IosCode
+    /// </summary>
+    public string CountryIosCode { get; set; } 
+
+    /// <summary>
+    /// 国家名称
+    /// </summary>
+    public string CountryName { get; set; }
+
+    /// <summary>
+    /// 城市名称
+    /// </summary>
+    public string CityName { get; set; } 
 }

@@ -54,4 +54,8 @@ public record HotelPageListDto
     /// 电话
     /// </summary>
     public string? TelPhone { get; set; }
+    /// <summary>
+    /// 国家二位码
+    /// </summary>
+    public string CountryIosCode { get; set; }
 }

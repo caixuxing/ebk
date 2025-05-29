@@ -12,7 +12,7 @@ public interface IHotelPublishApp
     /// </summary>
     /// <param name="cmd"></param>
     /// <returns></returns>
-    Task<long> PublishHotelAsync(CreateOrUpHotelPublishCmd cmd);
+    Task<bool> PublishHotelAsync(CreateOrUpHotelPublishCmd cmd);
 
 
 

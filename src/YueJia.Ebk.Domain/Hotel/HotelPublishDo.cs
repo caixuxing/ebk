@@ -41,7 +41,7 @@ public partial record HotelPublishDo : EntityTenant
     /// <summary>
     /// 联系电话
     /// </summary>
-    [SugarColumn(ColumnDescription = "联系电话", Length = 15)]
+    [SugarColumn(ColumnDescription = "联系电话", Length = 100)]
     public string TelPhone { get; set; } = default!;
     /// <summary>
     /// 最低价

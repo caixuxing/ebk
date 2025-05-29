@@ -105,7 +105,7 @@
                 axios.post(`/dept/PageList`, {...state.qry}).then(response => {
                     let {data,status}=response;
                     state.dataList = data.data.list;
-                    state.totalCount = data.data.total;
+                    state.qry.totalCount = data.data.total;
                 })
             };
 

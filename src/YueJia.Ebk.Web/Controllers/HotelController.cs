@@ -48,12 +48,23 @@ public class HotelController : AbpController
 
 
     /// <summary>
+    /// 用户添加酒店
+    /// </summary>
+    /// <returns></returns>
+    public async Task<IActionResult> UserAddHotelMgr() {
+
+        ViewBag.CountryList = await YueJiaSysServiceApp.GetDropDownCountryListAsync();
+        return View();
+    }
+
+
+    /// <summary>
     /// 确认添加酒店发布
     /// </summary>
     /// <param name="cmd"></param>
     /// <returns></returns>
     [HttpPost, Route("[controller]/PublishHotel")]
-    public async Task<IResult> PublishHotel([FromBody] CreateOrUpHotelPublishCmd cmd) => ApiResult.HandleLongResult(await HotelPublishApp.PublishHotelAsync(cmd));
+    public async Task<IResult> PublishHotel([FromBody] CreateOrUpHotelPublishCmd cmd) => ApiResult.HandleBoolResult(await HotelPublishApp.PublishHotelAsync(cmd));
 
     /// <summary>
     /// 更新酒店发布
