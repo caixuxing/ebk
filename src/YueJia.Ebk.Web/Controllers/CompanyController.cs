@@ -8,6 +8,9 @@ using YueJia.Ebk.Web.ViewModels.Company;
 namespace YueJia.Ebk.Web.Controllers;
 
 
+/// <summary>
+/// 公司
+/// </summary>
 [Authorize]
 public class CompanyController : AbpController
 {
@@ -35,11 +38,13 @@ public class CompanyController : AbpController
     /// <returns></returns>
     public async Task<IActionResult> AddEditMgr(long id)
     {
-        var model = new CompanyDetailsDto() { IsChannelManage= YesOrNoType.No,Status= YesOrNoType.Yes  };
-        if (id>0) {
+        var model = new CompanyDetailsDto() { IsChannelManage = YesOrNoType.No, Status = YesOrNoType.Yes };
+        if (id > 0)
+        {
             model = await CompanyApp.GetCompanyById(id);
-            if (model==null) { 
-              return View("../Home/ErrorMgr");
+            if (model == null)
+            {
+                return View("../Home/ErrorMgr");
             }
         }
         ViewBag.id = id;
@@ -145,14 +150,14 @@ public class CompanyController : AbpController
 
 
 
-    ///// <summary>
-    ///// 获取公司详情
-    ///// </summary>
-    ///// <param name="id"></param>
-    ///// <returns></returns>
-    //[HttpGet, Route("[controller]/{id}/details")]
-    //public async Task<IResult> GetCompanyById([FromRoute] string id)
-    //{
-    //    var result = await CompanyApp.GetCompanyById(id.ToLong());
-    //    return ApiResult.HandleResult(result);
-    //}
+///// <summary>
+///// 获取公司详情
+///// </summary>
+///// <param name="id"></param>
+///// <returns></returns>
+//[HttpGet, Route("[controller]/{id}/details")]
+//public async Task<IResult> GetCompanyById([FromRoute] string id)
+//{
+//    var result = await CompanyApp.GetCompanyById(id.ToLong());
+//    return ApiResult.HandleResult(result);
+//}

@@ -7,6 +7,11 @@ using YueJia.Ebk.Application.Contracts.SysApp;
 using YueJia.Ebk.Web.ViewModels.Hotel;
 namespace YueJia.Ebk.Web.Controllers;
 
+
+/// <summary>
+/// 酒店管理
+/// </summary>
+[Authorize]
 public class HotelController : AbpController
 {
 
@@ -15,6 +20,8 @@ public class HotelController : AbpController
     private IYueJiaSysServiceApp YueJiaSysServiceApp => LazyServiceProvider.LazyGetRequiredService<IYueJiaSysServiceApp>();
 
     private ISysEnumApp SysEnumApp => LazyServiceProvider.LazyGetRequiredService<ISysEnumApp>();
+
+    private IHotelApp HotelApp => LazyServiceProvider.LazyGetRequiredService<IHotelApp>();
 
 
 
@@ -92,51 +99,93 @@ public class HotelController : AbpController
 
 
     /// <summary>
-    /// 添加酒店房间
+    /// 添加酒店房间(View)
     /// </summary>
-    /// <param name="hotelCode"></param>
+    /// <param name="id"></param>
     /// <returns></returns>
-    public async Task<IActionResult> AddHotelRoom(string hotelCode)
+    public async Task<IActionResult> AddHotelRoom(string id)
     {
+        var hotelPublishDetail = await HotelPublishApp.GetHotelPublishDetailAsync(id.ToLong());
         AddHotelRoomVo vm = new AddHotelRoomVo()
         {
-            HotelCode = hotelCode,
+            Id = id,
+            HotelName = $"{hotelPublishDetail.HotelName}({hotelPublishDetail.HotelNameEn})",
+            HotelCode = hotelPublishDetail.HotelCode,
+            BedType = "",
+            RoomType = "",
+            MaximumNumberOfPeople = 2,
             AdultLimit = 2,
-            BedType = "1212",
             ChildLimit = 0,
-            RoomType = "3323",
-            HotelName = "测试酒店",
-            MaximumNumberOfPeople = 5,
             Stock = new StockVo()
             {
-
                 EndDate = DateTime.Now,
-                StartDate = DateTime.Now.AddDays(-1),
-                Stock = new Dictionary<WeekTypeMnum, int>() {
-                    { WeekTypeMnum.Monday, 1 },
-                    { WeekTypeMnum.Tuesday, 2 },
-                    { WeekTypeMnum.Wednesday, 3 },
-                    { WeekTypeMnum.Thursday, 4 },
-                    { WeekTypeMnum.Friday, 5 },
-                    { WeekTypeMnum.Saturday, 6 },
-                    { WeekTypeMnum.Sunday, 7 }
+                StartDate = DateTime.Now,
+                Stock = new Dictionary<DayOfWeek, int>() {
+                    { DayOfWeek.Monday, 0 },
+                    { DayOfWeek.Tuesday, 0 },
+                    { DayOfWeek.Wednesday, 0 },
+                    { DayOfWeek.Thursday, 0 },
+                    { DayOfWeek.Friday, 0 },
+                    { DayOfWeek.Saturday, 0 },
+                    { DayOfWeek.Sunday, 0 }
                 }
-
             }
-
         };
         return View(vm);
     }
 
+    /// <summary>
+    /// 添加酒店房间
+    /// </summary>
+    /// <param name="cmd"></param>
+    /// <returns></returns>
+    [HttpPost, Route("[controller]/AddHotelRoom")]
+    public async Task<IResult> AddHotelRoom([FromBody] CreateHotelRoomCmd cmd) => ApiResult.HandleLongResult(await HotelApp.AddHotelRoomAsync(cmd));
 
-    public IActionResult RoomAndPricePlan(string id, string hotelCode)
+
+
+    /// <summary>
+    /// 房间与价格计划（View）
+    /// </summary>
+    /// <param name="id"></param>
+    /// <returns></returns>
+    public async Task<IActionResult> RoomAndPricePlan(string id)
     {
-        RoomAndPricePlanVo vm = new RoomAndPricePlanVo()
+        var hotel = await HotelPublishApp.GetHotelPublishDetailAsync(id.ToLong());
+        var roomAndPricePlan = await HotelApp.GetHotelRoomByHotelCodeAsync(hotel.HotelCode);
+
+        var roomAndPricePlanVm = roomAndPricePlan.Select(x => new
+        {
+            x.Id,
+            x.RoomType,
+            x.RoomTypeName,
+            x.BedType,
+            x.BedTypeName,
+            x.MaximumNumberOfPeople,
+            x.AdultLimit,
+            x.ChildLimit,
+            pricePlans = x.PricePlans,
+            ShowContent = false,
+            ShowFooter = true
+
+        });
+
+        return View(new RoomAndPricePlanVo()
         {
             Id = id,
-            HotelCode = hotelCode,
+            HotelCode = hotel.HotelCode,
+            HotelName = hotel.HotelName,
+            HotelNameEn = hotel.HotelNameEn,
+            HotelRoomListJson = JsonConvert.SerializeObject(roomAndPricePlanVm, new JsonSerializerSettings { ContractResolver = new CamelCasePropertyNamesContractResolver() })
+        });
+    }
 
-        };
-        return View(vm);
+    /// <summary>
+    /// 新增价格计划（View）
+    /// </summary>
+    /// <returns></returns>
+    public IActionResult AddPricePlan(string id)
+    {
+        return View();
     }
 }

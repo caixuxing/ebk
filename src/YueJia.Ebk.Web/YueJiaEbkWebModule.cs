@@ -135,7 +135,7 @@ internal class YueJiaEbkWebModule : AbpModule
             //    }});
 
             //加载xml文档注释
-            Directory.GetFiles(AppDomain.CurrentDomain.BaseDirectory, "CaiXin.*.xml")
+            Directory.GetFiles(AppDomain.CurrentDomain.BaseDirectory, "YueJia.Ebk.*.xml")
              .Select(x => x)
              .ForEach(item => c.IncludeXmlComments(item, true));
 

@@ -22,14 +22,19 @@
 }
 <el-container style="height:100vh;overflow: hidden;">
     <el-main>
-        <el-form :model="state.formData" label-width="auto" >
+        <el-form :model="state.formData" label-width="auto" :rules="FormDataRules" ref="FormDataRef">
+          
              <el-alert type="primary" show-icon :closable="false" >
-             <p>[feiheng] / Pimalai Resort And Spa(皮马莱度假村和水疗中心) / 房间与价格计划 / 库存与价格 / 促销</p>
+            <p>[我的酒店] / <el-link type="primary" v-on:click="openViewHotel">@Html.Raw($"{Model.HotelName}")</el-link> / <el-link type="primary" v-on:click="openRoomAndPricePlan">房间与价格计划</el-link> / 库存与价格 / 促销</p>
              </el-alert>
+
+           <el-form-item style="margin-top:30px">
+                <h1>新增房间</h1>
+            </el-form-item>
             <el-divider content-position="left">房间信息</el-divider>
             <el-form-item label="酒店名称">
-                <el-input v-model="state.formData.hotelCode" autocomplete="off" clearable placeholder="酒店编码" style="width:50%"></el-input>
-                 <el-text class="mx-1">{{state.formData.hotelName}}</el-text>
+                <el-input v-model="state.formData.hotelCode" autocomplete="off"  placeholder="酒店编码" style="width:50%;display:none"></el-input>
+                <el-text class="mx-1">{{state.formData.hotelName}}</el-text>
 
             </el-form-item>
             <el-form-item label="房型" required prop="roomType" >
@@ -43,21 +48,35 @@
                     </el-select>
             </el-form-item>
             <el-form-item label="人数上限">
-               <el-input-number v-model="state.formData.maximumNumberOfPeople" controls-position="right" style="width:50%" placeholder="人数上限"></el-input-number>
+       
+                    <el-select v-model="state.formData.maximumNumberOfPeople" placeholder="人数上限"  filterable  style="width:50%"> 
+                       <el-option v-for="option in 24" :key="option" :label="option" :value="option"  ></el-option>
+                    </el-select>
+
             </el-form-item>
             <el-form-item label="成人上限" label-width="auto">
-               <el-input-number v-model="state.formData.adultLimit" controls-position="right" style="width:50%" placeholder="成人上限"></el-input-number>
+             
+                   <el-select v-model="state.formData.adultLimit" placeholder="成人上限"  filterable  style="width:50%"> 
+                       <el-option v-for="option in state.formData.maximumNumberOfPeople" :key="option" :label="option" :value="option"  ></el-option>
+                    </el-select>
             </el-form-item>
             <el-form-item label="儿童上限" label-width="auto">
-               <el-input-number v-model="state.formData.childLimit" controls-position="right" style="width:50%" placeholder="儿童上限"></el-input-number>
+               <el-select v-model="state.formData.childLimit" placeholder="儿童上限"  filterable  style="width:50%"> 
+                       <el-option v-for="option in state.formData.maximumNumberOfPeople" :key="option-1" :label="option-1" :value="option-1"  ></el-option>
+               </el-select>
             </el-form-item>
-          
          <el-divider content-position="left" style="margin-top:50px">库存设置</el-divider>
-              <el-form-item label="日期范围" label-width="auto">
-              <el-date-picker v-model="state.stock.dateRange" type="daterange" start-placeholder="开始日期" end-placeholder="结束日期"
-                      :default-value="[new Date(2025, 05, 26), new Date(2025, 05, 26)]" style="width:200px"></el-date-picker>
+              <el-form-item label="日期范围" label-width="auto" required prop="dateRange">
+           
+
+
+                               <el-date-picker is-range type="daterange" class="full-width-input"
+                                                                v-model="state.formData.dateRange"
+                                                                format="YYYY-MM-DD" value-format="YYYY-MM-DD" start-placeholder="开始日期" end-placeholder="结束日期"
+                                                                clearable></el-date-picker>
+
             </el-form-item>
-              <el-form-item label="房间库存" label-width="auto">
+              <el-form-item label="房间库存" label-width="auto" required>
                   <div class="el-table--fit el-table--border el-table--scrollable-y el-table--enable-row-hover el-table el-table--layout-fixed is-scrolling-none" data-prefix="el" style="width: 100%; height: 100px;">
                       <div class="el-table__inner-wrapper">
                           <div class="el-table__header-wrapper">
@@ -75,17 +94,13 @@
                                 </thead>
                                 <tbody>
                                     <tr class="el-table__row">
-                                        <td class="el-table__cell" colspan="1" rowspan="1">
-                                            <div class="cell">
-                                              <el-input-number v-model="state.stock.stock.one" controls-position="right" style="width:100%" ></el-input-number>
-                                            </div>
-                                        </td>
-                                        <td class="el-table__cell" colspan="1" rowspan="1"><div class="cell"><el-input-number v-model="state.stock.stock.two" controls-position="right" style="width:100%" ></el-input-number></div></td>
-                                        <td class="el-table__cell" colspan="1" rowspan="1"><div class="cell"><el-input-number v-model="state.stock.stock.three" controls-position="right" style="width:100%"></el-input-number></div></td>
-                                        <td class="el-table__cell" colspan="1" rowspan="1"><div class="cell"><el-input-number v-model="state.stock.stock.four" controls-position="right" style="width:100%"></el-input-number></div></td>
-                                        <td class="el-table__cell" colspan="1" rowspan="1"><div class="cell"><el-input-number v-model="state.stock.stock.five" controls-position="right" style="width:100%"></el-input-number></div></td>
-                                        <td class="el-table__cell" colspan="1" rowspan="1"><div class="cell"><el-input-number v-model="state.stock.stock.six" controls-position="right" style="width:100%"></el-input-number></div></td>
-                                        <td class="el-table__cell" colspan="1" rowspan="1"><div class="cell"><el-input-number v-model="state.stock.stock.seven" controls-position="right" style="width:100%"></el-input-number></div></td>
+                                        <td class="el-table__cell" colspan="1" rowspan="1"><div class="cell"> <el-input-number v-model="state.formData.stock.Monday" controls-position="right" style="width:100%" ></el-input-number></div> </td>
+                                        <td class="el-table__cell" colspan="1" rowspan="1"><div class="cell"><el-input-number v-model="state.formData.stock.Tuesday" controls-position="right" style="width:100%" ></el-input-number></div></td>
+                                        <td class="el-table__cell" colspan="1" rowspan="1"><div class="cell"><el-input-number v-model="state.formData.stock.Wednesday" controls-position="right" style="width:100%"></el-input-number></div></td>
+                                        <td class="el-table__cell" colspan="1" rowspan="1"><div class="cell"><el-input-number v-model="state.formData.stock.Thursday" controls-position="right" style="width:100%"></el-input-number></div></td>
+                                        <td class="el-table__cell" colspan="1" rowspan="1"><div class="cell"><el-input-number v-model="state.formData.stock.Friday" controls-position="right" style="width:100%"></el-input-number></div></td>
+                                        <td class="el-table__cell" colspan="1" rowspan="1"><div class="cell"><el-input-number v-model="state.formData.stock.Saturday" controls-position="right" style="width:100%"></el-input-number></div></td>
+                                        <td class="el-table__cell" colspan="1" rowspan="1"><div class="cell"><el-input-number v-model="state.formData.stock.Sunday" controls-position="right" style="width:100%"></el-input-number></div></td>
                                     </tr>
                                     </tbody>
                                   </table>
@@ -125,27 +140,51 @@
                        maximumNumberOfPeople:@Html.Raw(Model.MaximumNumberOfPeople),
                        adultLimit:@Html.Raw(Model.AdultLimit),
                        childLimit:@Html.Raw(Model.ChildLimit),
-                    },
-                    stock:{
-                        dateRange:[`@(Html.Raw(Model.Stock.StartDate.ToString("yyyy-MM-dd")))`,`@(Html.Raw(Model.Stock.EndDate.ToString("yyyy-MM-dd")))`],
+                       dateRange:[`@(Html.Raw(Model.Stock.StartDate.ToString("yyyy-MM-dd")))`,`@(Html.Raw(Model.Stock.EndDate.ToString("yyyy-MM-dd")))`],
+                       startDate:``,
+                       endDate:``,
                         stock:{
-                            one:@Html.Raw(Model.Stock.Stock.SingleOrDefault(x=>x.Key==WeekTypeMnum.Monday).Value),
-                            two:@Html.Raw(Model.Stock.Stock.SingleOrDefault(x=>x.Key==WeekTypeMnum.Tuesday).Value),
-                            three:@Html.Raw(Model.Stock.Stock.SingleOrDefault(x=>x.Key==WeekTypeMnum.Wednesday).Value),
-                            four:@Html.Raw(Model.Stock.Stock.SingleOrDefault(x=>x.Key==WeekTypeMnum.Thursday).Value),
-                            five:@Html.Raw(Model.Stock.Stock.SingleOrDefault(x=>x.Key==WeekTypeMnum.Friday).Value),
-                            six:@Html.Raw(Model.Stock.Stock.SingleOrDefault(x=>x.Key==WeekTypeMnum.Saturday).Value),
-                            seven:@Html.Raw(Model.Stock.Stock.SingleOrDefault(x=>x.Key==WeekTypeMnum.Sunday).Value),
+                            Monday:@Html.Raw(Model.Stock.Stock.GetValueOrDefault(DayOfWeek.Monday)),
+                            Tuesday:@Html.Raw(Model.Stock.Stock.GetValueOrDefault(DayOfWeek.Tuesday)),
+                            Wednesday:@Html.Raw(Model.Stock.Stock.GetValueOrDefault(DayOfWeek.Wednesday)),
+                            Thursday:@Html.Raw(Model.Stock.Stock.GetValueOrDefault(DayOfWeek.Thursday)),
+                            Friday:@Html.Raw(Model.Stock.Stock.GetValueOrDefault(DayOfWeek.Friday)),
+                            Saturday:@Html.Raw(Model.Stock.Stock.GetValueOrDefault(DayOfWeek.Saturday)),
+                            Sunday:@Html.Raw(Model.Stock.Stock.GetValueOrDefault(DayOfWeek.Sunday)),
                         }
+
                     }
+                    
                 });
-                 const save=()=>{
-                   window.parent.mainFrame(`/Hotel/HotelPublishList`,`我的酒店`,`page3-1`);
-                 };
+               const id=Vue.ref(`@Html.Raw(Model.Id)`);
+               const FormDataRef = Vue.ref(null);
+               const FormDataRules = {
+                   roomType: [{ required: true, message: '房型必选!', trigger: 'blur' }],
+                   bedType: [{ required: true, message: '床型必选!', trigger: 'blur' }],
+                   dateRange: [{ type: 'daterange', required: true, message: '日期必填!', trigger: 'blur' }]
+               };
+
+
+                const save = async () => {
+                let isValid = await FormDataRef.value.validate(); 
+                if(!isValid) return ElMessage({ message: "请完善表单信息!", type: "error" });
+                let requestData = { ...state.formData, startDate:state.formData.dateRange[0], endDate:state.formData.dateRange[1] };
+                let response = await axios.post(`/Hotel/AddHotelRoom`, requestData);
+                    if (response.status  === 200) {
+                          ElMessage({ message: "保存成功!", type: "success" });
+                          openRoomAndPricePlan();
+                    }
+                  
+                     //window.parent.mainFrame(`/Hotel/HotelPublishList`,`我的酒店`,`page3-1`);
+               }
+
+           const openRoomAndPricePlan=()=> window.parent.mainFrame(`/Hotel/RoomAndPricePlan/${id.value}`,``,``);
+          const openViewHotel=()=> window.parent.mainFrame(`/Hotel/ViewHotel/${id.value}`,``,``);
+
                 const cancel=()=>{
                    window.parent.mainFrame(`/Hotel/HotelPublishList`,`我的酒店`,`page3-1`);
                  };
-                return {state,save,cancel }
+                return {state,save,cancel,FormDataRules,FormDataRef,openRoomAndPricePlan,openViewHotel }
         }
         });
         app.use(ElementPlus);

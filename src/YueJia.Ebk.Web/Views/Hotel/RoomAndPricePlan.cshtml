@@ -4,40 +4,141 @@
 }
 @section head {
     <title>房间与价格计划</title>
+    <style type="text/css">
+        .el-row {
+            margin-bottom: 20px;
+        }
+        .hide-body .el-card__body {
+  display: none !important;
+  padding: 0 !important;
+}
+ </style>
 }
 <el-container style="height:100vh;overflow: hidden;">
     <el-main>
+        <el-scrollbar>
   
             <el-alert type="primary" show-icon :closable="false" >
-             <p>[我的酒店] / axxxxxxx / <el-link type="primary" v-on:click="">房间与价格计划</el-link> / 库存与价格 / 促销</p>
+            <p>[我的酒店] / <el-link type="primary" v-on:click="openViewHotel">@Html.Raw($"{Model.HotelName}({Model.HotelNameEn})")</el-link> / <el-link type="primary" v-on:click="openRoomAndPricePlan">房间与价格计划</el-link> / 库存与价格 / 促销</p>
              </el-alert>
 
            <el-form label-width="100px" :inline="true" style="margin-top:30px;">
                 <el-form-item prop="desc" style="margin-bottom:5px;">
-                    <el-button type="primary" v-on:click="openAddHotelRoom">新增房间</el-button>
+                   <h1 style="margin:0px 20px">房间与价格计划</h1> <el-button type="primary" v-on:click="openAddHotelRoom">新增房间</el-button>
                 </el-form-item>
             </el-form>
-            <el-divider content-position="">房间与价格计划</el-divider>
+            <el-divider content-position="left">房间与价格计划</el-divider>
+            <el-card v-for="(item, index) in state.roomData" :key="i" style="width:99%;margin-bottom:20px;" :class="{ 'hide-body': !item.showContent }">
+            <template #header>
+                <div class="card-header">
+                    <el-row :gutter="20">
+                        <el-col :span="18">
+                            <div class="grid-content ep-bg-purple" >
+                                <el-button type="text"  >{{item.roomTypeName}},{{item.bedTypeName}}</el-button>   
+                            </div>
+                        </el-col>
+                            <el-col :span="6" style="text-align: right">
+                                <el-button type="text" icon="el-icon-refresh" v-on:click="toggleCardContent(index)">
+                                    {{ item.showContent ? '隐藏更多详情' : '显示更多详情' }}
+                                </el-button>
+                                <el-button type="text" icon="el-icon-refresh" v-on:click="openAddPricePlan(item)">新增价格计划</el-button>
+                                <el-button type="text" icon="el-icon-refresh" v-on:click="toggleCardFooter(index)">
+                                    {{ item.showFooter ? '隐藏价格计划' : '显示价格计划' }}
+                                </el-button>
+
+                        </el-col>
+                    </el-row>
+                </div>
+            </template>
+                <div v-if="item.showContent">
+                <el-row :gutter="20" >
+                        <el-col :span="6"><div class="grid-content ep-bg-purple">床型：{{item.bedTypeName}}</div></el-col>
+                    <el-col :span="6"><div class="grid-content ep-bg-purple">人数上限：{{item.maximumNumberOfPeople}}</div></el-col>
+                    <el-col :span="6"><div class="grid-content ep-bg-purple">成人上限：{{item.adultLimit}}</div></el-col>
+                    <el-col :span="6"><div class="grid-content ep-bg-purple">儿童上线：{{item.childLimit}}</div></el-col>
+                </el-row>
+            
+            </div>
+                <template #footer v-if="item.showFooter">
+
+                    <el-table :data="item.dataList"
+                              border
+                              height="100%"
+                              v-loading="state.dataloading">
+                        <el-table-column label="#" width="60" align="center">
+                         
+                        </el-table-column>
+                        <el-table-column label="价格计划代码" width="180px" align="center">
+                            <template #default="scope">
+                                {{ scope.row.pricePlanCode }}
+                            </template>
+                        </el-table-column>
+                        <el-table-column label="价格计划名称" width="300px" align="left">
+                            <template #default="scope">
+                                {{scope.row.pricePlanName}}
+                            </template>
+                        </el-table-column>
+                        <el-table-column label="餐型" width="auto" max-width="200px" align="left">
+                            <template #default="scope">
+                                {{scope.row.mealType}}
+                            </template>
+                        </el-table-column>
+                        <el-table-column label="基本人数" width="200px" align="center">
+                            <template #default="scope" align="right">
+                                {{ scope.row.numberOfPeople }}
+                            </template>
+                        </el-table-column>
+
+                        <el-table-column label="国籍" width="120px" align="center">
+                            <template #default="scope">
+                                <div style="text-align:center">
+                                    <span>{{  scope.row.nationality }}</span>
+                                </div>
+                            </template>
+                        </el-table-column>
+                        <el-table-column label="状态" width="120px" align="center">
+                            <template #default="scope">
+                                <div style="text-align:center">
+                                    <span>{{  scope.row.statusName }}</span>
+                                </div>
+                            </template>
+                        </el-table-column>
+
+                        <el-table-column label="操作" prop="opt" width="140px" align="center">
+                            <template #default="scope">
+                                <div style="text-align:center">
+                                    <el-button size="small" v-on:click="ViewHotel(scope.row)">查看</el-button>
+                                    <el-button size="small" type="danger" v-on:click="deleteItem(scope.row.id)">删除 </el-button>
+                                </div>
+                            </template>
+                        </el-table-column>
+
+                    </el-table>
+
+            </template>
+        </el-card>
+       </el-scrollbar>
     </el-main>
 </el-container>
 @section scripts {
     <script type="text/javascript">
         const app = Vue.createApp({
         setup() {
-        const state = Vue.reactive({
-            tableData: {
+            const state = Vue.reactive({
+              roomData:@Html.Raw(Model.HotelRoomListJson),
+            });
+           const id=Vue.ref(`@Html.Raw(Model.Id)`);
+           // 切换内容显示
+           const toggleCardContent=(index)=>state.roomData[index].showContent = !state.roomData[index].showContent;
+            // 切换底部显示
+          const toggleCardFooter=(index)=>state.roomData[index].showFooter = !state.roomData[index].showFooter;
+          const openAddHotelRoom=()=> window.parent.mainFrame(`/Hotel/AddHotelRoom/${id.value}`,``,``);
+          const openViewHotel=()=> window.parent.mainFrame(`/Hotel/ViewHotel/${id.value}`,``,``);
+          const openAddPricePlan=(row)=> window.parent.mainFrame(`/Hotel/AddPricePlan/${row.id}`,``,``);
 
-                }
-        });
-       const id=Vue.ref(`@Html.Raw(Model.Id)`);
-       const code=Vue.ref(`@Html.Raw(Model.HotelCode)`);
 
-        const openAddHotelRoom=()=>{
-           window.parent.mainFrame(`/Hotel/AddHotelRoom?hotelCode=${code.value}`,``,``);
-       };
+              return {state,openViewHotel,openAddHotelRoom,toggleCardContent,toggleCardFooter,openAddPricePlan}
 
-
-       return {openAddHotelRoom}
         }
         });
         app.use(ElementPlus);

@@ -1,7 +1,11 @@
 ﻿namespace YueJia.Ebk.Web.ViewModels.Hotel;
 
+/// <summary>
+/// 添加房型ViewModel
+/// </summary>
 public class AddHotelRoomVo
 {
+    public string Id { get; set; }
     /// <summary>
     /// 酒店代码
     /// </summary>

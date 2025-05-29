@@ -4,6 +4,12 @@
 }
 @section head {
     <title>查看酒店</title>
+        <style scoped>
+		.el-input-number .el-input__inner{
+        
+        text-align:left !important;
+        }
+        </style>
 }
 <el-container style="height:100vh;overflow: hidden;">
     <el-main>
@@ -11,7 +17,11 @@
             <el-alert type="primary" show-icon :closable="false" >
              <p>[我的酒店] / @Html.Raw($"{Model.HotelName}({Model.HotelNameEn})") / <el-link type="primary" v-on:click="openRoomAndPricePlan">房间与价格计划</el-link> / 库存与价格 / 促销</p>
              </el-alert>
-            <el-divider content-position="left">酒店</el-divider>
+
+            <el-form-item style="margin-top:30px">
+                <h1>酒店</h1>
+            </el-form-item>
+            <el-divider content-position="left"></el-divider>
       <el-form-item label="酒店编码" >
          <el-text class="mx-1">{{state.formData.hotelCode}}</el-text>
       </el-form-item>
@@ -31,7 +41,8 @@
          <el-text class="mx-1">{{state.formData.telPhone}}</el-text>
       </el-form-item>
           <el-form-item label="最低价" label-width="auto"  required prop="lowestPrice">
-        <el-input v-model="state.formData.lowestPrice" autocomplete="off"  clearable placeholder="最低价、为0不限制"  maxlength="10"  ></el-input>
+        <el-input-number v-model="state.formData.lowestPrice" controls-position="right" style="width:100%"  clearable placeholder="最低价、为0不限制"  maxlength="10"  ></el-input-number>
+    
       </el-form-item>
        <el-form-item label="销售状态" label-width="auto">
         <el-radio-group v-model="state.formData.status">
@@ -89,7 +100,7 @@
                  };
 
        const openRoomAndPricePlan=()=>{
-           window.parent.mainFrame(`/Hotel/RoomAndPricePlan?id=${id.value}&hotelCode=${state.formData.hotelCode}`,``,``);
+           window.parent.mainFrame(`/Hotel/RoomAndPricePlan/${id.value}`,``,``);
        };
 
 
