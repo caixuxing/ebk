@@ -1,7 +1,13 @@
-﻿using YueJia.Ebk.Application.Contracts.DeptApp;
+﻿using YueJia.Ebk.Application.CompanyApp;
+using YueJia.Ebk.Application.Contracts.CompanyApp.Commands;
+using YueJia.Ebk.Application.Contracts.CompanyApp.Dto;
+using YueJia.Ebk.Application.Contracts.DeptApp;
 using YueJia.Ebk.Application.Contracts.DeptApp.Commands;
 using YueJia.Ebk.Application.Contracts.DeptApp.Dto;
 using YueJia.Ebk.Application.Contracts.DeptApp.Query;
+using YueJia.Ebk.Application.Contracts.SysApp;
+using YueJia.Ebk.Application.Contracts.SysUserApp.Commands;
+using YueJia.Ebk.Application.DeptApp;
 
 namespace YueJia.Ebk.Web.Controllers
 {
@@ -10,24 +16,41 @@ namespace YueJia.Ebk.Web.Controllers
 
         private IDeptApp DeptApp => LazyServiceProvider.LazyGetRequiredService<IDeptApp>();
 
+        private ISysEnumApp SysEnumApp => LazyServiceProvider.LazyGetRequiredService<ISysEnumApp>();
 
-        public IActionResult Index() => View();
+
+        public IActionResult Index() { 
+            ViewBag.YesOrNoTypeList = SysEnumApp.GetEnumDataList(nameof(YesOrNoType));
+            return View();
+        }
 
 
         /// <summary>
-        /// 新增或编辑部门
+        /// 新增编辑
         /// </summary>
+        /// <param name="id"></param>
         /// <returns></returns>
-        public async Task<IActionResult> AddOrEditDept(string? id, string? parentDeptId, string? deptName, string? companyId)
+        public async Task<IActionResult> AddEditMgr(long id)
         {
-            DeptDetailsDto model = new DeptDetailsDto();
-            if (!string.IsNullOrWhiteSpace(parentDeptId) && long.TryParse(parentDeptId, out long outParentDeptId)) model.ParentDeptId = outParentDeptId;
-            if (!string.IsNullOrWhiteSpace(deptName)) model.DeptName = deptName;
-            if (!string.IsNullOrWhiteSpace(companyId) && long.TryParse(companyId, out long outCompanyId)) model.CompanyId = outCompanyId;
-            if (!string.IsNullOrWhiteSpace(id) && long.TryParse(id, out long deptId)) model = await DeptApp.GetDeptById(deptId);
-            ViewBag.DeptData = JsonConvert.SerializeObject(await DeptApp.GetTopLevelDeptData());
-            return View(model);
+            var model = new DeptDetailsDto() {  Status = YesOrNoType.Yes ,ParentDeptId =-1 };
+            if (id > 0)
+            {
+                model = await DeptApp.GetDeptById(id);
+                if (model == null)
+                {
+                    return View("../Home/ErrorMgr");
+                }
+            }
+            ViewBag.id = id;
+            ViewBag.model = new CreateOrUpdateDeptCmd()
+            {
+                Name = model.DeptName,
+                Status = model.Status
+            };
+            return View();
         }
+
+
         /// <summary>
         /// 获取部门列表
         /// </summary>
@@ -66,3 +89,19 @@ namespace YueJia.Ebk.Web.Controllers
 
     }
 }
+
+
+///// <summary>
+///// 新增或编辑部门
+///// </summary>
+///// <returns></returns>
+//public async Task<IActionResult> AddOrEditDept(string? id, string? parentDeptId, string? deptName, string? companyId)
+//{
+//    DeptDetailsDto model = new DeptDetailsDto();
+//    if (!string.IsNullOrWhiteSpace(parentDeptId) && long.TryParse(parentDeptId, out long outParentDeptId)) model.ParentDeptId = outParentDeptId;
+//    if (!string.IsNullOrWhiteSpace(deptName)) model.DeptName = deptName;
+//    if (!string.IsNullOrWhiteSpace(companyId) && long.TryParse(companyId, out long outCompanyId)) model.CompanyId = outCompanyId;
+//    if (!string.IsNullOrWhiteSpace(id) && long.TryParse(id, out long deptId)) model = await DeptApp.GetDeptById(deptId);
+//    ViewBag.DeptData = JsonConvert.SerializeObject(await DeptApp.GetTopLevelDeptData());
+//    return View(model);
+//}

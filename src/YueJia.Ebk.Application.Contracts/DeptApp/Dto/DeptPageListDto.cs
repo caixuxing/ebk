@@ -1,13 +1,13 @@
 ﻿namespace YueJia.Ebk.Application.Contracts.DeptApp.Dto
 {
-    public record DeptPageListDto : DeptPageListBaseDto
-    {
+    //public record DeptPageListDto : DeptPageListBaseDto
+    //{
 
-        /// <summary>
-        /// 子级
-        /// </summary>
-        public List<DeptPageListBaseDto> Children { get; set; } = new();
-    }
+    //    /// <summary>
+    //    /// 子级
+    //    /// </summary>
+    //    public List<DeptPageListBaseDto> Children { get; set; } = new();
+    //}
 
 
 

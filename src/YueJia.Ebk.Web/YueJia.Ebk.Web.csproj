@@ -8,6 +8,7 @@
 
   <ItemGroup>
     <Content Remove="C:\Users\Administrator\.nuget\packages\volo.abp.aspnetcore.mvc\8.2.3\contentFiles\any\net8.0\Volo.Abp.AspNetCore.Mvc.abppkg.analyze.json" />
+    <Content Remove="Views\Dept\AddOrEditDept.cshtml" />
   </ItemGroup>
 
   <ItemGroup>

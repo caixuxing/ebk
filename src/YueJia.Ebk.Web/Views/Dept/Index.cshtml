@@ -1,21 +1,17 @@
-﻿@{
-    Layout = "~/Views/Shared/_Layout.cshtml";
-}
-@section head {
-    <title>部门管理</title>
-}
-<el-container style="height:100vh;overflow: hidden;">
+﻿<el-container style="height:100vh;overflow: hidden;">
     <el-main>
 
         <el-form label-width="100px" :inline="true">
             <div>
                 <el-form-item label="部门名称" prop="desc" style="margin-bottom:5px;">
-                    <el-input v-model="state.qry.name" placeholder="部门名称" clearable></el-input>
+                    <el-input v-model="state.qry.name"  clearable style="width:200px"></el-input>
                 </el-form-item>
                 <el-form-item label="状态" prop="desc" style="margin-bottom:5px;">
                     <el-select v-model="state.qry.status" placeholder="不限" clearable style="width:200px">
-                        <el-option label="是" value="1"></el-option>
-                        <el-option label="否" value="2"></el-option>
+                        @foreach (YueJia.Ebk.Application.Contracts.SysApp.Dto.EnumDto ele in ViewBag.YesOrNoTypeList)
+                        {
+                            <el-option label="@ele.Describe" value="@ele.Value"></el-option>
+                        }
                     </el-select>
                 </el-form-item>
                 <el-form-item prop="desc" style="margin-bottom:5px;">
@@ -27,32 +23,27 @@
             <el-form label-width="100px" :inline="true" style="margin-top:30px;">
             <div>
                 <el-form-item prop="desc" style="margin-bottom:5px;">
-                    <el-button type="primary" v-on:click="AddDeptt()">新增</el-button>
+                    <el-button type="primary" v-on:click="onNew()">新增</el-button>
                 </el-form-item>
             </div>
         </el-form>
  
-        <el-table :data="state.dataList"
-        style="width: 100%;margin-bottom: 20px;"
-        row-key="deptId"
-        border
-        default-expand-all
-        :tree-props="{children: 'children', hasChildren: 'hasChildren'}">
-@*  <el-table-column label="#" width="60" align="center">
+
+       <el-table :data="state.dataList"
+                      border
+                      height="100%">
+            <el-table-column label="#" width="60" align="center">
                 <template #default="scope">
                     <div style="text-align:left">
-                        <span>{{ (state.qry.pageIndex) * state.qry.pageSize + scope.$index +1   }}</span>
+                        <span>{{ (state.qry.pageIndex-1) * state.qry.pageSize + scope.$index +1   }}</span>
                     </div>
                 </template>
-            </el-table-column> *@
-            <el-table-column label="部门名称" width="auto" max-width="200" align="left"  >
-                <template #default="scope">
-                    {{ scope.row.deptName }}
-                </template>
             </el-table-column>
-            <el-table-column label="公司名称" width="auto" max-width="200" align="left"  >
+            <el-table-column label="部门名称" width="auto" max-width="200" align="center">
                 <template #default="scope">
-                    {{ scope.row.companyName }}
+                    <div style="text-align:left">
+                        {{ scope.row.deptName }}
+                    </div>
                 </template>
             </el-table-column>
             <el-table-column label="状态" width="60px" align="center">
@@ -72,13 +63,12 @@
             <el-table-column label="操作" prop="opt" width="260px" align="center">
                 <template #default="scope">
                     <div style="text-align:center">
-                   @*      <el-button size="small" v-on:click="AddDept(scope.row)">添加子级部门</el-button> *@
-                        <el-button size="small" v-on:click="EditDept(scope.row)">编辑</el-button>
-                        <el-button size="small" type="danger" v-on:click="deleteItem(scope.row.deptId)" >删除 </el-button>
+                        <el-button size="small" v-on:click="onEdit(scope.row)">编辑</el-button>
+                        <el-button size="small" type="danger" v-on:click="onDelete(scope.row)">删除 </el-button>
                     </div>
                 </template>
             </el-table-column>
-  </el-table>
+     </el-table>
 
 
 
@@ -100,126 +90,106 @@
     <script type="text/javascript">
         const app = Vue.createApp({
         setup() {
-      
+
+           let qry = {  name: '',status: null,pageIndex: 1,pageSize: 50,totalCount: 0 }
+
            const state = Vue.reactive({
-                dataLoading: false,
-                qry: {
-                    name: null,
-                    status: null,
-                    pageIndex: 0,
-                    pageSize: 20,
-                    totalCount: 0,
-                },
+                qry:  JSON.parse(JSON.stringify( qry)),
                 dataList: []
 
             });
+
            Vue.onMounted(() => { loadData()  });
+
             const loadData = () => {
-                state.dataLoading = true;
                 axios.post(`/dept/PageList`, {...state.qry}).then(response => {
                     let {data,status}=response;
-                    Object.assign(state,
-                                {dataList:data.data.list,
-                            qry:{
-                                    pageIndex:data.data.pageIndex,
-                                    pageSize:data.data.pageSize,
-                                    totalCount:data.data.total,
-                                    name:state.qry.name,
-                                    status:state.qry.status
-                                }
-                    });
+                    state.dataList = data.data.list;
+                    state.totalCount = data.data.total;
                 })
-                state.dataLoading = false;
-                };
+            };
+
+
             const handleSizeChange = (val) => {
                     state.qry.pageIndex = 1;
                     state.qry.pageSize = val;
                     loadData();
-                        };
+            };
             const handleCurrentChange = (val) => {
-                        state.qry.pageIndex = val;
-                        loadData();
-                    };
-            const deleteItem =  (id) => {
+                    state.qry.pageIndex = val;
+                    loadData();
+           };
 
-              ElMessageBox.confirm('您确定删除吗?', { confirmButtonText: '确定', cancelButtonText: '取消', type: 'warning', })
-              .then(() => {
-                    state.dataLoading = true;
-                     axios.delete(`/Dept/${id}/delete`)
-                    .then(response => {
-                        let {data,status}=response;
-                        if (status == 200&&data.isSuccess ){
-                            ElMessage({ message: `删除成功!`,  type: `success` });
-                             loadData();
-                            return;
+
+           /**
+            * 新增
+            */
+           const onNew = () => {
+                    layer.open({
+                        type: 2,
+                        title: '新增',
+                        area: ['600px', '480px'],
+                        fix: false,
+                        maxmin: true,
+                        content:  "/Dept/AddEditMgr?id=0",
+                        end: function () {
+                           state.qry.pageIndex = 1;
+                           loadData();
                         }
-                        ElMessage.error(data.message);
-                    })
-                    state.dataLoading = false;
-                    })
-                    .catch(() => { console.log('取消删除'); });
-              }
+                    });
+           };
+
+          /**
+            * 编辑
+            */
+           const onEdit=(row)=>{
+
+               console.log(row);
+                    layer.open({
+                        type: 2,
+                        title: '编辑',
+                        area: ['600px', '480px'],
+                        fix: false,
+                        maxmin: true,
+                        content:  "/Dept/AddEditMgr?id="+row.deptId,
+                        end: function () {
+                           loadData();
+                        }
+                    });
+            }
+
+
+           const onDelete =  (row) => {
+
+                  ElMessageBox.confirm('您确定删除吗?', { confirmButtonText: '确定', cancelButtonText: '取消', type: 'warning', }).then(() => {
+
+                         axios.delete(`/Dept/${row.id}/delete`).then(res  => {
+                                          top.window.vueElMessage({ message: res.data. message , type:  res.data.isSuccess?'success':'info' })
+                                          if(res.data.isSuccess){
+                                             loadData();
+                                          }
+                        })
+                 })
+            }
+
+
             //重置查询表单
             const resetQueryForm=()=>{
-                 state.qry  = {...state.qry,   name: null, status: null };
+                state.qry  = JSON.parse(JSON.stringify( qry))
+             };
+
+
+            return {
+                state
+                ,loadData
+                ,handleSizeChange
+                ,handleCurrentChange
+                ,resetQueryForm
+                ,onNew
+                ,onEdit
+                ,onDelete
                 };
-            const AddDept = (row) => {
-                    layui.use(function () {
-                        var layer = layui.layer;
-                        layer.open({
-                            type: 2,
-                            area: ['600px', '270px'],
-                            title: `新增【${row.deptName}】子级部门`,
-                            fix: true,
-                            maxmin: false,
-                            shade: 0.6, //遮罩透明度
-                            shadeClose: false,//点击遮罩关闭
-                            anim: 0,
-                            content: `Dept/AddOrEditDept?parentDeptId=${row.deptId}&companyId=${row.companyId}`,
-                            resize:false
-                        });
-                    });
-                }
-
-
-                 const AddDeptt = () => {
-                    layui.use(function () {
-                        var layer = layui.layer;
-                        layer.open({
-                            type: 2,
-                            area: ['600px', '270px'],
-                            title: `新增部门`,
-                            fix: true,
-                            maxmin: false,
-                            shade: 0.6, //遮罩透明度
-                            shadeClose: false,//点击遮罩关闭
-                            anim: 0,
-                            content: `Dept/AddOrEditDept`,
-                            resize:false
-                        });
-                    });
-                }
-
-            const EditDept = (row) => {
-                    layui.use(function () {
-                        var layer = layui.layer;
-                        layer.open({
-                            type: 2,
-                            area: ['600px', '270px'],
-                            title: `编辑【${row.deptName}】`,
-                            fix: true,
-                            maxmin: false,
-                            shade: 0.6, //遮罩透明度
-                            shadeClose: false,//点击遮罩关闭
-                            anim: 0,
-                            content: `Dept/AddOrEditDept?id=${row.deptId}`,
-                            resize:false
-                        });
-                    });
-                }
-
-            return {state,loadData,handleSizeChange,handleCurrentChange,deleteItem,resetQueryForm,AddDept,EditDept,AddDeptt};
-                }
+              }
             });
             app.use(ElementPlus,{ locale: ElementPlusLocaleZhCn });
             app.mount('#app');
