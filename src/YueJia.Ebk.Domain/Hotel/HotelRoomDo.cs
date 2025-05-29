@@ -12,7 +12,7 @@ public partial record HotelRoomDo : EntityTenant
     /// <summary>
     /// 酒店ID
     /// </summary>
-    [SugarColumn(ColumnDescription = "酒店ID")]
+    [SugarColumn(ColumnDescription = "酒店ID", DefaultValue = "0")]
     public long HotelId { get; init; }
 
     /// <summary>
