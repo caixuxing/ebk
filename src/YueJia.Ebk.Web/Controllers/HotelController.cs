@@ -47,15 +47,28 @@ public class HotelController : AbpController
     public async Task<IResult> GetPageList([FromBody] HotelPublishPageFilterQry requestQry) => ApiResult.HandleResult(await HotelPublishApp.GetMyHotelPublishPageListAsync(requestQry));
 
 
-
+    /// <summary>
+    /// 确认添加酒店发布
+    /// </summary>
+    /// <param name="cmd"></param>
+    /// <returns></returns>
     [HttpPost, Route("[controller]/PublishHotel")]
     public async Task<IResult> PublishHotel([FromBody] CreateOrUpHotelPublishCmd cmd) => ApiResult.HandleLongResult(await HotelPublishApp.PublishHotelAsync(cmd));
 
-
+    /// <summary>
+    /// 更新酒店发布
+    /// </summary>
+    /// <param name="cmd"></param>
+    /// <param name="id"></param>
+    /// <returns></returns>
     [HttpPut, Route("[controller]/{id}/UpdatePublishHotel")]
     public async Task<IResult> UpdatePublishHotel([FromBody] CreateOrUpHotelPublishCmd cmd, [FromRoute] string id) => ApiResult.HandleBoolResult(await HotelPublishApp.UpdatePublishHotelAsync(cmd, id.ToLong()));
 
-
+    /// <summary>
+    /// 酒店发布详情
+    /// </summary>
+    /// <param name="id"></param>
+    /// <returns></returns>
     [HttpGet, Route("[controller]/{id}/Detail")]
     public async Task<IResult> GetHotelPublishDetail([FromRoute] string id) => ApiResult.HandleResult(await HotelPublishApp.GetHotelPublishDetailAsync(id.ToLong()));
 
@@ -152,7 +165,7 @@ public class HotelController : AbpController
     public async Task<IActionResult> RoomAndPricePlan(string id)
     {
         var hotel = await HotelPublishApp.GetHotelPublishDetailAsync(id.ToLong());
-        var roomAndPricePlan = await HotelApp.GetHotelRoomByHotelCodeAsync(hotel.HotelCode);
+        var roomAndPricePlan = await HotelApp.GetHotelRoomListByIdAsync(id.ToLong());
 
         var roomAndPricePlanVm = roomAndPricePlan.Select(x => new
         {
@@ -181,11 +194,45 @@ public class HotelController : AbpController
     }
 
     /// <summary>
-    /// 新增价格计划（View）
+    ///  新增价格计划（View）
     /// </summary>
+    /// <param name="id">房间ID</param>
     /// <returns></returns>
-    public IActionResult AddPricePlan(string id)
+    public async Task<IActionResult> AddPricePlan(string id)
     {
+        var room = await HotelApp.GetHotelRoomByIdAsync(id.ToLong());
+
+        AddPricePlanVo vm = new AddPricePlanVo()
+        {
+
+
+        };
+
         return View();
     }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="cmd"></param>
+    /// <returns></returns>
+    [HttpPost, Route("[controller]/CreatePricePlan")]
+    public async Task<IResult> CreatePricePlan([FromBody] CreateOrUpdatePricePlanCmd cmd) => ApiResult.HandleLongResult(await HotelApp.CreatePricePlanAsync(cmd));
+
+    /// <summary>
+    /// 删除价格计划
+    /// </summary>
+    /// <param name="id"></param>
+    /// <returns></returns>
+    [HttpDelete, Route("[controller]/DeletePricePlan/{id}")]
+    public async Task<IResult> DeletePricePlan([FromRoute] string id) => ApiResult.HandleBoolResult(await HotelApp.DeletePricePlanAsync(id.ToLong()));
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="cmd"></param>
+    /// <param name="id"></param>
+    /// <returns></returns>
+    [HttpPut, Route("[controller]/DeletePricePlan/{id}")]
+    public async Task<IResult> UpdatePricePlan([FromBody] CreateOrUpdatePricePlanCmd cmd, string id) => ApiResult.HandleBoolResult(await HotelApp.UpdatePricePlanAsync(cmd, id.ToLong()));
 }

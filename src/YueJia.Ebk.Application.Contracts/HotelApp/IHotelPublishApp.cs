@@ -1,7 +1,6 @@
 ﻿using YueJia.Ebk.Application.Contracts.HotelApp.Commands;
 using YueJia.Ebk.Application.Contracts.HotelApp.Dto;
 using YueJia.Ebk.Application.Contracts.HotelApp.Query;
-using YueJia.Ebk.Domain.Shared.Response;
 
 namespace YueJia.Ebk.Application.Contracts.HotelApp;
 
@@ -18,9 +17,10 @@ public interface IHotelPublishApp
 
 
     /// <summary>
-    ///更新发布酒店
+    /// 更新发布酒店
     /// </summary>
     /// <param name="cmd"></param>
+    /// <param name="id"></param>
     /// <returns></returns>
     Task<bool> UpdatePublishHotelAsync(CreateOrUpHotelPublishCmd cmd, long id);
 

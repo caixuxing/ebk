@@ -8,11 +8,18 @@
 public partial record HotelRoomDo : EntityTenant
 {
     public HotelRoomDo() { }
+
+    /// <summary>
+    /// 酒店ID
+    /// </summary>
+    [SugarColumn(ColumnDescription = "酒店ID")]
+    public long HotelId { get; init; }
+
     /// <summary>
     /// 酒店代码
     /// </summary>
     [SugarColumn(ColumnDescription = "酒店编码", Length = 30)]
-    public string HotelCode { get; private set; } = default!;
+    public string HotelCode { get; init; } = default!;
 
     /// <summary>
     /// 房型

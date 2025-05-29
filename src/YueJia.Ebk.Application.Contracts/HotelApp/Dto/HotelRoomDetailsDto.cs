@@ -1,22 +1,15 @@
 ﻿namespace YueJia.Ebk.Application.Contracts.HotelApp.Dto;
 
-
 /// <summary>
-/// 酒店房间集合Dto
+/// 酒店房间详情
 /// </summary>
-public record HotelRoomListDto
+public record HotelRoomDetailsDto
 {
     /// <summary>
     /// 房间ID
     /// </summary>
     [JsonNumberHandling(JsonNumberHandling.WriteAsString)]
     public long Id { get; set; }
-
-    /// <summary>
-    /// 酒店代码
-    /// </summary>
-    public string HotelCode { get; set; } = default!;
-
 
     /// <summary>
     /// 房型
@@ -27,8 +20,6 @@ public record HotelRoomListDto
     /// 房型名称
     /// </summary>
     public string RoomTypeName { get; set; } = default!;
-
-
 
     /// <summary>
     /// 床型

@@ -78,6 +78,6 @@ public class HotelPublishApp : ApplicationService, IHotelPublishApp
     {
         var entity = await HotelPublishRepo.GetByIdAsync(id) ?? throw new InvalidOperationException($"酒店ID:{id}资源不存在！");
         entity.SetStatus(cmd.Status).SetLowestPrice(cmd.LowestPrice);
-        return await HotelPublishRepo.UpdateAsync(entity);
+        return await HotelPublishRepo.AsUpdateable(entity).ExecuteCommandWithOptLockAsync(true) > 0;
     }
 }

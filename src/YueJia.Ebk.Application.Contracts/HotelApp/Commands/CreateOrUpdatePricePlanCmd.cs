@@ -1,0 +1,53 @@
+﻿namespace YueJia.Ebk.Application.Contracts.HotelApp.Commands;
+
+/// <summary>
+/// 创建或更新价格计划参数
+/// </summary>
+public record CreateOrUpdatePricePlanCmd
+{
+    /// <summary>
+    /// 酒店房间ID
+    /// </summary>
+    public long HotelRoomId { get; set; }
+    /// <summary>
+    /// 早餐类型
+    /// </summary>
+    public BreakfastTypeEnum BreakfastType { get; set; }
+    /// <summary>
+    /// 提前天数
+    /// </summary>
+    public int DaysInAdvance { get; set; }
+
+    /// <summary>
+    /// 连住天数
+    /// </summary>
+    public int ContinuousStayDays { get; set; }
+
+    /// <summary>
+    /// 是否保留房
+    /// </summary>
+    public YesOrNoType IsReservedRoom { get; set; }
+
+    /// <summary>
+    /// 是否启用
+    /// </summary>
+    public YesOrNoType IsEnable { get; set; }
+}
+
+/// <summary>
+/// 创建或更新价格计划参数校验
+/// </summary>
+public class CreateOrUpdatePricePlanCmdValidator : AbstractValidator<CreateOrUpdatePricePlanCmd>
+{
+    /// <summary>
+    /// 构造函数
+    /// </summary>
+    public CreateOrUpdatePricePlanCmdValidator()
+    {
+        RuleFor(x => x.BreakfastType).IsInEnum().WithMessage("早餐类型参数无效！");
+        RuleFor(x => x.DaysInAdvance).GreaterThan(0).WithMessage("提前天数必须大于0！");
+        RuleFor(x => x.ContinuousStayDays).GreaterThan(0).WithMessage("连住天数必须大于0！");
+        RuleFor(x => x.IsReservedRoom).IsInEnum().WithMessage("是否保留房参数无效！");
+        RuleFor(x => x.IsEnable).IsInEnum().WithMessage("是否启用参数无效！");
+    }
+}
