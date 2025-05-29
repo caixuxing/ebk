@@ -24,7 +24,7 @@ public class CreateOrUpHotelPublishCmd
     /// <summary>
     /// 销售状态
     /// </summary>
-    public HotelSaleTypeMnum Status { get; set; } = HotelSaleTypeMnum.Stop;
+    public HotelSaleTypeEnum Status { get; set; } = HotelSaleTypeEnum.Stop;
 
     /// <summary>
     /// 酒店地址

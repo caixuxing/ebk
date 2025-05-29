@@ -5,7 +5,10 @@
 /// </summary>
 public class AddHotelRoomVo
 {
-    public string Id { get; set; }
+    /// <summary>
+    /// 酒店ID
+    /// </summary>
+    public string HotelId { get; set; }
     /// <summary>
     /// 酒店代码
     /// </summary>

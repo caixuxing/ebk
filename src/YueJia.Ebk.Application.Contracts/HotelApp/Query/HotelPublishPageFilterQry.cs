@@ -13,5 +13,5 @@ public record HotelPublishPageFilterQry : BasePageQry
     /// <summary>
     /// 状态
     /// </summary>
-    public HotelSaleTypeMnum? Status { get; set; }
+    public HotelSaleTypeEnum? Status { get; set; }
 }

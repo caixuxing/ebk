@@ -48,18 +48,17 @@ public record HotelRoomListDto
     /// <summary>
     /// 状态
     /// </summary>
-    public HotelSaleTypeMnum Status { get; set; }
+    public YesOrNoType IsEnabled { get; set; }
 
     /// <summary>
     /// 状态名称
     /// </summary>
-    public string StatusName
+    public string IsEnabledName
     {
         get
         {
-            return Status.ToDescription();
+            return IsEnabled == YesOrNoType.Yes ? "启用" : "停用";
         }
-        private set { }
     }
     /// <summary>
     /// 人数上限

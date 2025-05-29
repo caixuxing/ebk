@@ -69,7 +69,7 @@ public class HotelPublishApp : ApplicationService, IHotelPublishApp
 
         if (await HotelPublishRepo.IsAnyAsync(x => x.HotelCode == cmd.HotelCode && x.CreatedbyId == CurrentUserApp.Id)) throw new InvalidOperationException($"酒店【{cmd.HotelName}({cmd.HotelCode})】已存在,无须重复添加！");
 
-        var entity = HotelPublishDo.Create(cmd.HotelCode, cmd.HotelName, cmd.HotelNameEn, HotelSaleTypeMnum.Stop, cmd.Address, cmd.AddressEn, cmd.TelPhone, cmd.LowestPrice) ?? throw new InvalidOperationException("创建酒店失败！");
+        var entity = HotelPublishDo.Create(cmd.HotelCode, cmd.HotelName, cmd.HotelNameEn, HotelSaleTypeEnum.Stop, cmd.Address, cmd.AddressEn, cmd.TelPhone, cmd.LowestPrice) ?? throw new InvalidOperationException("创建酒店失败！");
 
         return await HotelPublishRepo.InsertReturnSnowflakeIdAsync(entity);
     }

@@ -26,7 +26,7 @@ public class HotelApp : ApplicationService, IHotelApp
     {
         await LazyServiceProvider.LazyGetRequiredService<FluentValidation.IValidator<CreateHotelRoomCmd>>().ValidateAndThrowAsync(cmd);
 
-        var entity = HotelRoomDo.Create(cmd.HotelCode, cmd.RoomType, cmd.BedType, cmd.MaximumNumberOfPeople,
+        var entity = HotelRoomDo.Create(cmd.HotelId.ToLong(), cmd.HotelCode, cmd.RoomType, cmd.BedType, cmd.MaximumNumberOfPeople,
             cmd.AdultLimit, cmd.ChildLimit, cmd.StartDate, cmd.EndDate, cmd.StockInitValJosn)
             ?? throw new InvalidOperationException("床间酒店房间信息失败！");
 
@@ -83,6 +83,7 @@ public class HotelApp : ApplicationService, IHotelApp
         return new HotelRoomDetailsDto()
         {
             Id = entity.Id,
+            HotelId = entity.HotelId,
             RoomType = entity.RoomType,
             RoomTypeName = currentHotelRoomTypeDate.FirstOrDefault(x => x.roomcode == int.Parse(entity.RoomType))?.roomname ?? string.Empty,
             BedType = entity.BedType,
@@ -103,7 +104,9 @@ public class HotelApp : ApplicationService, IHotelApp
                  MaximumNumberOfPeople = x.MaximumNumberOfPeople,
                  AdultLimit = x.AdultLimit,
                  ChildLimit = x.ChildLimit,
-                 HotelCode = x.HotelCode
+                 HotelCode = x.HotelCode,
+                 IsEnabled = x.IsEnabled
+
              })
             .ToListAsync();
 
@@ -114,12 +117,26 @@ public class HotelApp : ApplicationService, IHotelApp
             .Select(t => new { t.roomcode, t.roomname })
             .ToListAsync();
 
+
+
+        var PricePlans = await PricePlanRepo.AsQueryable().Where(x => x.HotelId == id)
+         .Select(x => new PricePlanListDto()
+         {
+             Id = x.Id,
+             BreakfastType = x.BreakfastType,
+             DaysInAdvance = x.DaysInAdvance,
+             ContinuousStayDays = x.ContinuousStayDays,
+             IsReservedRoom = x.IsReservedRoom,
+             IsEnable = x.IsEnable,
+             HotelRoomId = x.HotelRoomId
+         })
+        .ToListAsync();
         data = data?.Select(item =>
         {
             item.RoomTypeName = currentHotelRoomTypeDate.SingleOrDefault(x => x.roomcode == int.Parse(item.RoomType))?.roomname ?? string.Empty;
+            item.PricePlans = PricePlans.Where(x => x.HotelRoomId == item.Id).ToList();
             return item;
         }).ToList();
-
 
         return data ?? new();
     }

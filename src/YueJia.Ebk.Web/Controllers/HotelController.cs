@@ -32,7 +32,7 @@ public class HotelController : AbpController
     public async Task<IActionResult> HotelPublishList()
     {
         ViewBag.CountryData = JsonConvert.SerializeObject(await YueJiaSysServiceApp.GetDropDownCountryListAsync(), new JsonSerializerSettings { ContractResolver = new CamelCasePropertyNamesContractResolver() });
-        ViewBag.HotelSaleTypeData = JsonConvert.SerializeObject(SysEnumApp.GetEnumDataList(nameof(HotelSaleTypeMnum)), new JsonSerializerSettings { ContractResolver = new CamelCasePropertyNamesContractResolver() });
+        ViewBag.HotelSaleTypeData = JsonConvert.SerializeObject(SysEnumApp.GetEnumDataList(nameof(HotelSaleTypeEnum)), new JsonSerializerSettings { ContractResolver = new CamelCasePropertyNamesContractResolver() });
         await Task.Delay(1);
         return View();
     }
@@ -103,7 +103,7 @@ public class HotelController : AbpController
             LowestPrice = hotelPublishDetail.LowestPrice,
             Status = hotelPublishDetail.Status,
             TelPhone = hotelPublishDetail.TelPhone,
-            HotelSaleTypeJson = JsonConvert.SerializeObject(SysEnumApp.GetEnumDataList(nameof(HotelSaleTypeMnum)),
+            HotelSaleTypeJson = JsonConvert.SerializeObject(SysEnumApp.GetEnumDataList(nameof(HotelSaleTypeEnum)),
                                                              new JsonSerializerSettings { ContractResolver = new CamelCasePropertyNamesContractResolver() })
         };
         return View(mv);
@@ -121,7 +121,7 @@ public class HotelController : AbpController
         var hotelPublishDetail = await HotelPublishApp.GetHotelPublishDetailAsync(id.ToLong());
         AddHotelRoomVo vm = new AddHotelRoomVo()
         {
-            Id = id,
+            HotelId = id,
             HotelName = $"{hotelPublishDetail.HotelName}({hotelPublishDetail.HotelNameEn})",
             HotelCode = hotelPublishDetail.HotelCode,
             BedType = "",
@@ -169,7 +169,7 @@ public class HotelController : AbpController
 
         var roomAndPricePlanVm = roomAndPricePlan.Select(x => new
         {
-            x.Id,
+            Id = x.Id.ToString(),
             x.RoomType,
             x.RoomTypeName,
             x.BedType,
@@ -177,12 +177,11 @@ public class HotelController : AbpController
             x.MaximumNumberOfPeople,
             x.AdultLimit,
             x.ChildLimit,
+            x.IsEnabledName,
             pricePlans = x.PricePlans,
             ShowContent = false,
             ShowFooter = true
-
         });
-
         return View(new RoomAndPricePlanVo()
         {
             Id = id,
@@ -190,6 +189,7 @@ public class HotelController : AbpController
             HotelName = hotel.HotelName,
             HotelNameEn = hotel.HotelNameEn,
             HotelRoomListJson = JsonConvert.SerializeObject(roomAndPricePlanVm, new JsonSerializerSettings { ContractResolver = new CamelCasePropertyNamesContractResolver() })
+
         });
     }
 
@@ -201,14 +201,23 @@ public class HotelController : AbpController
     public async Task<IActionResult> AddPricePlan(string id)
     {
         var room = await HotelApp.GetHotelRoomByIdAsync(id.ToLong());
-
+        var hotel = await HotelPublishApp.GetHotelPublishDetailAsync(room.HotelId);
         AddPricePlanVo vm = new AddPricePlanVo()
         {
+            HotelId = room.HotelId.ToString(),
+            HotelCode = hotel.HotelCode,
+            HotelName = $"{hotel.HotelName}({hotel.HotelNameEn})",
+            BedTypeName = room.BedTypeName,
+            RoomTypeName = room.RoomTypeName,
 
-
+            BreakfastType = null,
+            DaysInAdvance = 1,
+            ContinuousStayDays = 1,
+            IsEnable = YesOrNoType.Yes,
+            IsReservedRoom = YesOrNoType.Yes,
         };
 
-        return View();
+        return View(vm);
     }
 
     /// <summary>

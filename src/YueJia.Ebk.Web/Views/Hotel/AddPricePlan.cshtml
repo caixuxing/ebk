@@ -1,82 +1,136 @@
-﻿@{
+﻿@using YueJia.Ebk.Application.Contracts.SysApp
+@model  YueJia.Ebk.Web.ViewModels.Hotel.AddPricePlanVo
+@inject ISysEnumApp enumApp
+@{
     Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@section head {
+    <title>新增价格计划</title>
+    <style scoped>
+		.el-input-number .el-input__inner{
+        text-align:left !important;
+        }
+        </style>
 }
 <el-container style="height:100vh;overflow: hidden;">
     <el-main>
-        <el-form :model="state.formData" label-width="auto" >
-            <el-alert type="primary" show-icon :closable="false">
-                <p>[我的酒店] / <el-link type="primary" v-on:click="openViewHotel">1111111111111111")</el-link> / <el-link type="primary" v-on:click="openRoomAndPricePlan">房间与价格计划</el-link> / 库存与价格 / 促销</p>
-            </el-alert>
+        <el-form :model="state.formData" label-width="auto" :rules="FormDataRules" ref="FormDataRef">
+          
+
+          <el-alert type="primary" show-icon :closable="false" >
+            <p>[我的酒店] / <el-link type="primary" v-on:click="openViewHotel">@Html.Raw($"{Model.HotelName}")</el-link> / <el-link type="primary" v-on:click="openRoomAndPricePlan">房间与价格计划</el-link> / 库存与价格 / 促销</p>
+             </el-alert>
             <el-form-item style="margin-top:30px">
                 <h1>新增价格计划</h1>
             </el-form-item>
             <el-divider content-position="left">房间信息</el-divider>
-            <el-form-item label="酒店编码">
+            <el-form-item label="酒店编码：">
                 <el-text class="mx-1">{{state.formData.hotelCode}}</el-text>
             </el-form-item>
 
-            <el-form-item label="酒店名称">
+            <el-form-item label="酒店名称：">
               
                        <el-text class="mx-1">{{state.formData.hotelName}}</el-text>
             </el-form-item>
 
-            <el-form-item label="房型名称">
+            <el-form-item label="房型名称：">
                 <el-text class="mx-1">{{state.formData.roomTypeName}}</el-text>
             </el-form-item>
 
-            <el-form-item label="床型">
-                <el-input v-model="state.formData.roomNum"></el-input>
+            <el-form-item label="床型：">
                  <el-text class="mx-1">{{state.formData.bedTypeName}}</el-text>
             </el-form-item>
 
        
             <el-divider content-position="left">价格计划设置</el-divider>
 
-            <el-form-item label="早餐类型">
-                <el-select v-model="state.formData.roomTypeId" placeholder="请选择房间类型">
-                    <el-option label="标准间" value="1"></el-option>
-                    <el-option label="豪华间" value="2"></el-option>
-                    <el-option label="总统间" value="3"></el-option>
-                </el-select>
+            <el-form-item label="早餐类型：" required prop="breakfastType">
+                     <el-select v-model="state.formData.breakfastType" placeholder="请选择早餐类型"  filterable   style="width:50%"> 
+                       <el-option v-for="option in state.breakfastTypeData" :key="option.value" :label="option.describe" :value="option.value"  ></el-option>
+                    </el-select>
             </el-form-item>
 
-            <el-form-item label="提前天数">
-                <el-input v-model="state.formData.price"></el-input>
+            <el-form-item label="提前天数：">
+                <el-input v-model="state.formData.daysInAdvance" style="width:50%"></el-input>
             </el-form-item>
 
-            <el-form-item label="连住天数">
-                <el-input v-model="state.formData.discount"></el-input>
+            <el-form-item label="连住天数：">
+                <el-input v-model="state.formData.continuousStayDays" style="width:50%"></el-input>
             </el-form-item>
 
-            <el-form-item label="保留房">
-            <el-switch v-model="state.formData.status" inline-prompt active-text="是" inactive-text="否"/>
+            <el-form-item label="是否保留房：">
+            <el-switch v-model="state.formData.isReservedRoom" inline-prompt active-text="是" inactive-text="否"/>
             </el-form-item>
 
-            <el-form-item label="状态">
-                 <el-switch v-model="state.formData.status" inline-prompt active-text="是" inactive-text="否"/>
+            <el-form-item label="是否启用：">
+                 <el-switch v-model="state.formData.isEnable" inline-prompt active-text="是" inactive-text="否"/>
             </el-form-item>
             </el-form>
-
-
-
+                       <el-form-item>
+            <div class="dialog-footer" style="text-align: center; width: 100%;">
+                <el-button v-on:click="cancel">返回 </el-button>
+                <el-button type="primary" v-on:click="save">保存 </el-button>
+            </div>
+        </el-form-item>
     </el-main>
+ 
 </el-container>
 @section scripts {
     <script type="text/javascript">
         const app = Vue.createApp({
         setup() {
-
                 const state = Vue.reactive({
+                   breakfastTypeData:@(Html.Raw(JsonConvert.SerializeObject(enumApp.GetEnumDataList(nameof(BreakfastTypeEnum)), new JsonSerializerSettings { ContractResolver = new CamelCasePropertyNamesContractResolver() }))),
                     formData: {
-                        roomTypeId: '',
-                        roomTypeName: '',
+                        hotelCode:`@Html.Raw(Model.HotelCode)`,
+                        hotelName: `@Html.Raw(Model.HotelName)`,
+                        roomTypeName: '@Html.Raw(Model.RoomTypeName)',
+                        bedTypeName: `@Html.Raw(Model.BedTypeName)`,
+                        breakfastType:`@Html.Raw(Model.BreakfastType)`,
+                        daysInAdvance:@Html.Raw(Model.DaysInAdvance),
+                        continuousStayDays:@Html.Raw(Model.ContinuousStayDays),
+                        isReservedRoom:@(Model.IsReservedRoom==YesOrNoType.Yes? "true":"false"),
+                        isEnable:@(Model.IsEnable==YesOrNoType.Yes? "true":"false")
+                        hotelId:`@Html.Raw(Model.HotelId)`
                     }
                 });
 
+                const hotelId=Vue.ref(`@Html.Raw(Model.HotelId)`);
+                const FormDataRef = Vue.ref(null);
+ 
+            const FormDataRules = {
+                    breakfastType: [{ required: true, message: '早餐类型必填!', trigger: 'blur' }]
+                };
 
-                return {
-                    state
-                }
+
+
+
+           const openRoomAndPricePlan=()=> window.parent.mainFrame(`/Hotel/RoomAndPricePlan/${hotelId.value}`,``,``);
+
+           const openViewHotel=()=> window.parent.mainFrame(`/Hotel/ViewHotel/${hotelId.value}`,``,``);
+
+                const cancel=()=>{
+                   window.parent.mainFrame(`/Hotel/HotelPublishList`,`我的酒店`,`page3-1`);
+                 };
+
+
+            const save = async () => {
+                let isValid = await FormDataRef.value.validate(); 
+                if(!isValid) return ElMessage({ message: "请完善表单信息!", type: "error" });
+                let requestData = { ...state.formData, isEnable:state.formData.isEnable?1:0, isReservedRoom:state.formData.isReservedRoom?1:0};
+                let response = await axios.post(`/Hotel/CreatePricePlan`, requestData);
+                    if (response.status  === 200) {
+                          ElMessage({ message: "保存成功!", type: "success" });
+                          openRoomAndPricePlan();
+                    }
+                  
+                    
+               }
+
+
+
+                return {state,openRoomAndPricePlan,openViewHotel,cancel,save,FormDataRules,FormDataRef}
         }
         });
         app.use(ElementPlus);

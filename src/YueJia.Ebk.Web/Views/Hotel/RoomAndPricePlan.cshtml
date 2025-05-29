@@ -32,11 +32,19 @@
             <template #header>
                 <div class="card-header">
                     <el-row :gutter="20">
-                        <el-col :span="18">
+                        <el-col :span="6">
                             <div class="grid-content ep-bg-purple" >
-                                <el-button type="text"  >{{item.roomTypeName}},{{item.bedTypeName}}</el-button>   
+                                 <el-text class="mx-1">{{item.roomTypeName}},{{item.bedTypeName}}</el-text>
                             </div>
                         </el-col>
+                        <el-col :span="1">
+                             <el-text class="mx-1" type="success">{{item.isEnabledName}}</el-text>
+                            
+                            </el-col>
+                                 <el-col :span="11">
+                                <el-button type="danger" size="small">删除</el-button>
+                            </el-col>
+
                             <el-col :span="6" style="text-align: right">
                                 <el-button type="text" icon="el-icon-refresh" v-on:click="toggleCardContent(index)">
                                     {{ item.showContent ? '隐藏更多详情' : '显示更多详情' }}
@@ -68,38 +76,38 @@
                         <el-table-column label="#" width="60" align="center">
                          
                         </el-table-column>
-                        <el-table-column label="价格计划代码" width="180px" align="center">
-                            <template #default="scope">
-                                {{ scope.row.pricePlanCode }}
-                            </template>
-                        </el-table-column>
-                        <el-table-column label="价格计划名称" width="300px" align="left">
-                            <template #default="scope">
-                                {{scope.row.pricePlanName}}
-                            </template>
-                        </el-table-column>
                         <el-table-column label="餐型" width="auto" max-width="200px" align="left">
                             <template #default="scope">
-                                {{scope.row.mealType}}
+                                {{scope.row.breakfastTypeName}}
                             </template>
                         </el-table-column>
-                        <el-table-column label="基本人数" width="200px" align="center">
+                        <el-table-column label="提前天数" width="auto" max-width="200px" align="center">
                             <template #default="scope" align="right">
-                                {{ scope.row.numberOfPeople }}
+                                {{ scope.row.daysInAdvance }}
                             </template>
                         </el-table-column>
 
-                        <el-table-column label="国籍" width="120px" align="center">
+                        <el-table-column label="连住天数"width="auto" max-width="200px" align="center">
                             <template #default="scope">
                                 <div style="text-align:center">
-                                    <span>{{  scope.row.nationality }}</span>
+                                    <span>{{  scope.row.continuousStayDays }}</span>
                                 </div>
                             </template>
                         </el-table-column>
-                        <el-table-column label="状态" width="120px" align="center">
+
+                        
+                        <el-table-column label="是否保留房" width="auto" max-width="200px" align="center">
                             <template #default="scope">
                                 <div style="text-align:center">
-                                    <span>{{  scope.row.statusName }}</span>
+                                    <span>{{  scope.row.isReservedRoomName }}</span>
+                                </div>
+                            </template>
+                        </el-table-column>
+
+                        <el-table-column label="状态" width="auto" max-width="200px" align="center">
+                            <template #default="scope">
+                                <div style="text-align:center">
+                                    <span>{{  scope.row.isEnableName }}</span>
                                 </div>
                             </template>
                         </el-table-column>
@@ -107,7 +115,7 @@
                         <el-table-column label="操作" prop="opt" width="140px" align="center">
                             <template #default="scope">
                                 <div style="text-align:center">
-                                    <el-button size="small" v-on:click="ViewHotel(scope.row)">查看</el-button>
+                                    <el-button size="small">查看</el-button>
                                     <el-button size="small" type="danger" v-on:click="deleteItem(scope.row.id)">删除 </el-button>
                                 </div>
                             </template>
@@ -134,7 +142,11 @@
           const toggleCardFooter=(index)=>state.roomData[index].showFooter = !state.roomData[index].showFooter;
           const openAddHotelRoom=()=> window.parent.mainFrame(`/Hotel/AddHotelRoom/${id.value}`,``,``);
           const openViewHotel=()=> window.parent.mainFrame(`/Hotel/ViewHotel/${id.value}`,``,``);
-          const openAddPricePlan=(row)=> window.parent.mainFrame(`/Hotel/AddPricePlan/${row.id}`,``,``);
+          const openAddPricePlan=(row)=> {
+          
+            console.log(row.id);
+              window.parent.mainFrame(`/Hotel/AddPricePlan/${row.id}`,``,``)
+          };
 
 
               return {state,openViewHotel,openAddHotelRoom,toggleCardContent,toggleCardFooter,openAddPricePlan}

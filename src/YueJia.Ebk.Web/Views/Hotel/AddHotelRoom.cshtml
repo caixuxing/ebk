@@ -156,7 +156,7 @@
                     }
                     
                 });
-               const id=Vue.ref(`@Html.Raw(Model.Id)`);
+               const id=Vue.ref(`@Html.Raw(Model.HotelId)`);
                const FormDataRef = Vue.ref(null);
                const FormDataRules = {
                    roomType: [{ required: true, message: '房型必选!', trigger: 'blur' }],
