@@ -1,5 +1,4 @@
-﻿using YueJia.Ebk.Application.Contracts.SysApp;
-using YueJia.Ebk.Application.Contracts.SysUserApp;
+﻿using YueJia.Ebk.Application.Contracts.SysUserApp;
 using YueJia.Ebk.Application.Contracts.SysUserApp.Commands;
 using YueJia.Ebk.Application.Contracts.SysUserApp.Dto;
 using YueJia.Ebk.Application.Contracts.SysUserApp.Query;
@@ -30,7 +29,7 @@ public class SysUserApp : ApplicationService, ISysUserApp
                                       cmd.RealName,
                                       AccountTypeEnum.NormalUser,
                                       cmd.IsEnabled,
-                                      cmd.DeptId?.ToLong(),
+                                      string.IsNullOrWhiteSpace(cmd.DeptId) ? null : cmd.DeptId.ToLong(),
                                       cmd.ContactPhone);
         entity.DeptAdmin = cmd.DeptAdmin;
         return await SysUserRepo.InsertReturnSnowflakeIdAsync(entity);
@@ -99,7 +98,9 @@ public class SysUserApp : ApplicationService, ISysUserApp
                    DeptName = t1.Name,
                    IsEnabled = t.IsEnabled,
                    CreateTime = t.CreateTime,
-                   ContactPhone = t.ContactPhone ?? string.Empty
+                   ContactPhone = t.ContactPhone ?? string.Empty,
+                   AccountType = t.AccountType,
+                   DeptAdmin = t.DeptAdmin,
 
                });
         var data = await query.ToPageListAsync(qry.PageIndex, qry.PageSize, total);

@@ -70,6 +70,22 @@
                     </div>
                 </template>
             </el-table-column>
+               <el-table-column label="是否部门管理" width="120px" align="center">
+                <template #default="scope">
+                    <div style="text-align:center">
+                        <span>{{  scope.row.deptAdminNam }}</span>
+                    </div>
+                </template>
+            </el-table-column>
+
+             <el-table-column label="账户类型" width="120px" align="center">
+                <template #default="scope">
+                    <div style="text-align:center">
+                        <span>{{  scope.row.accountTypeName }}</span>
+                    </div>
+                </template>
+            </el-table-column>
+
              <el-table-column label="创建日期" width="160px" align="center">
                 <template #default="scope">
                     <div style="text-align:right">

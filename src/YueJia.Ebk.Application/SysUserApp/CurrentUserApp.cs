@@ -4,6 +4,7 @@ using YueJia.Ebk.Application.Contracts.SysUserApp.Dto;
 using YueJia.Ebk.Domain.Company;
 using YueJia.Ebk.Domain.Dept;
 using YueJia.Ebk.Domain.Shared.Const;
+using YueJia.Ebk.Domain.SysUser;
 
 namespace YueJia.Ebk.Application.SysUserApp;
 
@@ -12,6 +13,9 @@ public class CurrentUserApp : ApplicationService, ICurrentUserApp
     private readonly IHttpContextAccessor _accessor;
 
     private ISimpleClient<CompanyDO> CompanyRepo => LazyServiceProvider.LazyGetRequiredService<ISimpleClient<CompanyDO>>();
+
+
+    public ISimpleClient<SysUserDo> SysUserRepo => LazyServiceProvider.LazyGetRequiredService<ISimpleClient<SysUserDo>>();
 
     private ISimpleClient<DepartmentDo> DepartmentRepo => LazyServiceProvider.LazyGetRequiredService<ISimpleClient<DepartmentDo>>();
 
@@ -125,10 +129,8 @@ public class CurrentUserApp : ApplicationService, ICurrentUserApp
         {
             if (this.AccountType != AccountTypeEnum.SuperAdmin)
             {
-                var data = DepartmentRepo.AsQueryable().Where(x => x.Id == DeptId || x.ParentId == DeptId)
-                    .OrderByDescending(x => x.Id)
-                    .ToList();
-                var first = data.FirstOrDefault();
+                var data = DepartmentRepo.AsQueryable().Where(x => x.Id == DeptId || x.ParentId == DeptId).ToList();
+                var first = data.FirstOrDefault(x => x.Id == DeptId);
                 return new CurrentAccountDeptDto()
                 {
                     DeptId = first?.Id,
@@ -140,5 +142,13 @@ public class CurrentUserApp : ApplicationService, ICurrentUserApp
             return new();
         }
 
+    }
+
+    public bool IsDeptAdmin
+    {
+        get
+        {
+            return SysUserRepo.GetById(this.Id.ToLong()).DeptAdmin;
+        }
     }
 }
