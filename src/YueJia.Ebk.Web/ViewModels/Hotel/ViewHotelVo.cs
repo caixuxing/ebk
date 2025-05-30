@@ -3,7 +3,7 @@
     public class ViewHotelVo
     {
 
-        public long Id { get; set; }
+        public string Id { get; set; }
 
         public string HotelCode { get; set; }
 
@@ -20,9 +20,6 @@
 
         public HotelSaleTypeEnum Status { get; set; }
 
-        /// <summary>
-        /// 销售类型Josn
-        /// </summary>
-        public string HotelSaleTypeJson { get; set; } = default!;
+
     }
 }

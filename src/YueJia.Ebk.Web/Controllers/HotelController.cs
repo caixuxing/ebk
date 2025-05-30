@@ -95,7 +95,6 @@ public class HotelController : AbpController
 
 
 
-
     /// <summary>
     /// 酒店详情
     /// </summary>
@@ -106,7 +105,7 @@ public class HotelController : AbpController
         var hotelPublishDetail = await HotelPublishApp.GetHotelPublishDetailAsync(id.ToLong());
         ViewHotelVo mv = new ViewHotelVo()
         {
-            Id = id.ToLong(),
+            Id = id,
             HotelName = hotelPublishDetail.HotelName,
             HotelNameEn = hotelPublishDetail.HotelNameEn,
             HotelCode = hotelPublishDetail.HotelCode,
@@ -115,9 +114,8 @@ public class HotelController : AbpController
             LowestPrice = hotelPublishDetail.LowestPrice,
             Status = hotelPublishDetail.Status,
             TelPhone = hotelPublishDetail.TelPhone,
-            HotelSaleTypeJson = JsonConvert.SerializeObject(SysEnumApp.GetEnumDataList(nameof(HotelSaleTypeEnum)),
-                                                             new JsonSerializerSettings { ContractResolver = new CamelCasePropertyNamesContractResolver() })
         };
+        ViewBag.HotelSaleTypeList = SysEnumApp.GetEnumDataList(nameof(HotelSaleTypeMnum));
         return View(mv);
     }
 

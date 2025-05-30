@@ -4,50 +4,45 @@
 }
 @section head {
     <title>查看酒店</title>
-        <style scoped>
-		.el-input-number .el-input__inner{
-        
+    <style scoped>
+        .el-input-number .el-input__inner{
+
         text-align:left !important;
         }
-        </style>
+    </style>
 }
 <el-container style="height:100vh;overflow: hidden;">
     <el-main>
-         <el-form :model="state.formData"  label-width="auto" :rules="FormDataRules" ref="FormDataRef">
-            <el-alert type="primary" show-icon :closable="false" >
-             <p><el-link type="primary" v-on:click="openMyHotel">我的酒店</el-link>  / @Html.Raw($"{Model.HotelName}({Model.HotelNameEn})") / <el-link type="primary" v-on:click="openRoomAndPricePlan">房间与价格计划</el-link> / 库存与价格 / 促销</p>
-             </el-alert>
-
-            <el-form-item style="margin-top:30px">
-                <h1>酒店</h1>
+        <div style="height:50px;line-height:50px;" >
+            <h1>酒店</h1>
+        </div>
+        <el-divider content-position="left"></el-divider>
+        <el-form  label-width="auto" style="width:800px; margin:0px auto;"  >
+            @*    <el-alert type="primary" show-icon :closable="false" >
+                <p>[我的酒店] / @Html.Raw($"{Model.HotelName}({Model.HotelNameEn})") / <el-link type="primary" >房间与价格计划</el-link> / 库存与价格 / 促销</p>
+            </el-alert> *@
+            <el-form-item label="酒店编码" >
+                <el-text class="mx-1">{{model.hotelCode}}</el-text>
             </el-form-item>
-            <el-divider content-position="left"></el-divider>
-      <el-form-item label="酒店编码" >
-         <el-text class="mx-1">{{state.formData.hotelCode}}</el-text>
-      </el-form-item>
-      <el-form-item label="酒店名称">
-          <el-text class="mx-1">{{state.formData.hotelName}}</el-text>
-      </el-form-item>
-       <el-form-item label="酒店名称英文">
-          <el-text class="mx-1">{{state.formData.hotelNameEn}}</el-text>
-      </el-form-item>
-       <el-form-item label="酒店地址" >
-            <el-text class="mx-1">{{state.formData.address}}</el-text>
-      </el-form-item>
-      <el-form-item label="酒店地址英文" label-width="auto" >
-         <el-text class="mx-1">{{state.formData.addressEn}}</el-text>
-      </el-form-item>
-       <el-form-item label="联系电话" label-width="auto" >
-         <el-text class="mx-1">{{state.formData.telPhone}}</el-text>
-      </el-form-item>
-          <el-form-item label="最低价" label-width="auto"  required prop="lowestPrice">
-        <el-input-number v-model="state.formData.lowestPrice" controls-position="right" style="width:100%"  clearable placeholder="最低价、为0不限制"  maxlength="10"  ></el-input-number>
-    
-      </el-form-item>
-       <el-form-item label="销售状态" label-width="auto">
-        <el-radio-group v-model="state.formData.status">
-             <el-radio v-for="item in state.saleTypeData" :key="item.value" :label="item.describe" :value="item.value">{{item.describe}}</el-radio>
-          </el-radio-group>
+            <el-form-item label="酒店名称">
+                <el-text class="mx-1">{{model.hotelName}}（{{model.hotelNameEn}}）</el-text>
+            </el-form-item>
+            <el-form-item label="酒店地址" label-width="auto" >
+                <el-text class="mx-1">{{model.addressEn}}</el-text>
+            </el-form-item>
+            <el-form-item label="联系电话" label-width="auto" >
+                <el-text class="mx-1">{{model.telPhone}}</el-text>
+            </el-form-item>
+            <el-form-item label="最低价" label-width="auto"  >
+                <el-input-number v-model="model.lowestPrice" :controls="false" style="width:100px" :min="0" :max="10000000" v-on:change="onLowestPriceChange"></el-input-number>
+            </el-form-item>
+            <el-form-item label="销售状态" label-width="auto">
+                <el-radio-group v-model="model.status">
+                    @foreach (var ele in ViewBag.HotelSaleTypeList)
+                    {
+                        <el-radio :label="@ele.Value">@ele.Describe</el-radio>
+                    }
+                </el-radio-group>
       </el-form-item>
     </el-form>
         <el-form-item>
@@ -61,45 +56,35 @@
     <script type="text/javascript">
         const app = Vue.createApp({
         setup() {
-              const state = Vue.reactive({
-                    saleTypeData:@(Html.Raw(Model.HotelSaleTypeJson)),
-                    formData: {
-                            hotelCode:`@Html.Raw(Model.HotelCode)`,
-                            hotelName:`@Html.Raw(Model.HotelName)`,
-                            hotelNameEn:`@Html.Raw(Model.HotelNameEn)`,
-                            address:`@Html.Raw(Model.Address)`, 
-                            addressEn:`@Html.Raw(Model.AddressEn)`,
-                            telPhone:`@Html.Raw(Model.TelPhone)`,
-                            lowestPrice:@Model.LowestPrice,
-                            status: @Model.Status.GetHashCode()
+
+              const model =  Vue.reactive(
+                     @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model, new System.Text.Json.JsonSerializerOptions() { PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase }))
+                 );
+
+                 console.log('**********');
+                 console.log(model);
+
+               const onLowestPriceChange = (val) => {
+                      if (val === null || val === undefined ) {
+                        model.lowestPrice = 0; // 自动重置为默认值
                       }
-                });
-              const id=Vue.ref(`@Html.Raw(Model.Id)`);
-              const FormDataRef = Vue.ref(null);
- 
-            const FormDataRules = {
-                    lowestPrice: [{ required: true, message: '最低价必填!', trigger: 'blur' }]
                 };
 
-             const save = async () => {
-            let isValid = await FormDataRef.value.validate();
-            if (!isValid) return ElMessage({ message: "请完善表单信息!", type: "error" });
-            let requestData = { ...state.formData,lowestPrice:Number(state.formData.lowestPrice) };
-            let response = await axios.put(`/Hotel/${id.value}/UpdatePublishHotel`, requestData);
-            if (response.status === 200) {
-                ElMessage({ message: "保存成功!", type: "success" });
-                state.openAddDialog = false;
-                window.parent.mainFrame(`/Hotel/HotelPublishList`,`我的酒店`,`page3-1`);
-            }
-        };
+                /**
+                 * 保存
+                 */
+             const save =  () => {
+                    let reqData = { ...model };
+                    axios['put'](`/Hotel/${model.id}/UpdatePublishHotel`, reqData).then(res=>{
+                             top.window.vueElMessage({ message: res.data. message , type:  res.data.isSuccess?'success':'info' })
+                   })
+             };
 
-       const openRoomAndPricePlan=()=>{
-           window.parent.mainFrame(`/Hotel/RoomAndPricePlan/${id.value}`,``,``);
-       };
-        const openMyHotel=()=> window.parent.mainFrame(`/Hotel/HotelPublishList`,`我的酒店`,`page3-1`);
-
-
-                return {state,save,FormDataRules,FormDataRef,openRoomAndPricePlan,openMyHotel}
+                return {
+                     model
+                    ,save
+                    ,onLowestPriceChange
+                }
         }
         });
         app.use(ElementPlus);
