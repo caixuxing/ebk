@@ -5,10 +5,13 @@ public partial record PricePlanDo : EntityTenant
 {
     public PricePlanDo() { }
 
+
     /// <summary>
     /// 酒店房间ID
     /// </summary>
+    [SugarColumn(ColumnDescription = "酒店房间ID")]
     public long HotelRoomId { get; set; }
+
     /// <summary>
     /// 早餐类型
     /// </summary>

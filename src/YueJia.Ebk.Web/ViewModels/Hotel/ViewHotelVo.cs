@@ -18,7 +18,7 @@
         public string TelPhone { get; set; }
         public decimal LowestPrice { get; set; }
 
-        public HotelSaleTypeMnum Status { get; set; }
+        public HotelSaleTypeEnum Status { get; set; }
 
 
     }

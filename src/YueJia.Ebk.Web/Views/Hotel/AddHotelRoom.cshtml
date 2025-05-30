@@ -113,7 +113,6 @@
 
                     <el-form-item>
       <div class="dialog-footer" style="text-align: center; width: 100%;">
-         <el-button v-on:click="cancel" >返回 </el-button>
         <el-button type="primary" v-on:click="save" >保存 </el-button>
       </div>
             </el-form-item>
@@ -133,6 +132,7 @@
                     bedTypeData:@(Html.Raw(JsonConvert.SerializeObject(enumApp.GetEnumDataList(nameof(BedTypeEnum)), new JsonSerializerSettings { ContractResolver = new CamelCasePropertyNamesContractResolver() }))),
                     roomTypeData:@(Html.Raw(JsonConvert.SerializeObject( await yueJiaSysServiceApp.GetDropDownRoomTypeByHotelCodeAsync(Model.HotelCode), new JsonSerializerSettings { ContractResolver = new CamelCasePropertyNamesContractResolver() }))),
                     formData: {
+                       hotelId: `@Html.Raw(Model.HotelId)`,
                        hotelCode: `@Html.Raw(Model.HotelCode)`,
                        hotelName: `@Html.Raw(Model.HotelName)`,
                        roomType:`@Html.Raw(Model.RoomType)`,
@@ -156,7 +156,7 @@
                     }
                     
                 });
-               const id=Vue.ref(`@Html.Raw(Model.Id)`);
+               const id=Vue.ref(`@Html.Raw(Model.HotelId)`);
                const FormDataRef = Vue.ref(null);
                const FormDataRules = {
                    roomType: [{ required: true, message: '房型必选!', trigger: 'blur' }],

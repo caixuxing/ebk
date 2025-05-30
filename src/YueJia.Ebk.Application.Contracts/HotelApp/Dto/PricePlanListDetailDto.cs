@@ -1,16 +1,17 @@
 ﻿namespace YueJia.Ebk.Application.Contracts.HotelApp.Dto;
 
+
+
 /// <summary>
-/// 酒店房间详情
+/// 价格计划明细
 /// </summary>
-public record HotelRoomDetailsDto
+public class PricePlanListDetailDto
 {
     /// <summary>
-    /// 房间ID
+    /// 价格计划ID
     /// </summary>
     [JsonNumberHandling(JsonNumberHandling.WriteAsString)]
-    public long Id { get; set; }
-
+    public long PricePlanId { get; set; }
 
     /// <summary>
     /// 酒店ID
@@ -18,6 +19,18 @@ public record HotelRoomDetailsDto
     [JsonNumberHandling(JsonNumberHandling.WriteAsString)]
     public long HotelId { get; set; }
 
+    /// <summary>
+    /// 酒店代码
+    /// </summary>
+    public string HotelCode { get; set; } = default!;
+    /// <summary>
+    /// 酒店名称
+    /// </summary>
+    public string HotelName { get; set; } = default!;
+    /// <summary>
+    /// 酒店名称（英文）
+    /// </summary>
+    public string HotelNameEn { get; set; } = default!;
 
     /// <summary>
     /// 房型
@@ -32,8 +45,7 @@ public record HotelRoomDetailsDto
     /// <summary>
     /// 床型
     /// </summary>
-    public BedTypeEnum BedType { get; set; } = default!;
-
+    public BedTypeEnum BedType { get; set; }
     /// <summary>
     /// 床型名称
     /// </summary>
@@ -47,8 +59,7 @@ public record HotelRoomDetailsDto
     /// <summary>
     /// 状态
     /// </summary>
-    public HotelSaleTypeEnum Status { get; set; }
-
+    public YesOrNoType Status { get; set; }
     /// <summary>
     /// 状态名称
     /// </summary>
@@ -56,9 +67,8 @@ public record HotelRoomDetailsDto
     {
         get
         {
-            return Status.ToDescription();
+            return Status == YesOrNoType.Yes ? "启用" : "停用";
         }
-        private set { }
     }
     /// <summary>
     /// 人数上限
@@ -74,8 +84,33 @@ public record HotelRoomDetailsDto
     /// </summary>
     public int? ChildLimit { get; set; }
 
+
+
     /// <summary>
-    /// 房间价格计划
+    /// 酒店房间ID
     /// </summary>
-    public List<PricePlanListDto> PricePlans { get; set; } = new();
+    public long HotelRoomId { get; set; }
+    /// <summary>
+    /// 早餐类型
+    /// </summary>
+    public BreakfastTypeEnum BreakfastType { get; private set; }
+    /// <summary>
+    /// 提前天数
+    /// </summary>
+    public int DaysInAdvance { get; private set; }
+
+    /// <summary>
+    /// 连住天数
+    /// </summary>
+    public int ContinuousStayDays { get; private set; }
+
+    /// <summary>
+    /// 是否保留房
+    /// </summary>
+    public YesOrNoType IsReservedRoom { get; private set; }
+
+    /// <summary>
+    /// 是否启用
+    /// </summary>
+    public YesOrNoType IsEnable { get; private set; }
 }

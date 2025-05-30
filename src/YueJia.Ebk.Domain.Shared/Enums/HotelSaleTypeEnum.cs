@@ -5,7 +5,7 @@ namespace YueJia.Ebk.Domain.Shared.Enums;
 /// <summary>
 /// 酒店销售状态
 /// </summary>
-public enum HotelSaleTypeMnum
+public enum HotelSaleTypeEnum
 {
     /// <summary>
     /// 上架

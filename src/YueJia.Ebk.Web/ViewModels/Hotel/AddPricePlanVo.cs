@@ -6,6 +6,12 @@
 /// </summary>
 public class AddPricePlanVo
 {
+
+    /// <summary>
+    /// 酒店ID
+    /// </summary>
+    public string HotelId { get; set; } = default!;
+
     /// <summary>
     /// 酒店编码
     /// </summary>
@@ -31,11 +37,11 @@ public class AddPricePlanVo
     /// <summary>
     /// 酒店房间ID
     /// </summary>
-    public long HotelRoomId { get; set; }
+    public string HotelRoomId { get; set; }
     /// <summary>
     /// 早餐类型
     /// </summary>
-    public BreakfastTypeEnum BreakfastType { get; set; }
+    public BreakfastTypeEnum? BreakfastType { get; set; }
     /// <summary>
     /// 提前天数
     /// </summary>

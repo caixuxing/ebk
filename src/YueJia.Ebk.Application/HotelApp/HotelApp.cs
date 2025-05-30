@@ -26,7 +26,7 @@ public class HotelApp : ApplicationService, IHotelApp
     {
         await LazyServiceProvider.LazyGetRequiredService<FluentValidation.IValidator<CreateHotelRoomCmd>>().ValidateAndThrowAsync(cmd);
 
-        var entity = HotelRoomDo.Create(cmd.HotelCode, cmd.RoomType, cmd.BedType, cmd.MaximumNumberOfPeople,
+        var entity = HotelRoomDo.Create(cmd.HotelId.ToLong(), cmd.HotelCode, cmd.RoomType, cmd.BedType, cmd.MaximumNumberOfPeople,
             cmd.AdultLimit, cmd.ChildLimit, cmd.StartDate, cmd.EndDate, cmd.StockInitValJosn)
             ?? throw new InvalidOperationException("床间酒店房间信息失败！");
 
@@ -56,19 +56,46 @@ public class HotelApp : ApplicationService, IHotelApp
     {
         await LazyServiceProvider.LazyGetRequiredService<FluentValidation.IValidator<CreateOrUpdatePricePlanCmd>>().ValidateAndThrowAsync(cmd);
 
-        var entity = PricePlanDo.Create(cmd.HotelRoomId, cmd.BreakfastType, cmd.DaysInAdvance, cmd.ContinuousStayDays, cmd.IsReservedRoom, cmd.IsEnable);
+        var entity = PricePlanDo.Create(cmd.HotelRoomId.ToLong(), cmd.BreakfastType, cmd.DaysInAdvance, cmd.ContinuousStayDays, cmd.IsReservedRoom, cmd.IsEnable);
 
         return await PricePlanRepo.InsertReturnSnowflakeIdAsync(entity);
     }
+
+    public async Task<bool> DeleteHotelRoomAsync(long id)
+    {
+        var entity = HotelRoomRepo.GetById(id) ?? throw new InvalidOperationException("酒店房间信息不存在！");
+        if (entity.IsDelete) return true;
+        entity.IsDelete = true;
+        var pricePlanEntity = PricePlanRepo.AsQueryable().Where(x => x.HotelRoomId == id).ToList();
+        pricePlanEntity.ForEach(x => x.IsDelete = true);
+
+
+        return await DbTransaction.ExecuteInTransactionAsync(db, async () =>
+        {
+            await db.Updateable(entity)
+                    .PublicSetColumns(it => it.Version, it => it.Version + 1)
+                    .UpdateColumns(it => new { it.IsDelete, it.LastModifiedbyId, it.LastModifiedbyName, it.LastModifiedTime, it.Version })
+                    .ExecuteCommandAsync();
+            await db.Updateable(pricePlanEntity)
+                    .PublicSetColumns(it => it.Version, it => it.Version + 1)
+                    .UpdateColumns(it => new { it.IsDelete, it.LastModifiedbyId, it.LastModifiedbyName, it.LastModifiedTime, it.Version })
+                    .ExecuteCommandAsync();
+
+
+
+
+            return true;
+        });
+    }
+
 
     public async Task<bool> DeletePricePlanAsync(long id)
     {
         var entity = await PricePlanRepo.GetByIdAsync(id) ?? throw new InvalidOperationException("价格计划不存在！");
 
         if (entity.IsDelete) return true;
-
+        entity.IsDelete = true;
         return await PricePlanRepo.AsUpdateable(entity)
-            .UpdateColumnsIF(true, it => it.IsDelete == true)
             .UpdateColumns(it => new { it.IsDelete, it.LastModifiedbyId, it.LastModifiedbyName, it.LastModifiedTime, it.Version })
             .ExecuteCommandWithOptLockAsync(true) > 0;
     }
@@ -83,6 +110,7 @@ public class HotelApp : ApplicationService, IHotelApp
         return new HotelRoomDetailsDto()
         {
             Id = entity.Id,
+            HotelId = entity.HotelId,
             RoomType = entity.RoomType,
             RoomTypeName = currentHotelRoomTypeDate.FirstOrDefault(x => x.roomcode == int.Parse(entity.RoomType))?.roomname ?? string.Empty,
             BedType = entity.BedType,
@@ -103,9 +131,28 @@ public class HotelApp : ApplicationService, IHotelApp
                  MaximumNumberOfPeople = x.MaximumNumberOfPeople,
                  AdultLimit = x.AdultLimit,
                  ChildLimit = x.ChildLimit,
-                 HotelCode = x.HotelCode
+                 HotelCode = x.HotelCode,
+                 IsEnabled = x.IsEnabled
              })
             .ToListAsync();
+
+        var hotelRoomIds = data.Select(o => o.Id).ToList();
+        var items = PricePlanRepo.AsQueryable().Where(i => hotelRoomIds.Contains(i.HotelRoomId))
+            .Select(x => new PricePlanListDto()
+            {
+                Id = x.Id.ToString(),
+                BreakfastType = x.BreakfastType,
+                DaysInAdvance = x.DaysInAdvance,
+                ContinuousStayDays = x.ContinuousStayDays,
+                IsReservedRoom = x.IsReservedRoom,
+                IsEnable = x.IsEnable,
+                HotelRoomId = x.HotelRoomId.ToString()
+            })
+            .ToList();
+        var itemGroups = items.GroupBy(i => i.HotelRoomId).ToDictionary(g => g.Key, g => g.ToList());
+
+
+
 
         string hotelCode = data?.FirstOrDefault()?.HotelCode ?? string.Empty;
 
@@ -114,12 +161,15 @@ public class HotelApp : ApplicationService, IHotelApp
             .Select(t => new { t.roomcode, t.roomname })
             .ToListAsync();
 
-        data = data?.Select(item =>
-        {
-            item.RoomTypeName = currentHotelRoomTypeDate.SingleOrDefault(x => x.roomcode == int.Parse(item.RoomType))?.roomname ?? string.Empty;
-            return item;
-        }).ToList();
+        var result = data?.Select(item =>
+         {
+             item.RoomTypeName = currentHotelRoomTypeDate.SingleOrDefault(x => x.roomcode == int.Parse(item.RoomType))?.roomname ?? string.Empty;
 
+             item.PricePlans = itemGroups.TryGetValue(item.Id.ToString(), out var itemList) ? itemList : new();
+
+
+             return item;
+         }).ToList();
 
         return data ?? new();
     }

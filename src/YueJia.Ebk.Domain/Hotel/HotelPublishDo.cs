@@ -26,7 +26,7 @@ public partial record HotelPublishDo : EntityTenant
     /// 状态
     /// </summary>
     [SugarColumn(ColumnDescription = "状态")]
-    public HotelSaleTypeMnum Status { get; set; }
+    public HotelSaleTypeEnum Status { get; set; }
     /// <summary>
     /// 酒店地址
     /// </summary>
@@ -72,7 +72,7 @@ public partial record HotelPublishDo : EntityTenant
 
 public partial record HotelPublishDo
 {
-    private HotelPublishDo(string hotelCode, string hotelName, string hotelNameEn, HotelSaleTypeMnum status, string address, string addressEn, string telPhone, decimal lowestPrice)
+    private HotelPublishDo(string hotelCode, string hotelName, string hotelNameEn, HotelSaleTypeEnum status, string address, string addressEn, string telPhone, decimal lowestPrice)
     {
         HotelCode = hotelCode;
         HotelName = hotelName;
@@ -85,7 +85,7 @@ public partial record HotelPublishDo
     }
 
 
-    public static HotelPublishDo Create(string hotelCode, string hotelName, string hotelNameEn, HotelSaleTypeMnum status, string address, string addressEn, string telPhone, decimal lowestPrice)
+    public static HotelPublishDo Create(string hotelCode, string hotelName, string hotelNameEn, HotelSaleTypeEnum status, string address, string addressEn, string telPhone, decimal lowestPrice)
     {
         return new HotelPublishDo(hotelCode, hotelName, hotelNameEn, status, address, addressEn, telPhone, lowestPrice);
     }
@@ -108,7 +108,7 @@ public partial record HotelPublishDo
         return this;
     }
 
-    public HotelPublishDo SetStatus(HotelSaleTypeMnum status)
+    public HotelPublishDo SetStatus(HotelSaleTypeEnum status)
     {
         Status = status;
         return this;

@@ -7,6 +7,11 @@ namespace YueJia.Ebk.Application.Contracts.HotelApp.Commands;
 /// </summary>
 public class CreateHotelRoomCmd
 {
+
+    /// <summary>
+    /// 酒店ID
+    /// </summary>
+    public string HotelId { get; set; } = default!;
     /// <summary>
     /// 酒店代码
     /// </summary>

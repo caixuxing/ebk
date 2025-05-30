@@ -23,7 +23,7 @@ public record HotelPublishPageListDto
     /// <summary>
     /// 状态
     /// </summary>
-    public HotelSaleTypeMnum Status { get; set; }
+    public HotelSaleTypeEnum Status { get; set; }
 
     /// <summary>
     /// 状态名称

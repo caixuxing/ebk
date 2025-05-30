@@ -32,7 +32,7 @@ public class HotelController : AbpController
     public async Task<IActionResult> HotelPublishList()
     {
         ViewBag.CountryData = JsonConvert.SerializeObject(await YueJiaSysServiceApp.GetDropDownCountryListAsync(), new JsonSerializerSettings { ContractResolver = new CamelCasePropertyNamesContractResolver() });
-        ViewBag.HotelSaleTypeData = JsonConvert.SerializeObject(SysEnumApp.GetEnumDataList(nameof(HotelSaleTypeMnum)), new JsonSerializerSettings { ContractResolver = new CamelCasePropertyNamesContractResolver() });
+        ViewBag.HotelSaleTypeData = JsonConvert.SerializeObject(SysEnumApp.GetEnumDataList(nameof(HotelSaleTypeEnum)), new JsonSerializerSettings { ContractResolver = new CamelCasePropertyNamesContractResolver() });
         await Task.Delay(1);
         return View();
     }
@@ -51,7 +51,8 @@ public class HotelController : AbpController
     /// 用户添加酒店
     /// </summary>
     /// <returns></returns>
-    public async Task<IActionResult> UserAddHotelMgr() {
+    public async Task<IActionResult> UserAddHotelMgr()
+    {
 
         ViewBag.CountryList = await YueJiaSysServiceApp.GetDropDownCountryListAsync();
         return View();
@@ -130,7 +131,7 @@ public class HotelController : AbpController
         var hotelPublishDetail = await HotelPublishApp.GetHotelPublishDetailAsync(id.ToLong());
         AddHotelRoomVo vm = new AddHotelRoomVo()
         {
-            Id = id,
+            HotelId = id,
             HotelName = $"{hotelPublishDetail.HotelName}({hotelPublishDetail.HotelNameEn})",
             HotelCode = hotelPublishDetail.HotelCode,
             BedType = "",
@@ -165,6 +166,15 @@ public class HotelController : AbpController
     public async Task<IResult> AddHotelRoom([FromBody] CreateHotelRoomCmd cmd) => ApiResult.HandleLongResult(await HotelApp.AddHotelRoomAsync(cmd));
 
 
+    /// <summary>
+    /// 删除酒店房间
+    /// </summary>
+    /// <param name="id"></param>
+    /// <returns></returns>
+    [HttpDelete, Route("[controller]/DeleteHotelRoom/{id}")]
+    public async Task<IResult> DeleteHotelRoom([FromRoute] string id) => ApiResult.HandleResult(await HotelApp.DeleteHotelRoomAsync(id.ToLong()));
+
+
 
     /// <summary>
     /// 房间与价格计划（View）
@@ -178,7 +188,7 @@ public class HotelController : AbpController
 
         var roomAndPricePlanVm = roomAndPricePlan.Select(x => new
         {
-            x.Id,
+            Id = x.Id.ToString(),
             x.RoomType,
             x.RoomTypeName,
             x.BedType,
@@ -186,12 +196,11 @@ public class HotelController : AbpController
             x.MaximumNumberOfPeople,
             x.AdultLimit,
             x.ChildLimit,
+            x.IsEnabledName,
             pricePlans = x.PricePlans,
             ShowContent = false,
             ShowFooter = true
-
         });
-
         return View(new RoomAndPricePlanVo()
         {
             Id = id,
@@ -199,8 +208,37 @@ public class HotelController : AbpController
             HotelName = hotel.HotelName,
             HotelNameEn = hotel.HotelNameEn,
             HotelRoomListJson = JsonConvert.SerializeObject(roomAndPricePlanVm, new JsonSerializerSettings { ContractResolver = new CamelCasePropertyNamesContractResolver() })
+
         });
     }
+
+    /// <summary>
+    /// 房间与价格计划列表
+    /// </summary>
+    /// <param name="id"></param>
+    /// <returns></returns>
+    [HttpGet, Route("[controller]/RoomAndPricePlanList/{id}")]
+    public async Task<IResult> RoomAndPricePlanList([FromRoute] string id)
+    {
+        var roomAndPricePlan = await HotelApp.GetHotelRoomListByIdAsync(id.ToLong());
+        return ApiResult.HandleResult(roomAndPricePlan.Select(x => new
+        {
+            Id = x.Id.ToString(),
+            x.RoomType,
+            x.RoomTypeName,
+            x.BedType,
+            x.BedTypeName,
+            x.MaximumNumberOfPeople,
+            x.AdultLimit,
+            x.ChildLimit,
+            x.IsEnabledName,
+            pricePlans = x.PricePlans,
+            ShowContent = false,
+            ShowFooter = true
+        }));
+    }
+
+
 
     /// <summary>
     ///  新增价格计划（View）
@@ -210,14 +248,24 @@ public class HotelController : AbpController
     public async Task<IActionResult> AddPricePlan(string id)
     {
         var room = await HotelApp.GetHotelRoomByIdAsync(id.ToLong());
-
+        var hotel = await HotelPublishApp.GetHotelPublishDetailAsync(room.HotelId);
         AddPricePlanVo vm = new AddPricePlanVo()
         {
+            HotelId = room.HotelId.ToString(),
+            HotelRoomId = room.Id.ToString(),
+            HotelCode = hotel.HotelCode,
+            HotelName = $"{hotel.HotelName}({hotel.HotelNameEn})",
+            BedTypeName = room.BedTypeName,
+            RoomTypeName = room.RoomTypeName,
 
-
+            BreakfastType = null,
+            DaysInAdvance = 1,
+            ContinuousStayDays = 1,
+            IsEnable = YesOrNoType.Yes,
+            IsReservedRoom = YesOrNoType.Yes,
         };
 
-        return View();
+        return View(vm);
     }
 
     /// <summary>
