@@ -8,6 +8,11 @@ public class AddPricePlanVo
 {
 
     /// <summary>
+    /// 价格计划ID
+    /// </summary>
+    public string PricePlanId { get; set; } = default!;
+
+    /// <summary>
     /// 酒店ID
     /// </summary>
     public string HotelId { get; set; } = default!;

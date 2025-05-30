@@ -47,6 +47,13 @@ public interface IHotelApp
     Task<long> CreatePricePlanAsync(CreateOrUpdatePricePlanCmd cmd);
 
     /// <summary>
+    /// 价格计划详情
+    /// </summary>
+    /// <param name="id"></param>
+    /// <returns></returns>
+    Task<PricePlanDetailDto> GetPricePlanDetailsByIdAsync(long id);
+
+    /// <summary>
     /// 更新价格计划
     /// </summary>
     /// <param name="cmd"></param>

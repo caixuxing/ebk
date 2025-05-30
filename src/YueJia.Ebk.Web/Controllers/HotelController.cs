@@ -273,6 +273,34 @@ public class HotelController : AbpController
     /// <summary>
     /// 
     /// </summary>
+    /// <param name="id"></param>
+    /// <returns></returns>
+    public async Task<IActionResult> EditPricePlan(string id)
+    {
+        var data = await HotelApp.GetPricePlanDetailsByIdAsync(id.ToLong());
+        AddPricePlanVo vm = new AddPricePlanVo()
+        {
+            HotelId = data.HotelId,
+            HotelRoomId = data.Id,
+            HotelCode = data.HotelCode,
+            HotelName = $"{data.HotelName}({data.HotelNameEn})",
+            BedTypeName = data.BedTypeName,
+            RoomTypeName = data.RoomTypeName,
+            BreakfastType = data.BreakfastType,
+            DaysInAdvance = data.DaysInAdvance,
+            ContinuousStayDays = data.ContinuousStayDays,
+            IsEnable = data.IsEnable,
+            IsReservedRoom = data.IsEnable,
+            PricePlanId = data.Id,
+        };
+        return View("AddPricePlan", vm);
+    }
+
+
+
+    /// <summary>
+    /// 
+    /// </summary>
     /// <param name="cmd"></param>
     /// <returns></returns>
     [HttpPost, Route("[controller]/CreatePricePlan")]
@@ -292,6 +320,6 @@ public class HotelController : AbpController
     /// <param name="cmd"></param>
     /// <param name="id"></param>
     /// <returns></returns>
-    [HttpPut, Route("[controller]/DeletePricePlan/{id}")]
+    [HttpPut, Route("[controller]/UpdatePricePlan/{id}")]
     public async Task<IResult> UpdatePricePlan([FromBody] CreateOrUpdatePricePlanCmd cmd, string id) => ApiResult.HandleBoolResult(await HotelApp.UpdatePricePlanAsync(cmd, id.ToLong()));
 }

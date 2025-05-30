@@ -38,8 +38,9 @@
                             </div>
                         </el-col>
                         <el-col :span="1">
-                             <el-text class="mx-1" type="success">{{item.isEnabledName}}</el-text>
                             
+                             <el-text class="mx-1" :type="item.isEnabledName=='启用'?'success':'danger'" icon="el-icon-refresh" title="点击可切换状态" style="cursor:pointer" v-on:click="toggleRoomStatus(item.id)">{{item.isEnabledName}}</el-text>
+
                             </el-col>
                                  <el-col :span="11">
                                 <el-button type="danger" size="small" v-on:click="deleteRoom(item.id)">删除</el-button>
@@ -115,7 +116,7 @@
                         <el-table-column label="操作" prop="opt" width="140px" align="center">
                             <template #default="scope">
                                 <div style="text-align:center">
-                                    <el-button size="small">查看</el-button>
+                                    <el-button size="small" v-on:click="editPricePlan(scope.row)">编辑</el-button>
                                     <el-button size="small" type="danger" v-on:click="deletePricePlan(scope.row)">删除 </el-button>
                                 </div>
                             </template>
@@ -148,8 +149,11 @@
               window.parent.mainFrame(`/Hotel/AddPricePlan/${row.id}`,``,``)
           };
           const openMyHotel=()=> window.parent.mainFrame(`/Hotel/HotelPublishList`,`我的酒店`,`page3-1`);
-            //删除房间
 
+
+
+
+            //删除房间
             const deleteRoom=(id)=> {
                    ElMessageBox.confirm('您确定删除吗?', { confirmButtonText: '确定', cancelButtonText: '取消', type: 'warning', }) .then(() => {
 
@@ -172,13 +176,17 @@
                             })
                     })
             };
+        const editPricePlan=(row)=> window.parent.mainFrame(`/Hotel/EditPricePlan/${row.id}`,``,``);
+            
+
+
             const loadData = () => {
                        axios.get(`/Hotel/RoomAndPricePlanList/${id.value}`).then(response => {
                          let {data,status}=response;
                          state.roomData = data.data;
                      })
              };
-          return {state,openViewHotel,openAddHotelRoom,toggleCardContent,toggleCardFooter,openAddPricePlan,openMyHotel,deleteRoom,deletePricePlan}
+          return {state,openViewHotel,openAddHotelRoom,toggleCardContent,toggleCardFooter,openAddPricePlan,openMyHotel,deleteRoom,deletePricePlan,editPricePlan}
 
         }
         });

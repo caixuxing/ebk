@@ -174,19 +174,48 @@ public class HotelApp : ApplicationService, IHotelApp
         return data ?? new();
     }
 
+    public async Task<PricePlanDetailDto> GetPricePlanDetailsByIdAsync(long id)
+    {
+
+        var data = await PricePlanRepo.AsQueryable()
+            .LeftJoin<HotelRoomDo>((t, t1) => t.HotelRoomId == t1.Id)
+            .LeftJoin<HotelPublishDo>((t, t1, t2) => t1.HotelId == t2.Id)
+            .Where((t, t1, t2) => t.Id == id)
+            .Select((t, t1, t2) => new PricePlanDetailDto()
+            {
+                Id = t.Id.ToString(),
+                BedType = t1.BedType,
+                BreakfastType = t.BreakfastType,
+                DaysInAdvance = t.DaysInAdvance,
+                ContinuousStayDays = t.ContinuousStayDays,
+                IsReservedRoom = t.IsReservedRoom,
+                IsEnable = t.IsEnable,
+                HotelCode = t2.HotelCode,
+                HotelName = t2.HotelName,
+                RoomType = t1.RoomType,
+                HotelId = t1.HotelId.ToString(),
+                HotelNameEn = t2.HotelNameEn
+            }).SingleAsync();
+
+        if (data is null) throw new InvalidOperationException("价格计划不存在！");
+        var currentHotelRoomTypeDate = await SqlSugarClient.Queryable<OtaRoomEntity>()
+                                .Where(q => q.pfcode == "D" && q.hotelcode == data.HotelCode)
+                                .Select(t => new { t.roomcode, t.roomname })
+                                .ToListAsync();
+        data.RoomTypeName = currentHotelRoomTypeDate.SingleOrDefault(x => x.roomcode == int.Parse(data.RoomType))?.roomname ?? string.Empty;
+
+        return data;
+    }
+
     public async Task<bool> UpdatePricePlanAsync(CreateOrUpdatePricePlanCmd cmd, long id)
     {
         await LazyServiceProvider.LazyGetRequiredService<FluentValidation.IValidator<CreateOrUpdatePricePlanCmd>>().ValidateAndThrowAsync(cmd);
-
         var entity = await PricePlanRepo.GetByIdAsync(id) ?? throw new InvalidOperationException("价格计划不存在！");
-
-        return await PricePlanRepo.AsUpdateable(entity)
-            .UpdateColumnsIF(!(entity.BreakfastType != cmd.BreakfastType), it => it.BreakfastType == cmd.BreakfastType)
-            .UpdateColumnsIF(!(entity.DaysInAdvance != cmd.DaysInAdvance), it => it.DaysInAdvance == cmd.DaysInAdvance)
-            .UpdateColumnsIF(!(entity.ContinuousStayDays != cmd.ContinuousStayDays), it => it.ContinuousStayDays == cmd.ContinuousStayDays)
-            .UpdateColumnsIF(!(entity.IsReservedRoom != cmd.IsReservedRoom), it => it.IsReservedRoom == cmd.IsReservedRoom)
-            .UpdateColumnsIF(!(entity.IsEnable != cmd.IsEnable), it => it.IsEnable == cmd.IsEnable)
-            .UpdateColumns(it => new { it.LastModifiedbyId, it.LastModifiedbyName, it.LastModifiedTime, it.Version })
-            .ExecuteCommandWithOptLockAsync(true) > 0 ? true : false;
+        entity.SetBreakfastType(cmd.BreakfastType)
+              .SetContinuousStayDays(cmd.ContinuousStayDays)
+              .SetDaysInAdvance(cmd.DaysInAdvance)
+              .SetIsEnable(cmd.IsEnable)
+              .SetIsReservedRoom(cmd.IsReservedRoom);
+        return await PricePlanRepo.AsUpdateable(entity).ExecuteCommandWithOptLockAsync(true) > 0;
     }
 }
