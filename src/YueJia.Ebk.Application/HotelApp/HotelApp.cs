@@ -56,7 +56,7 @@ public class HotelApp : ApplicationService, IHotelApp
     {
         await LazyServiceProvider.LazyGetRequiredService<FluentValidation.IValidator<CreateOrUpdatePricePlanCmd>>().ValidateAndThrowAsync(cmd);
 
-        var entity = PricePlanDo.Create(cmd.HotelRoomId, cmd.BreakfastType, cmd.DaysInAdvance, cmd.ContinuousStayDays, cmd.IsReservedRoom, cmd.IsEnable);
+        var entity = PricePlanDo.Create(cmd.HotelRoomId.ToLong(), cmd.BreakfastType, cmd.DaysInAdvance, cmd.ContinuousStayDays, cmd.IsReservedRoom, cmd.IsEnable);
 
         return await PricePlanRepo.InsertReturnSnowflakeIdAsync(entity);
     }
@@ -119,22 +119,11 @@ public class HotelApp : ApplicationService, IHotelApp
 
 
 
-        var PricePlans = await PricePlanRepo.AsQueryable().Where(x => x.HotelId == id)
-         .Select(x => new PricePlanListDto()
-         {
-             Id = x.Id,
-             BreakfastType = x.BreakfastType,
-             DaysInAdvance = x.DaysInAdvance,
-             ContinuousStayDays = x.ContinuousStayDays,
-             IsReservedRoom = x.IsReservedRoom,
-             IsEnable = x.IsEnable,
-             HotelRoomId = x.HotelRoomId
-         })
-        .ToListAsync();
+
         data = data?.Select(item =>
         {
             item.RoomTypeName = currentHotelRoomTypeDate.SingleOrDefault(x => x.roomcode == int.Parse(item.RoomType))?.roomname ?? string.Empty;
-            item.PricePlans = PricePlans.Where(x => x.HotelRoomId == item.Id).ToList();
+            item.PricePlans = new();
             return item;
         }).ToList();
 

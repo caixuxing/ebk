@@ -7,11 +7,6 @@ public partial record PricePlanDo : EntityTenant
 
 
     /// <summary>
-    /// 酒店ID
-    /// </summary>
-    [SugarColumn(ColumnDescription = "酒店ID")]
-    public long HotelId { get; set; }
-    /// <summary>
     /// 酒店房间ID
     /// </summary>
     [SugarColumn(ColumnDescription = "酒店房间ID")]

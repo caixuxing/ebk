@@ -59,7 +59,7 @@ public class HotelPublishApp : ApplicationService, IHotelPublishApp
                   CountryIosCode = x.CountryIosCode,
                   CountryName = x.CountryName,
                   CityName = x.CityName,
-              }).OrderByDescending( x=>x.Id );
+              }).OrderByDescending(x => x.Id);
 
         var data = await query.ToPageListAsync(qry.PageIndex, qry.PageSize, total);
 
@@ -76,7 +76,7 @@ public class HotelPublishApp : ApplicationService, IHotelPublishApp
         var entity = HotelPublishDo.Create(cmd.HotelCode,
                                            cmd.HotelName,
                                            cmd.HotelNameEn,
-                                           HotelSaleTypeMnum.Down,
+                                           HotelSaleTypeEnum.Down,
                                            cmd.Address,
                                            cmd.AddressEn,
                                            cmd.TelPhone,
@@ -84,14 +84,14 @@ public class HotelPublishApp : ApplicationService, IHotelPublishApp
         entity.CountryIosCode = cmd.CountryIosCode;
         entity.CountryName = cmd.CountryName;
         entity.CityName = cmd.AreaName;
-         await HotelPublishRepo.InsertReturnSnowflakeIdAsync(entity);
+        await HotelPublishRepo.InsertReturnSnowflakeIdAsync(entity);
         return true;
 
-        if (await HotelPublishRepo.IsAnyAsync(x => x.HotelCode == cmd.HotelCode && x.CreatedbyId == CurrentUserApp.Id)) throw new InvalidOperationException($"酒店【{cmd.HotelName}({cmd.HotelCode})】已存在,无须重复添加！");
+        //if (await HotelPublishRepo.IsAnyAsync(x => x.HotelCode == cmd.HotelCode && x.CreatedbyId == CurrentUserApp.Id)) throw new InvalidOperationException($"酒店【{cmd.HotelName}({cmd.HotelCode})】已存在,无须重复添加！");
 
-        var entity = HotelPublishDo.Create(cmd.HotelCode, cmd.HotelName, cmd.HotelNameEn, HotelSaleTypeEnum.Stop, cmd.Address, cmd.AddressEn, cmd.TelPhone, cmd.LowestPrice) ?? throw new InvalidOperationException("创建酒店失败！");
+        //var entity = HotelPublishDo.Create(cmd.HotelCode, cmd.HotelName, cmd.HotelNameEn, HotelSaleTypeEnum.Stop, cmd.Address, cmd.AddressEn, cmd.TelPhone, cmd.LowestPrice) ?? throw new InvalidOperationException("创建酒店失败！");
 
-        return await HotelPublishRepo.InsertReturnSnowflakeIdAsync(entity);
+        //return await HotelPublishRepo.InsertReturnSnowflakeIdAsync(entity);
     }
 
     public async Task<bool> UpdatePublishHotelAsync(CreateOrUpHotelPublishCmd cmd, long id)
