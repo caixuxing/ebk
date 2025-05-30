@@ -115,7 +115,7 @@ public class HotelController : AbpController
             Status = hotelPublishDetail.Status,
             TelPhone = hotelPublishDetail.TelPhone,
         };
-        ViewBag.HotelSaleTypeList = SysEnumApp.GetEnumDataList(nameof(HotelSaleTypeMnum));
+        ViewBag.HotelSaleTypeList = SysEnumApp.GetEnumDataList(nameof(HotelSaleTypeEnum));
         return View(mv);
     }
 
