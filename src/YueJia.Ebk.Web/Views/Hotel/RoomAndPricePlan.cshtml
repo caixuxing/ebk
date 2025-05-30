@@ -18,9 +18,12 @@
     <el-main>
         <el-scrollbar>
   
-            <el-alert type="primary" show-icon :closable="false" >
+          @*   <el-alert type="primary" show-icon :closable="false" >
             <p><el-link type="primary" v-on:click="openMyHotel">我的酒店</el-link> / <el-link type="primary" v-on:click="openViewHotel">@Html.Raw($"{Model.HotelName}({Model.HotelNameEn})")</el-link> / <el-link type="primary" v-on:click="openRoomAndPricePlan">房间与价格计划</el-link> / 库存与价格 / 促销</p>
-             </el-alert>
+             </el-alert> *@
+
+          
+            @Html.Partial("~/Views/Hotel/UserHotelNavigationMgr.cshtml", (@ViewBag.mv as YueJia.Ebk.Web.ViewModels.Hotel.ViewHotelVo))
 
            <el-form label-width="100px" :inline="true" style="margin-top:30px;">
                 <el-form-item prop="desc" style="margin-bottom:5px;">

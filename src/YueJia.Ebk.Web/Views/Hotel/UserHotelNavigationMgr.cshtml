@@ -1,0 +1,50 @@
+﻿@model YueJia.Ebk.Web.ViewModels.Hotel.ViewHotelVo
+
+<div >
+
+@*     <el-breadcrumb>
+        <el-breadcrumb-item >
+            <label onclick="onToDataList()">数据列表</label>
+        </el-breadcrumb-item>
+        <el-breadcrumb-item>
+            <label >@Model.HotelName</label>
+        </el-breadcrumb-item>
+        <el-breadcrumb-item>
+            
+            <label onclick="onToRoomAndPricePlan()">房间与价格计划</label>
+         </el-breadcrumb-item>
+        <el-breadcrumb-item>
+            <template>
+                 <el-popover placement="bottom"
+                                title="标题"
+                                width="200"
+                                trigger="click"
+                                content="这是一段内容,这是一段内容,这是一段内容,这是一段内容。">
+                              <label slot="reference">库存与价格</label>
+                    </el-popover> 
+            </template>
+         </el-breadcrumb-item>
+    </el-breadcrumb> *@
+    ***
+    <template>
+        <el-popover placement="bottom"
+                    title="标题"
+                    width="200"
+                    trigger="click"
+                    content="这是一段内容,这是一段内容,这是一段内容,这是一段内容。">
+            <label slot="reference">库存与价格</label>
+        </el-popover>
+    </template>
+    ***
+</div>
+
+<script type="text/javascript">
+     function onToDataList(){
+        window.location.href = '/Hotel/HotelPublishList?r='+@DateTime.Now.ToString("yyyyMMddHHmmss");
+    }
+
+    function onToRoomAndPricePlan(){
+        window.location.href = '/Hotel/RoomAndPricePlan?id='+'@Model.Id'
+    }
+
+</script>
