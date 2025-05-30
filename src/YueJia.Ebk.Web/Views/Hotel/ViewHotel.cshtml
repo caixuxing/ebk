@@ -13,11 +13,16 @@
 }
 <el-container style="height:100vh;overflow: hidden;">
     <el-main>
+
+        @Html.Partial("~/Views/Hotel/UserHotelNavigationMgr.cshtml", Model)
+
         <div style="height:50px;line-height:50px;" >
             <h1>酒店</h1>
         </div>
         <el-divider content-position="left"></el-divider>
         <el-form  label-width="auto" style="width:800px; margin:0px auto;"  >
+
+
             @*    <el-alert type="primary" show-icon :closable="false" >
                 <p>[我的酒店] / @Html.Raw($"{Model.HotelName}({Model.HotelNameEn})") / <el-link type="primary" >房间与价格计划</el-link> / 库存与价格 / 促销</p>
             </el-alert> *@
@@ -54,6 +59,9 @@
 </el-container>
 @section scripts {
     <script type="text/javascript">
+
+      
+
         const app = Vue.createApp({
         setup() {
 

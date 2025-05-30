@@ -60,6 +60,16 @@ public class HotelController : AbpController
 
 
     /// <summary>
+    /// 用户酒店导航
+    /// </summary>
+    /// <returns></returns>
+    public IActionResult UserHotelNavigationMgr()
+    {
+        return View();
+    }
+
+
+    /// <summary>
     /// 确认添加酒店发布
     /// </summary>
     /// <param name="cmd"></param>
@@ -118,6 +128,8 @@ public class HotelController : AbpController
         ViewBag.HotelSaleTypeList = SysEnumApp.GetEnumDataList(nameof(HotelSaleTypeEnum));
         return View(mv);
     }
+
+     
 
 
 
@@ -183,6 +195,7 @@ public class HotelController : AbpController
     /// <returns></returns>
     public async Task<IActionResult> RoomAndPricePlan(string id)
     {
+
         var hotel = await HotelPublishApp.GetHotelPublishDetailAsync(id.ToLong());
         var roomAndPricePlan = await HotelApp.GetHotelRoomListByIdAsync(id.ToLong());
 
@@ -201,6 +214,13 @@ public class HotelController : AbpController
             ShowContent = false,
             ShowFooter = true
         });
+
+        ViewBag.mv = new ViewHotelVo()
+        {
+            Id = id,
+            HotelName = hotel.HotelName,
+        };
+
         return View(new RoomAndPricePlanVo()
         {
             Id = id,
