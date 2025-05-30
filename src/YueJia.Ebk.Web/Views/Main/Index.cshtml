@@ -140,16 +140,16 @@
     <script src="https://unpkg.com/dayjs@1.8.21/plugin/utc.js"></script>
 
    <script type="text/javascript">
-     function mainFrame(url,itle,index)
+     function mainFrame(url,title,index)
        { 
             if (window.vueState)  { 
                 if(url!=null&&url!=""){
                       window.vueState.currentIframeUrl=url;
                 }
                 window.vueState.activeIndex=index;
-                if(itle!=null&&itle!="")
+                if(title!=null&&title!="")
                 {
-                  window.vueState.activeTitle=itle;
+                  window.vueState.activeTitle=title;
                 }
             }
        }

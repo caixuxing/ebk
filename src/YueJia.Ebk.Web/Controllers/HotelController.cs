@@ -51,7 +51,8 @@ public class HotelController : AbpController
     /// 用户添加酒店
     /// </summary>
     /// <returns></returns>
-    public async Task<IActionResult> UserAddHotelMgr() {
+    public async Task<IActionResult> UserAddHotelMgr()
+    {
 
         ViewBag.CountryList = await YueJiaSysServiceApp.GetDropDownCountryListAsync();
         return View();
@@ -167,6 +168,15 @@ public class HotelController : AbpController
     public async Task<IResult> AddHotelRoom([FromBody] CreateHotelRoomCmd cmd) => ApiResult.HandleLongResult(await HotelApp.AddHotelRoomAsync(cmd));
 
 
+    /// <summary>
+    /// 删除酒店房间
+    /// </summary>
+    /// <param name="id"></param>
+    /// <returns></returns>
+    [HttpDelete, Route("[controller]/DeleteHotelRoom/{id}")]
+    public async Task<IResult> DeleteHotelRoom([FromRoute] string id) => ApiResult.HandleResult(await HotelApp.DeleteHotelRoomAsync(id.ToLong()));
+
+
 
     /// <summary>
     /// 房间与价格计划（View）
@@ -205,6 +215,34 @@ public class HotelController : AbpController
     }
 
     /// <summary>
+    /// 房间与价格计划列表
+    /// </summary>
+    /// <param name="id"></param>
+    /// <returns></returns>
+    [HttpGet, Route("[controller]/RoomAndPricePlanList/{id}")]
+    public async Task<IResult> RoomAndPricePlanList([FromRoute] string id)
+    {
+        var roomAndPricePlan = await HotelApp.GetHotelRoomListByIdAsync(id.ToLong());
+        return ApiResult.HandleResult(roomAndPricePlan.Select(x => new
+        {
+            Id = x.Id.ToString(),
+            x.RoomType,
+            x.RoomTypeName,
+            x.BedType,
+            x.BedTypeName,
+            x.MaximumNumberOfPeople,
+            x.AdultLimit,
+            x.ChildLimit,
+            x.IsEnabledName,
+            pricePlans = x.PricePlans,
+            ShowContent = false,
+            ShowFooter = true
+        }));
+    }
+
+
+
+    /// <summary>
     ///  新增价格计划（View）
     /// </summary>
     /// <param name="id">房间ID</param>
@@ -216,6 +254,7 @@ public class HotelController : AbpController
         AddPricePlanVo vm = new AddPricePlanVo()
         {
             HotelId = room.HotelId.ToString(),
+            HotelRoomId = room.Id.ToString(),
             HotelCode = hotel.HotelCode,
             HotelName = $"{hotel.HotelName}({hotel.HotelNameEn})",
             BedTypeName = room.BedTypeName,

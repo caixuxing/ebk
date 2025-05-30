@@ -69,7 +69,6 @@
             </el-form>
                        <el-form-item>
             <div class="dialog-footer" style="text-align: center; width: 100%;">
-                <el-button v-on:click="cancel">返回 </el-button>
                 <el-button type="primary" v-on:click="save">保存 </el-button>
             </div>
         </el-form-item>
@@ -91,8 +90,8 @@
                         daysInAdvance:@Html.Raw(Model.DaysInAdvance),
                         continuousStayDays:@Html.Raw(Model.ContinuousStayDays),
                         isReservedRoom:@(Model.IsReservedRoom==YesOrNoType.Yes? "true":"false"),
-                        isEnable:@(Model.IsEnable==YesOrNoType.Yes? "true":"false")
-                        hotelId:`@Html.Raw(Model.HotelId)`
+                        isEnable:@(Model.IsEnable==YesOrNoType.Yes? "true":"false"),
+                        hotelRoomId:`@Html.Raw(Model.HotelRoomId)`
                     }
                 });
 
@@ -118,7 +117,12 @@
             const save = async () => {
                 let isValid = await FormDataRef.value.validate(); 
                 if(!isValid) return ElMessage({ message: "请完善表单信息!", type: "error" });
-                let requestData = { ...state.formData, isEnable:state.formData.isEnable?1:0, isReservedRoom:state.formData.isReservedRoom?1:0};
+                let requestData = { ...state.formData,
+                    daysInAdvance:Number(state.formData.daysInAdvance),
+                    continuousStayDays:Number(state.formData.continuousStayDays),
+                    isEnable:state.formData.isEnable?1:0, 
+                    isReservedRoom:state.formData.isReservedRoom?1:0
+                };
                 let response = await axios.post(`/Hotel/CreatePricePlan`, requestData);
                     if (response.status  === 200) {
                           ElMessage({ message: "保存成功!", type: "success" });

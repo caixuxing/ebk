@@ -9,15 +9,13 @@ public record PricePlanListDto
     /// <summary>
     /// 价格计划Id
     /// </summary>
-    [JsonNumberHandling(JsonNumberHandling.WriteAsString)]
-    public long Id { get; set; }
+    public string Id { get; set; }
 
 
     /// <summary>
     /// 酒店房间ID
     /// </summary>
-    [JsonNumberHandling(JsonNumberHandling.WriteAsString)]
-    public long HotelRoomId { get; set; }
+    public string HotelRoomId { get; set; }
 
     /// <summary>
     /// 
@@ -68,14 +66,14 @@ public record PricePlanListDto
     /// </summary>
     public YesOrNoType IsEnable { get; set; }
 
-
+    /// <summary>
+    /// 是否启用
+    /// </summary>
     public string IsEnableName
     {
         get
         {
-
-
-            return IsEnable.ToDescription();
+            return IsEnable == YesOrNoType.Yes ? "启用" : "禁用";
         }
     }
 }

@@ -46,6 +46,7 @@ public class CreateOrUpdatePricePlanCmdValidator : AbstractValidator<CreateOrUpd
     /// </summary>
     public CreateOrUpdatePricePlanCmdValidator()
     {
+        RuleFor(x => x.HotelRoomId).NotEmpty().WithMessage("酒店房间ID不能为空！");
         RuleFor(x => x.BreakfastType).IsInEnum().WithMessage("早餐类型参数无效！");
         RuleFor(x => x.DaysInAdvance).GreaterThan(0).WithMessage("提前天数必须大于0！");
         RuleFor(x => x.ContinuousStayDays).GreaterThan(0).WithMessage("连住天数必须大于0！");

@@ -15,7 +15,7 @@
     <el-main>
          <el-form :model="state.formData"  label-width="auto" :rules="FormDataRules" ref="FormDataRef">
             <el-alert type="primary" show-icon :closable="false" >
-             <p>[我的酒店] / @Html.Raw($"{Model.HotelName}({Model.HotelNameEn})") / <el-link type="primary" v-on:click="openRoomAndPricePlan">房间与价格计划</el-link> / 库存与价格 / 促销</p>
+             <p><el-link type="primary" v-on:click="openMyHotel">我的酒店</el-link>  / @Html.Raw($"{Model.HotelName}({Model.HotelNameEn})") / <el-link type="primary" v-on:click="openRoomAndPricePlan">房间与价格计划</el-link> / 库存与价格 / 促销</p>
              </el-alert>
 
             <el-form-item style="margin-top:30px">
@@ -52,7 +52,6 @@
     </el-form>
         <el-form-item>
             <div class="dialog-footer" style="text-align: center; width: 100%;">
-                <el-button v-on:click="cancel">返回 </el-button>
                 <el-button type="primary" v-on:click="save">保存 </el-button>
             </div>
         </el-form-item>
@@ -94,18 +93,13 @@
             }
         };
 
-
-           const cancel=()=>{
-                   window.parent.mainFrame(`/Hotel/HotelPublishList`,`我的酒店`,`page3-1`);
-                 };
-
        const openRoomAndPricePlan=()=>{
            window.parent.mainFrame(`/Hotel/RoomAndPricePlan/${id.value}`,``,``);
        };
+        const openMyHotel=()=> window.parent.mainFrame(`/Hotel/HotelPublishList`,`我的酒店`,`page3-1`);
 
 
-
-                return {state,save,cancel,FormDataRules,FormDataRef,openRoomAndPricePlan}
+                return {state,save,FormDataRules,FormDataRef,openRoomAndPricePlan,openMyHotel}
         }
         });
         app.use(ElementPlus);

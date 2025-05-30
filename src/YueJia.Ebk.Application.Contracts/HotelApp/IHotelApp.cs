@@ -15,6 +15,15 @@ public interface IHotelApp
     /// <returns></returns>
     Task<long> AddHotelRoomAsync(CreateHotelRoomCmd cmd);
 
+
+    /// <summary>
+    /// 删除房间
+    /// </summary>
+    /// <param name="id"></param>
+    /// <returns></returns>
+    Task<bool> DeleteHotelRoomAsync(long id);
+
+
     /// <summary>
     /// 按酒店Id获取酒店房间与价格计划列表
     /// </summary>

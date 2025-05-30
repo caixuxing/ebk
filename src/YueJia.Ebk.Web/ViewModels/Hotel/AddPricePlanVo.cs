@@ -37,7 +37,7 @@ public class AddPricePlanVo
     /// <summary>
     /// 酒店房间ID
     /// </summary>
-    public long HotelRoomId { get; set; }
+    public string HotelRoomId { get; set; }
     /// <summary>
     /// 早餐类型
     /// </summary>
