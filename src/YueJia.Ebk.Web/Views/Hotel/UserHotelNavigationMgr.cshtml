@@ -1,48 +1,42 @@
 ﻿@model YueJia.Ebk.Web.ViewModels.Hotel.ViewHotelVo
 
-<div >
+<div style="margin:15px 0px;" >
 
     <el-breadcrumb>
         <el-breadcrumb-item >
-            <label onclick="onToDataList()">数据列表</label>
+            <el-link :underline="false" href="/Hotel/HotelPublishList">数据列表</el-link>
         </el-breadcrumb-item>
         <el-breadcrumb-item>
             <label >@Model.HotelName</label>
         </el-breadcrumb-item>
         <el-breadcrumb-item>
-            
-            <label onclick="onToRoomAndPricePlan()">房间与价格计划</label>
+            <el-link :underline="false" href="/Hotel/RoomAndPricePlan?id=@Model.Id">房间与价格计划</el-link>
          </el-breadcrumb-item>
         <el-breadcrumb-item>
-            <el-popover placement="top"
-                        width="200">
-                <div style=" margin: 0">
-                    <ul>
-                        <li>
-                            <el-link icon="el-icon-edit">库存和价格</el-link>
-                         </li>
-                        <li>
-                            <div>
-                                <el-link icon="el-icon-edit">库存和价格日历</el-link>
-                            </div>
-                        </li>
-                        <li>
-                            <div>
-                                <el-link icon="el-icon-edit">加载库存与价格</el-link>
-                            </div>
-                        </li>
-                        <li>
-                            <div>
-                                <el-link icon="el-icon-edit">批量编辑库存与价格</el-link>
-                            </div>
-                        </li>
-                    </ul> 
-                </div>
-                <template #reference>
-                    <label>库存与价格</label>
-                </template>
-            </el-popover>
 
+            <el-dropdown trigger="click">
+                <span class="el-dropdown-link" style="cursor:pointer" >
+                    库存与价格
+                </span>
+                <template #dropdown>
+                    <div style="padding:10px;">
+                        <ul>
+                            <li style="padding: 5px 12px">
+                                <el-link :underline="false" href="/Hotel/InventoryAndPrice">库存和价格</el-link>
+                            </li>
+                            <li style="padding: 5px 12px">
+                                <el-link :underline="false">库存和价格日历</el-link>
+                            </li>
+                            <li style="padding: 5px 12px">
+                                <el-link :underline="false">加载库存与价格</el-link>
+                            </li>
+                            <li style="padding: 5px 12px">
+                                <el-link :underline="false">批量编辑库存与价格</el-link>
+                            </li>
+                        </ul>
+                    </div>
+                </template>
+            </el-dropdown>
          </el-breadcrumb-item>
     </el-breadcrumb>
 </div>
@@ -53,17 +47,3 @@
     }
 </style>
 
-<script type="text/javascript">
-     function onToDataList(){
-        window.location.href = '/Hotel/HotelPublishList?r='+@DateTime.Now.ToString("yyyyMMddHHmmss");
-    }
-
-    function onToRoomAndPricePlan(){
-        window.location.href = '/Hotel/RoomAndPricePlan?id='+'@Model.Id'
-    }
-
-    function InventoryAndPrice(){
-        
-    }
-
-</script>
