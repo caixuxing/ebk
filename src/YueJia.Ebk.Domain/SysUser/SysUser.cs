@@ -44,7 +44,7 @@ public partial record SysUserDo : EntityTenant
     [SugarColumn(ColumnDescription = "联系电话", Length = 15)]
     public string? ContactPhone { get; set; }
 
-    [SugarColumn(ColumnDescription = "部门管理", DefaultValue ="0")]
+    [SugarColumn(ColumnDescription = "部门管理", DefaultValue = "0")]
     public bool DeptAdmin { get; set; }
 }
 

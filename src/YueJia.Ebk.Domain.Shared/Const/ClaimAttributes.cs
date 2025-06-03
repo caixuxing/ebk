@@ -49,5 +49,10 @@
         /// </summary>
         public const string DeptId = "DeptId";
 
+        /// <summary>
+        /// 是否部门管理员
+        /// </summary>
+        public const bool IsDeptAdmin = false;
+
     }
 }

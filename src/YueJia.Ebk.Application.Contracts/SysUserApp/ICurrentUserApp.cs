@@ -24,15 +24,24 @@ public interface ICurrentUserApp
     /// </summary>
     string TenantId { get; }
 
+    /// <summary>
+    /// 是否部门管理
+    /// </summary>
+    bool IsDeptAdmin { get; }
 
+    /// <summary>
+    /// 账户类型
+    /// </summary>
     AccountTypeEnum? AccountType { get; }
 
     /// <summary>
-    /// 公司Id
+    /// 公司
     /// </summary>
     CurrentAccountCompanyDto Company { get; }
 
-
+    /// <summary>
+    /// 部门
+    /// </summary>
     CurrentAccountDeptDto Dept { get; }
 
 }

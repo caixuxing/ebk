@@ -4,6 +4,7 @@ using YueJia.Ebk.Application.Contracts.HotelApp.Dto;
 using YueJia.Ebk.Application.Contracts.HotelApp.Query;
 using YueJia.Ebk.Application.Contracts.SysUserApp;
 using YueJia.Ebk.Domain.Hotel;
+using YueJia.Ebk.Domain.SysUser;
 
 
 namespace YueJia.Ebk.Application.HotelApp;
@@ -18,6 +19,9 @@ public class HotelPublishApp : ApplicationService, IHotelPublishApp
 
 
     private ICurrentUserApp CurrentUserApp => LazyServiceProvider.LazyGetRequiredService<ICurrentUserApp>();
+
+    private ISimpleClient<SysUserDo> SysUserRepo => LazyServiceProvider.LazyGetRequiredService<ISimpleClient<SysUserDo>>();
+
 
     public async Task<HotelPublishDetailDto> GetHotelPublishDetailAsync(long id)
     {
@@ -40,31 +44,48 @@ public class HotelPublishApp : ApplicationService, IHotelPublishApp
         RefAsync<int> total = 0;
 
         var query = HotelPublishRepo.AsQueryable()
-              .WhereIF(CurrentUserApp.AccountType == AccountTypeEnum.NormalUser, x => x.CreatedbyId == CurrentUserApp.Id)
               .WhereIF(!string.IsNullOrWhiteSpace(qry.HotelName), x => SqlFunc.Like(x.HotelName, $"{qry.HotelName}%") || SqlFunc.Like(x.HotelNameEn, $"{qry.HotelName}%"))
               .WhereIF(!string.IsNullOrWhiteSpace(qry.HotelCode), x => x.HotelCode == qry.HotelCode)
-              .WhereIF(qry.Status.HasValue, x => x.Status == qry.Status)
-              .Select(x => new HotelPublishPageListDto()
-              {
-                  Id = x.Id,
-                  HotelCode = x.HotelCode,
-                  HotelName = x.HotelName,
-                  HotelNameEn = x.HotelNameEn,
-                  Address = x.Address,
-                  AddressEn = x.AddressEn,
-                  Status = x.Status,
-                  CreateTime = x.CreateTime,
-                  LowestPrice = x.LowestPrice,
-                  TelPhone = x.TelPhone,
-                  CountryIosCode = x.CountryIosCode,
-                  CountryName = x.CountryName,
-                  CityName = x.CityName,
-              }).OrderByDescending(x => x.Id);
-
-        var data = await query.ToPageListAsync(qry.PageIndex, qry.PageSize, total);
-
+              .WhereIF(qry.Status.HasValue, x => x.Status == qry.Status);
+        var queryMap = WhereDeptFilter(query).Select(x => new HotelPublishPageListDto()
+        {
+            Id = x.Id,
+            HotelCode = x.HotelCode,
+            HotelName = x.HotelName,
+            HotelNameEn = x.HotelNameEn,
+            Address = x.Address,
+            AddressEn = x.AddressEn,
+            Status = x.Status,
+            CreateTime = x.CreateTime,
+            LowestPrice = x.LowestPrice,
+            TelPhone = x.TelPhone,
+            CountryIosCode = x.CountryIosCode,
+            CountryName = x.CountryName,
+            CityName = x.CityName,
+        }).OrderByDescending(x => x.Id);
+        var data = await queryMap.ToPageListAsync(qry.PageIndex, qry.PageSize, total);
         return new PageData<IEnumerable<HotelPublishPageListDto>>(total, qry.PageSize, qry.PageIndex, data);
     }
+
+
+    private ISugarQueryable<HotelPublishDo> WhereDeptFilter(ISugarQueryable<HotelPublishDo> query)
+    {
+        if (new List<AccountTypeEnum>() { AccountTypeEnum.SysAdmin, AccountTypeEnum.SuperAdmin }.ToList().Contains(CurrentUserApp.AccountType!.Value))
+        {
+            return query;
+        }
+        if (CurrentUserApp.IsDeptAdmin)
+        {
+            var deptUserIds = SysUserRepo.GetList(x => x.DeptId == CurrentUserApp.Dept.DeptId)
+                .Select(x => x.Id.ToString())
+                .ToList();
+            deptUserIds.Insert(0, CurrentUserApp.Id.ToString());
+            return query.Where(x => deptUserIds.Contains(x.CreatedbyId!));
+        }
+        return query.Where(x => x.CreatedbyId == CurrentUserApp.Id);
+    }
+
+
 
     public async Task<bool> PublishHotelAsync(CreateOrUpHotelPublishCmd cmd)
     {
@@ -86,12 +107,6 @@ public class HotelPublishApp : ApplicationService, IHotelPublishApp
         entity.CityName = cmd.AreaName;
         await HotelPublishRepo.InsertReturnSnowflakeIdAsync(entity);
         return true;
-
-        //if (await HotelPublishRepo.IsAnyAsync(x => x.HotelCode == cmd.HotelCode && x.CreatedbyId == CurrentUserApp.Id)) throw new InvalidOperationException($"酒店【{cmd.HotelName}({cmd.HotelCode})】已存在,无须重复添加！");
-
-        //var entity = HotelPublishDo.Create(cmd.HotelCode, cmd.HotelName, cmd.HotelNameEn, HotelSaleTypeEnum.Stop, cmd.Address, cmd.AddressEn, cmd.TelPhone, cmd.LowestPrice) ?? throw new InvalidOperationException("创建酒店失败！");
-
-        //return await HotelPublishRepo.InsertReturnSnowflakeIdAsync(entity);
     }
 
     public async Task<bool> UpdatePublishHotelAsync(CreateOrUpHotelPublishCmd cmd, long id)

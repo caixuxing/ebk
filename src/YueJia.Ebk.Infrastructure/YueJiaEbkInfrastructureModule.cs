@@ -1,5 +1,4 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Configuration;
+﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using SqlSugar;
 using SqlSugar.DistributedSystem.Snowflake;
@@ -77,6 +76,8 @@ public class YueJiaEbkInfrastructureModule : AbpModule
                    if (!string.IsNullOrWhiteSpace(tenantId))
                        db.QueryFilter.AddTableFilter<ITenantIdFilter>(u => u.TenantId == long.Parse(tenantId));
                }
+
+
                if (true)
                {
                    db.Aop.OnLogExecuting = (sql, pars) =>
@@ -216,7 +217,7 @@ public class YueJiaEbkInfrastructureModule : AbpModule
 
 
         var hotelMatchConnectionConfigs = configuration.GetSection("YueJiaSysConnectionConfigs").Get<IocConfig>();
-        //考虑当前从库只用了部分表，创建新的数据库上下文,如果
+
         context.Services.AddKeyedScoped<ISqlSugarClient>(DbConst.YueJiaSysDb, (sp, _) =>
         {
             SqlSugarScope sqlSugar = new SqlSugarScope(new SqlSugar.ConnectionConfig()

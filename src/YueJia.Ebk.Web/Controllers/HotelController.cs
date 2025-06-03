@@ -129,7 +129,7 @@ public class HotelController : AbpController
         return View(mv);
     }
 
-     
+
 
 
 
@@ -340,4 +340,29 @@ public class HotelController : AbpController
     /// <returns></returns>
     [HttpPut, Route("[controller]/UpdatePricePlan/{id}")]
     public async Task<IResult> UpdatePricePlan([FromBody] CreateOrUpdatePricePlanCmd cmd, string id) => ApiResult.HandleBoolResult(await HotelApp.UpdatePricePlanAsync(cmd, id.ToLong()));
+
+
+
+
+    /// <summary>
+    /// 库存和价格（View）
+    /// </summary>
+    /// <returns></returns>
+    public IActionResult InventoryAndPrice()
+    {
+
+        return View();
+    }
+
+
+
+    /// <summary>
+    /// 加载库存和价格（View）
+    /// </summary>
+    /// <returns></returns>
+    public IActionResult LoadingInventoryAndPrices()
+    {
+
+        return View();
+    }
 }
