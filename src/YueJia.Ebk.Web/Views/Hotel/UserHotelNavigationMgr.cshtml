@@ -7,7 +7,7 @@
             <el-link :underline="false" href="/Hotel/HotelPublishList">数据列表</el-link>
         </el-breadcrumb-item>
         <el-breadcrumb-item>
-            <label >@Model.HotelName</label>
+            <el-link :underline="false" href="/Hotel/ViewHotel?id=@Model.Id">@Model.HotelName</el-link>
         </el-breadcrumb-item>
         <el-breadcrumb-item>
             <el-link :underline="false" href="/Hotel/RoomAndPricePlan?id=@Model.Id">房间与价格计划</el-link>
@@ -40,10 +40,3 @@
          </el-breadcrumb-item>
     </el-breadcrumb>
 </div>
-
-<style>
-    .test-popover {
-        position: relative; /* 确保有正确的定位上下文 */
-    }
-</style>
-
