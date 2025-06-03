@@ -197,16 +197,14 @@ public class HotelController : AbpController
     [HttpDelete, Route("[controller]/DeleteHotelRoom/{id}")]
     public async Task<IResult> DeleteHotelRoom([FromRoute] string id) => ApiResult.HandleResult(await HotelApp.DeleteHotelRoomAsync(id.ToLong()));
 
-
-
+    #region 房间与价格计划
     /// <summary>
     /// 房间与价格计划（View）
     /// </summary>
-    /// <param name="id"></param>
+    /// <param name="id">酒店唯一标识</param>
     /// <returns></returns>
     public async Task<IActionResult> RoomAndPricePlan(string id)
     {
-
         var hotel = await HotelPublishApp.GetHotelPublishDetailAsync(id.ToLong());
         var roomAndPricePlan = await HotelApp.GetHotelRoomListByIdAsync(id.ToLong());
 
@@ -242,6 +240,7 @@ public class HotelController : AbpController
 
         });
     }
+    #endregion
 
     /// <summary>
     /// 房间与价格计划列表

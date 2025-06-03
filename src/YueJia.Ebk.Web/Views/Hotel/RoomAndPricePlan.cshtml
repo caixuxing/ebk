@@ -3,7 +3,6 @@
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 @section head {
-    <title>房间与价格计划</title>
     <style type="text/css">
         .el-row {
             margin-bottom: 20px;
@@ -16,21 +15,17 @@
 }
 <el-container style="height:100vh;overflow: hidden;">
     <el-main>
+
+       @Html.Partial("~/Views/Hotel/UserHotelNavigationMgr.cshtml", (@ViewBag.mv as YueJia.Ebk.Web.ViewModels.Hotel.ViewHotelVo))
+       
+       <div style="height:50px;line-height:50px; position:relative ">
+            <h1   >房间与价格计划</h1>
+            <el-button type="primary" v-on:click="onAddRoom" size="small" style="position: absolute;top: 13px;left:170px;">新增房间</el-button>
+       </div>
+
+        <el-divider content-position="left"></el-divider>
+
         <el-scrollbar>
-  
-          @*   <el-alert type="primary" show-icon :closable="false" >
-            <p><el-link type="primary" v-on:click="openMyHotel">我的酒店</el-link> / <el-link type="primary" v-on:click="openViewHotel">@Html.Raw($"{Model.HotelName}({Model.HotelNameEn})")</el-link> / <el-link type="primary" v-on:click="openRoomAndPricePlan">房间与价格计划</el-link> / 库存与价格 / 促销</p>
-             </el-alert> *@
-
-          
-            @Html.PartialAsync("~/Views/Hotel/UserHotelNavigationMgr.cshtml", (@ViewBag.mv as YueJia.Ebk.Web.ViewModels.Hotel.ViewHotelVo))
-
-           <el-form label-width="100px" :inline="true" style="margin-top:30px;">
-                <el-form-item prop="desc" style="margin-bottom:5px;">
-                   <h1 style="margin:0px 20px">房间与价格计划</h1> <el-button type="primary" v-on:click="openAddHotelRoom">新增房间</el-button>
-                </el-form-item>
-            </el-form>
-            <el-divider content-position="left">房间与价格计划</el-divider>
             <el-card v-for="(item, index) in state.roomData" :key="i" style="width:99%;margin-bottom:20px;" :class="{ 'hide-body': !item.showContent }">
             <template #header>
                 <div class="card-header">
@@ -144,7 +139,31 @@
            const toggleCardContent=(index)=>state.roomData[index].showContent = !state.roomData[index].showContent;
             // 切换底部显示
           const toggleCardFooter=(index)=>state.roomData[index].showFooter = !state.roomData[index].showFooter;
-          const openAddHotelRoom=()=> window.parent.mainFrame(`/Hotel/AddHotelRoom/${id.value}`,``,``);
+
+
+
+        /**
+         * 新增房间
+         */
+          const onAddRoom=()=>{
+                    layer.open({
+                        type: 2,
+                        title: '新增房间',
+                        area: ['90%', '80%'],
+                        fix: false,
+                        maxmin: true,
+                        content:  "/Hotel/AddHotelRoom?id=@ViewBag.mv.Id",
+                        end: function () {
+                           state.qry.pageIndex = 1;
+                           loadData();
+                        }
+                    });
+          }
+   
+
+
+
+
           const openViewHotel=()=> window.parent.mainFrame(`/Hotel/ViewHotel/${id.value}`,``,``);
           const openAddPricePlan=(row)=> {
           
@@ -189,7 +208,7 @@
                          state.roomData = data.data;
                      })
              };
-          return {state,openViewHotel,openAddHotelRoom,toggleCardContent,toggleCardFooter,openAddPricePlan,openMyHotel,deleteRoom,deletePricePlan,editPricePlan}
+          return {state,openViewHotel,onAddRoom,toggleCardContent,toggleCardFooter,openAddPricePlan,openMyHotel,deleteRoom,deletePricePlan,editPricePlan}
 
         }
         });
