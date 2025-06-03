@@ -1,5 +1,6 @@
 ﻿using YueJia.Ebk.Application.Contracts.HotelApp.Commands;
 using YueJia.Ebk.Application.Contracts.HotelApp.Dto;
+using YueJia.Ebk.Application.Contracts.HotelApp.Query;
 
 namespace YueJia.Ebk.Application.Contracts.HotelApp;
 
@@ -66,5 +67,15 @@ public interface IHotelApp
     /// <param name="id"></param>
     /// <returns></returns>
     Task<bool> DeletePricePlanAsync(long id);
+
+
+
+
+    /// <summary>
+    /// 查询库存和价格详情
+    /// </summary>
+    /// <param name="qry"></param>
+    /// <returns></returns>
+    Task<InventoryAndPriceDetailsDto> GetInventoryAndPriceDetailsByFilterAsync(InventoryAndPriceDetailsQry qry);
 
 }

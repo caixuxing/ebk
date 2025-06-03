@@ -1,9 +1,11 @@
-﻿using YueJia.Ebk.Application.Contracts.HotelApp;
+﻿using SqlSugar;
+using YueJia.Ebk.Application.Contracts.HotelApp;
 using YueJia.Ebk.Application.Contracts.HotelApp.Commands;
 using YueJia.Ebk.Application.Contracts.HotelApp.Query;
 using YueJia.Ebk.Application.Contracts.OuterServiceApp;
 using YueJia.Ebk.Application.Contracts.OuterServiceApp.Qry;
 using YueJia.Ebk.Application.Contracts.SysApp;
+using YueJia.Ebk.Domain.Hotel;
 using YueJia.Ebk.Web.ViewModels.Hotel;
 namespace YueJia.Ebk.Web.Controllers;
 
@@ -22,6 +24,15 @@ public class HotelController : AbpController
     private ISysEnumApp SysEnumApp => LazyServiceProvider.LazyGetRequiredService<ISysEnumApp>();
 
     private IHotelApp HotelApp => LazyServiceProvider.LazyGetRequiredService<IHotelApp>();
+
+
+
+    private ISimpleClient<HotelRoomDo> HotelRoomRepo => LazyServiceProvider.LazyGetRequiredService<ISimpleClient<HotelRoomDo>>();
+    private ISimpleClient<PricePlanDo> PricePlanRepo => LazyServiceProvider.LazyGetRequiredService<ISimpleClient<PricePlanDo>>();
+
+    private ISimpleClient<HotelPublishDo> HotelPublishRepo => LazyServiceProvider.LazyGetRequiredService<ISimpleClient<HotelPublishDo>>();
+
+
 
 
 
@@ -347,11 +358,43 @@ public class HotelController : AbpController
     /// <summary>
     /// 库存和价格（View）
     /// </summary>
+    /// <param name="id">酒店Id</param>
     /// <returns></returns>
-    public IActionResult InventoryAndPrice()
+    public async Task<IActionResult> InventoryAndPrice(string id)
     {
+        var entity = await HotelPublishRepo.GetByIdAsync(id) ?? throw new InvalidOperationException("酒店不存在！");
 
-        return View();
+        InventoryAndPriceVo vm = new InventoryAndPriceVo();
+        vm.HotelId = entity.Id.ToString();
+        vm.HotelName = entity.HotelName;
+        vm.HotelNameEn = entity.HotelNameEn;
+        vm.StartDate = DateTime.Now;
+        vm.ShowDays = 7;
+        var data = await HotelApp.GetInventoryAndPriceDetailsByFilterAsync(new InventoryAndPriceDetailsQry()
+        {
+
+            HotelId = entity.Id,
+            RoomId = 0,
+            StartDate = vm.StartDate,
+            Days = vm.ShowDays,
+
+        });
+        return View(vm);
+    }
+
+
+    /// <summary>
+    /// 按条件筛选库存和价格
+    /// </summary>
+    /// <param name="qry"></param>
+    /// <returns></returns>
+    [HttpPost, Route("[controller]/InventoryAndPriceDetailsByFilter")]
+    public async Task<IResult> InventoryAndPriceDetailsByFilter(InventoryAndPriceDetailsQry qry)
+    {
+        var result = await HotelApp.GetInventoryAndPriceDetailsByFilterAsync(qry);
+
+        return ApiResult.HandleResult(result);
+
     }
 
 

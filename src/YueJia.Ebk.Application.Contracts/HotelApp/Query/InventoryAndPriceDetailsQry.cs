@@ -1,0 +1,28 @@
+﻿namespace YueJia.Ebk.Application.Contracts.HotelApp.Query
+{
+    /// <summary>
+    /// 查询库存和价格详情
+    /// </summary>
+    public class InventoryAndPriceDetailsQry
+    {
+
+        /// <summary>
+        /// 酒店ID
+        /// </summary>
+        public long HotelId { get; set; }
+        /// <summary>
+        /// 房间ID
+        /// </summary>
+        public long RoomId { get; set; }
+
+        /// <summary>
+        /// 开始时间
+        /// </summary>
+        public DateTime StartDate { get; set; }
+
+        /// <summary>
+        /// 天数
+        /// </summary>
+        public int Days { get; set; }
+    }
+}

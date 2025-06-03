@@ -1,5 +1,5 @@
 ﻿@using YueJia.Ebk.Application.Contracts.SysApp
-@model  YueJia.Ebk.Web.ViewModels.Hotel.AddPricePlanVo
+@model  YueJia.Ebk.Web.ViewModels.Hotel.InventoryAndPriceVo
 @inject ISysEnumApp enumApp
 @{
     Layout = "~/Views/Shared/_Layout.cshtml";
@@ -20,7 +20,7 @@
           
 
           <el-alert type="primary" show-icon :closable="false" >
-            <p>[我的酒店] / <el-link type="primary" >1111111111</el-link> / <el-link type="primary" v-on:click="openRoomAndPricePlan">房间与价格计划</el-link> / 库存与价格 / 促销</p>
+            <p>[我的酒店] / <el-link type="primary" >@($"{Html.Raw(Model.HotelName)}({Html.Raw(Model.HotelNameEn)})")</el-link> / <el-link type="primary" v-on:click="openRoomAndPricePlan">房间与价格计划</el-link> / 库存与价格 / 促销</p>
              </el-alert>
             <el-form-item style="margin-top:30px">
                 <h1>库存和价格</h1>
@@ -28,7 +28,7 @@
             </el-form-item>
    
             <el-form-item label="酒店：">
-                <el-text class="mx-1">Bohol Beach Club Resort[薄荷海滩俱乐部酒店]</el-text> <el-text class="mx-1">CNY</el-text>
+                <el-text class="mx-1">{{state.formData.hotelName}}</el-text> <el-text class="mx-1">CNY</el-text>
             </el-form-item>
 
             <el-form-item label="房间名称：">
@@ -40,17 +40,14 @@
                           <el-option key="14" label="14" value="14" ></el-option>
                         </el-select>
 
-
-                        <div  >
-                        开始日期：<el-date-picker :v-model="21-01-01" type="date" placeholder="Pick a day" :size="size"> </el-date-picker>
-                        </div>
-                        <div>
+                          开始日期：<el-date-picker v-model="state.formData.startDate" type="date" placeholder="开始日期" :size="size"> </el-date-picker>
                           显示天数：
-                          <el-select v-model="value" placeholder="Select" style="width: 240px">
-                          <el-option key="7" label="7" value="7" ></el-option>
-                          <el-option key="14" label="14" value="14" ></el-option>
+                          <el-select v-model="state.formData.showDays" placeholder="Select" style="width: 140px">
+                          <el-option key="7" label="7天" value="7" ></el-option>
+                          <el-option key="14" label="14天" value="14" ></el-option>
                         </el-select>
-                        </div>
+                       <el-button type="primary">前14天</el-button>
+                          <el-button type="primary">后14天</el-button>
 
                     </el-col>
                    
@@ -85,60 +82,43 @@
                          
                           <table class="el-table__header" border="0" cellpadding="0" cellspacing="0" style="width: 100%;">
                               <thead>
-                                  <tr><th class="el-table__cell" colspan="8"> <div class="cell"> 豪华房, 1 大床 或 1 双床    上架 </div></th></tr>
+                                  <tr><th class="el-table__cell" colspan="8"> <div class="cell">  {{state.formData.room.name}} </div></th></tr>
                                   <tr><th class="el-table__cell" colspan="1" rowspan="1"><div class="cell"></div></th>
-                                      <th class="el-table__cell" colspan="1" rowspan="1"><div class="cell" style="text-align:center"><p>06-04</p><p>周三</p></div></th>
-                                      <th class="el-table__cell" colspan="1" rowspan="1"><div class="cell" style="text-align:center"><p>06-04</p><p>周三</p></div></th>
-                                      <th class="el-table__cell" colspan="1" rowspan="1"><div class="cell" style="text-align:center"><p>06-04</p><p>周三</p></div></th>
-                                      <th class="el-table__cell" colspan="1" rowspan="1"><div class="cell" style="text-align:center"><p>06-04</p><p>周三</p></div></th>
-                                      <th class="el-table__cell" colspan="1" rowspan="1"><div class="cell" style="text-align:center"><p>06-04</p><p>周三</p></div></th>
-                                      <th class="el-table__cell" colspan="1" rowspan="1"><div class="cell" style="text-align:center"><p>06-04</p><p>周三</p></div></th>
-                                      <th class="el-table__cell" colspan="1" rowspan="1"><div class="cell" style="text-align:center"><p>06-04</p><p>周三</p></div></th>
+                                     
+                                      <th class="el-table__cell" colspan="1" rowspan="1" v-for="item in state.formData.room.inventory"><div class="cell" style="text-align:center"><p>{{item.monthDay}}</p><p>{{item.dayOfWeek}}</p></div></th>
                                   </tr>
                                 </thead>
                                 <tbody>
                                     <tr class="el-table__row">
                                         <td class="el-table__cell" width="20px"><div class="cell">库存</div> </td>
-                                        <td class="el-table__cell" colspan="1" rowspan="1"><div class="cell"> <el-input-number v-model="state.formData.stock.Monday" controls-position="right" style="width:100%" ></el-input-number></div> </td>
-                                        <td class="el-table__cell" colspan="1" rowspan="1"><div class="cell"><el-input-number v-model="state.formData.stock.Tuesday" controls-position="right" style="width:100%" ></el-input-number></div></td>
-                                        <td class="el-table__cell" colspan="1" rowspan="1"><div class="cell"><el-input-number v-model="state.formData.stock.Wednesday" controls-position="right" style="width:100%"></el-input-number></div></td>
-                                        <td class="el-table__cell" colspan="1" rowspan="1"><div class="cell"><el-input-number v-model="state.formData.stock.Thursday" controls-position="right" style="width:100%"></el-input-number></div></td>
-                                        <td class="el-table__cell" colspan="1" rowspan="1"><div class="cell"><el-input-number v-model="state.formData.stock.Friday" controls-position="right" style="width:100%"></el-input-number></div></td>
-                                        <td class="el-table__cell" colspan="1" rowspan="1"><div class="cell"><el-input-number v-model="state.formData.stock.Saturday" controls-position="right" style="width:100%"></el-input-number></div></td>
-                                        <td class="el-table__cell" colspan="1" rowspan="1"><div class="cell"><el-input-number v-model="state.formData.stock.Sunday" controls-position="right" style="width:100%"></el-input-number></div></td>
+                                        <td class="el-table__cell" colspan="1" rowspan="1" v-for="item in state.formData.room.inventory">
+                                            <div class="cell"> <el-input-number v-model="item.inventoryNum" controls-position="right" style="width:100%" ></el-input-number></div> 
+                                            </td>
                                     </tr>
                                     <tr class="el-table__row">
                                         <td class="el-table__cell" colspan="1" rowspan="1"><div class="cell">切换状态</div> </td>
-                                        <td class="el-table__cell" colspan="1" rowspan="1"><div class="cell" style="text-align:center"> <el-switch :v-model="false" inline-prompt active-text="是" inactive-text="否" /></div> </td>
-                                        <td class="el-table__cell" colspan="1" rowspan="1"><div class="cell" style="text-align:center"> <el-switch :v-model="false" inline-prompt active-text="是" inactive-text="否" /></div> </td>
-                                        <td class="el-table__cell" colspan="1" rowspan="1"><div class="cell" style="text-align:center"> <el-switch :v-model="false" inline-prompt active-text="是" inactive-text="否" /></div> </td>
-                                   <td class="el-table__cell" colspan="1" rowspan="1"><div class="cell" style="text-align:center"> <el-switch :v-model="false" inline-prompt active-text="是" inactive-text="否" /></div> </td>
-                                   <td class="el-table__cell" colspan="1" rowspan="1"><div class="cell" style="text-align:center"> <el-switch :v-model="false" inline-prompt active-text="是" inactive-text="否" /></div> </td>
-                                   <td class="el-table__cell" colspan="1" rowspan="1"><div class="cell" style="text-align:center"> <el-switch :v-model="false" inline-prompt active-text="是" inactive-text="否" /></div> </td>
-                                   <td class="el-table__cell" colspan="1" rowspan="1"><div class="cell" style="text-align:center"> <el-switch :v-model="false" inline-prompt active-text="是" inactive-text="否" /></div> </td>
+
+
+                                        <td class="el-table__cell" colspan="1" rowspan="1"  v-for="item in state.formData.room.inventory">
+                                            <div class="cell" style="text-align:center"> <el-switch v-model="item.status" inline-prompt active-text="是" inactive-text="否" /></div> </td>
+         
+
                                     </tr>
                                     <tr class="el-table__row">
-                                    <td class="el-table__cell" colspan="8" > <div class="cell">特价[双早] - 含早上架 All</div> </td>
+                                    <td class="el-table__cell" colspan="8" > <div class="cell">{{state.formData.pricePlan.name}}</div> </td>
                                     </tr>
                                         <tr class="el-table__row">
                                         <td class="el-table__cell" width="20px"><div class="cell">价格(CNY)</div> </td>
-                                        <td class="el-table__cell" colspan="1" rowspan="1"><div class="cell"> <el-input-number v-model="state.formData.stock.Monday" controls-position="right" style="width:100%" ></el-input-number></div> </td>
-                                        <td class="el-table__cell" colspan="1" rowspan="1"><div class="cell"><el-input-number v-model="state.formData.stock.Tuesday" controls-position="right" style="width:100%" ></el-input-number></div></td>
-                                        <td class="el-table__cell" colspan="1" rowspan="1"><div class="cell"><el-input-number v-model="state.formData.stock.Wednesday" controls-position="right" style="width:100%"></el-input-number></div></td>
-                                        <td class="el-table__cell" colspan="1" rowspan="1"><div class="cell"><el-input-number v-model="state.formData.stock.Thursday" controls-position="right" style="width:100%"></el-input-number></div></td>
-                                        <td class="el-table__cell" colspan="1" rowspan="1"><div class="cell"><el-input-number v-model="state.formData.stock.Friday" controls-position="right" style="width:100%"></el-input-number></div></td>
-                                        <td class="el-table__cell" colspan="1" rowspan="1"><div class="cell"><el-input-number v-model="state.formData.stock.Saturday" controls-position="right" style="width:100%"></el-input-number></div></td>
-                                        <td class="el-table__cell" colspan="1" rowspan="1"><div class="cell"><el-input-number v-model="state.formData.stock.Sunday" controls-position="right" style="width:100%"></el-input-number></div></td>
+                                        <td class="el-table__cell" colspan="1" rowspan="1"  v-for="item in state.formData.pricePlan.prices">
+                                            <div class="cell"> <el-input-number v-model="item.price" controls-position="right" style="width:100%" ></el-input-number></div>
+                                        </td>
+                                       
                                     </tr>
                                     <tr class="el-table__row">
                                         <td class="el-table__cell" colspan="1" rowspan="1"><div class="cell">切换状态</div> </td>
-                                        <td class="el-table__cell" colspan="1" rowspan="1"><div class="cell" style="text-align:center"> <el-switch :v-model="false" inline-prompt active-text="是" inactive-text="否" /></div> </td>
-                                         <td class="el-table__cell" colspan="1" rowspan="1"><div class="cell" style="text-align:center"> <el-switch :v-model="false" inline-prompt active-text="是" inactive-text="否" /></div> </td>
-                                       <td class="el-table__cell" colspan="1" rowspan="1"><div class="cell" style="text-align:center"> <el-switch :v-model="false" inline-prompt active-text="是" inactive-text="否" /></div> </td>
-                                   <td class="el-table__cell" colspan="1" rowspan="1"><div class="cell" style="text-align:center"> <el-switch :v-model="false" inline-prompt active-text="是" inactive-text="否" /></div> </td>
-                                      <td class="el-table__cell" colspan="1" rowspan="1"><div class="cell" style="text-align:center"> <el-switch :v-model="false" inline-prompt active-text="是" inactive-text="否" /></div> </td>
-                                         <td class="el-table__cell" colspan="1" rowspan="1"><div class="cell" style="text-align:center"> <el-switch :v-model="false" inline-prompt active-text="是" inactive-text="否" /></div> </td>
-                                            <td class="el-table__cell" colspan="1" rowspan="1"><div class="cell" style="text-align:center"> <el-switch :v-model="false" inline-prompt active-text="是" inactive-text="否" /></div> </td>
+                                        <td class="el-table__cell" colspan="1" rowspan="1"  v-for="item in state.formData.pricePlan.prices">
+                                            <div class="cell" style="text-align:center"> <el-switch v-model="item.status" inline-prompt active-text="是" inactive-text="否" /></div>
+                                       </td>
                                     </tr>
 
 
@@ -147,8 +127,6 @@
                                </div>
                          
                    </div>
-
-
                   
             </el-form-item>
 
@@ -170,50 +148,75 @@
     <script type="text/javascript">
         const app = Vue.createApp({
         setup() { 
-        
             const state = Vue.reactive({
+                roomData:[],
                 formData: {
-                    stock: {
-                        Monday: 0,
-                        Tuesday: 0,
-                        Wednesday: 0,
-                        Thursday: 0,
-                        Friday: 0,
-                        Saturday: 0,
-                        Sunday: 0
-                    }
-                },
-                FormDataRules: {
-                    stock: {
-                        Monday: [
-                            { required: true, message: '请输入星期一的库存', trigger: 'blur' },
-                            { type: 'number', message: '请输入正确的数字', trigger: 'blur' }
-                        ],
-                        Tuesday: [
-                            { required: true, message: '请输入星期二的库存', trigger: 'blur' },
-                            { type: 'number', message: '请输入正确的数字', trigger: 'blur' }
-                        ],
-                        Wednesday: [
-                            { required: true, message: '请输入星期三的库存', trigger: 'blur' },
-                            { type: 'number', message: '请输入正确的数字', trigger: 'blur' }
-                        ],
-                        Thursday: [
-                            { required: true, message: '请输入星期四的库存', trigger: 'blur' },
-                            { type: 'number', message: '请输入正确的数字', trigger: 'blur' }
-                        ],
-                        Friday: [
-                            { required: true, message: '请输入星期五的库存', trigger: 'blur' },
-                            { type: 'number', message: '请输入正确的数字', trigger: 'blur' }
-                        ],
-                        Saturday: [
-                            { required: true, message: '请输入星期六的库存', trigger: 'blur' },
-                            { type: 'number', message: '请输入正确的数字', trigger: 'blur' }
-                        ],
-                        Sunday: [
-                            { required: true, message: '请输入星期日的库存', trigger: 'blur' },
-                            { type: 'number', message: '请输入正确的数字', trigger: 'blur' }
+                    hotelName: `@(Html.Raw($"{Model.HotelName}({Model.HotelNameEn})"))`,
+                    roomName: '2222222222',
+                    roomType: '111',
+                    startDate: `@Html.Raw(Model.StartDate.ToString("yyyy-MM-dd"))`,
+                    showDays: `@Html.Raw(Model.ShowDays)`,
+                    room: {
+                          id: '1136',
+                        name: '豪华房, 1 大床 或 1 双床',
+                        statusName: '上架',
+                        inventory: [
+                            { id: '9523', monthDay: '06-11', dayOfWeek: '周1二', inventoryNum: 100, status: false },
+                            { id: '9524', monthDay: '06-02', dayOfWeek: '周三', inventoryNum: 100, status: false },
+                            { id: '9525', monthDay: '06-03', dayOfWeek: '周四', inventoryNum: 100, status: true },
+                            { id: '9526', monthDay: '06-04', dayOfWeek: '周五', inventoryNum: 100, status: false },
+                            { id: '9527', monthDay: '06-05', dayOfWeek: '周六', inventoryNum: 100, status: true },
+                            { id: '9528', monthDay: '06-06', dayOfWeek: '周日', inventoryNum: 100, status: true },
+                            { id: '9529', monthDay: '06-07', dayOfWeek: '周一', inventoryNum: 100, status: false }
                         ]
-                    }       
+
+                    },
+                    pricePlan: {
+                        id: '1136222',
+                        name: '特价【双早】-含早',
+                        statusName: '上架',
+                        prices: [
+                            { id: '11362221', price: 1000, status: true },
+                            { id: '11362222', price: 1000, status: false },
+                            { id: '11362223', price: 1000, status: true },
+                            { id: '11362224', price: 1000, status: true },
+                            { id: '11362225', price: 1000, status: false },
+                            { id: '11362226', price: 1000, status: true },
+                            { id: '11362227', price: 1000, status: true }
+                        ]
+                    },
+                    FormDataRules: {
+                        stock: {
+                            Monday: [
+                                { required: true, message: '请输入星期一的库存', trigger: 'blur' },
+                                { type: 'number', message: '请输入正确的数字', trigger: 'blur' }
+                            ],
+                            Tuesday: [
+                                { required: true, message: '请输入星期二的库存', trigger: 'blur' },
+                                { type: 'number', message: '请输入正确的数字', trigger: 'blur' }
+                            ],
+                            Wednesday: [
+                                { required: true, message: '请输入星期三的库存', trigger: 'blur' },
+                                { type: 'number', message: '请输入正确的数字', trigger: 'blur' }
+                            ],
+                            Thursday: [
+                                { required: true, message: '请输入星期四的库存', trigger: 'blur' },
+                                { type: 'number', message: '请输入正确的数字', trigger: 'blur' }
+                            ],
+                            Friday: [
+                                { required: true, message: '请输入星期五的库存', trigger: 'blur' },
+                                { type: 'number', message: '请输入正确的数字', trigger: 'blur' }
+                            ],
+                            Saturday: [
+                                { required: true, message: '请输入星期六的库存', trigger: 'blur' },
+                                { type: 'number', message: '请输入正确的数字', trigger: 'blur' }
+                            ],
+                            Sunday: [
+                                { required: true, message: '请输入星期日的库存', trigger: 'blur' },
+                                { type: 'number', message: '请输入正确的数字', trigger: 'blur' }
+                            ]
+                        }
+                    }
                 }
             });
 
@@ -222,6 +225,11 @@
             const openRoomAndPricePlan = () => {
                 window.location.href = '/Hotel/RoomAndPricePlan';
             }
+
+            const changeRoom = () => {
+                
+
+                }
 
             const save = () => {
                 FormDataRef.value.validate((valid) => {
@@ -241,7 +249,6 @@
                 openRoomAndPricePlan,
                 save
             };
-        
         }
         });
         app.use(ElementPlus);

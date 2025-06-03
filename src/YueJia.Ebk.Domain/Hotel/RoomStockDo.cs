@@ -2,10 +2,10 @@
 
 
 
-[SugarTable("RoomStock", "房间库存")]
-public partial record RoomStockDo : EntityTenant
+[SugarTable("RoomInventory", "房间库存")]
+public partial record RoomInventoryDo : EntityTenant
 {
-    public RoomStockDo() { }
+    public RoomInventoryDo() { }
     /// <summary>
     /// 酒店房间ID
     /// </summary>
@@ -24,19 +24,31 @@ public partial record RoomStockDo : EntityTenant
     [SugarColumn(ColumnDescription = "库存")]
     public int StockNum { get; private set; }
 
+
+    /// <summary>
+    /// 价格
+    /// </summary>
+    [SugarColumn(ColumnDescription = "库存", ColumnDataType = "decimal(8,2)")]
+    public decimal Price { get; private set; }
+
+    /// <summary>
+    /// 是否启用
+    /// </summary>
+    public YesOrNoType IsEnabled { get; set; }
+
 }
 
-public partial record RoomStockDo
+public partial record RoomInventoryDo
 {
-    private RoomStockDo(long hotelRoomId, DateTime currentDate, int stockNum)
+    private RoomInventoryDo(long hotelRoomId, DateTime currentDate, int stockNum)
     {
         HotelRoomId = hotelRoomId;
         CurrentDate = currentDate;
         StockNum = stockNum;
     }
 
-    public static RoomStockDo Create(long hotelRoomId, DateTime currentDate, int stockNum)
+    public static RoomInventoryDo Create(long hotelRoomId, DateTime currentDate, int stockNum)
     {
-        return new RoomStockDo(hotelRoomId, currentDate, stockNum);
+        return new RoomInventoryDo(hotelRoomId, currentDate, stockNum);
     }
 }

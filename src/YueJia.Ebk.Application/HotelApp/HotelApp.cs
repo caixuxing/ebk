@@ -2,6 +2,7 @@
 using YueJia.Ebk.Application.Contracts.HotelApp;
 using YueJia.Ebk.Application.Contracts.HotelApp.Commands;
 using YueJia.Ebk.Application.Contracts.HotelApp.Dto;
+using YueJia.Ebk.Application.Contracts.HotelApp.Query;
 using YueJia.Ebk.Application.Contracts.OuterServiceApp.Entity;
 using YueJia.Ebk.Application.Contracts.SysUserApp;
 using YueJia.Ebk.Domain.Hotel;
@@ -20,6 +21,11 @@ public class HotelApp : ApplicationService, IHotelApp
     private ISimpleClient<PricePlanDo> PricePlanRepo => LazyServiceProvider.LazyGetRequiredService<ISimpleClient<PricePlanDo>>();
     private ISqlSugarClient SqlSugarClient => LazyServiceProvider.GetRequiredKeyedService<ISqlSugarClient>(DbConst.YueJiaSysDb);
 
+    private ISimpleClient<HotelPublishDo> HotelPublishRepo => LazyServiceProvider.LazyGetRequiredService<ISimpleClient<HotelPublishDo>>();
+
+
+
+    private ISimpleClient<RoomInventoryDo> RoomStockRepo => LazyServiceProvider.LazyGetRequiredService<ISimpleClient<RoomInventoryDo>>();
 
 
     public async Task<long> AddHotelRoomAsync(CreateHotelRoomCmd cmd)
@@ -31,14 +37,14 @@ public class HotelApp : ApplicationService, IHotelApp
             ?? throw new InvalidOperationException("床间酒店房间信息失败！");
 
 
-        List<RoomStockDo> roomStockDos = new();
+        List<RoomInventoryDo> roomStockDos = new();
         for (DateTime date = cmd.StartDate; date <= cmd.EndDate; date = date.AddDays(1))
         {
             // 获取当前日期的星期几
             DayOfWeek dayOfWeek = date.DayOfWeek;
             // 如果键不存在，返回 int 的默认值（0）
             int stockNum = cmd.Stock.GetValueOrDefault(dayOfWeek);
-            roomStockDos.Add(RoomStockDo.Create(entity.Id, date, stockNum));
+            roomStockDos.Add(RoomInventoryDo.Create(entity.Id, date, stockNum));
         }
         return await DbTransaction.ExecuteInTransactionAsync(db, async () =>
         {
@@ -217,5 +223,67 @@ public class HotelApp : ApplicationService, IHotelApp
               .SetIsEnable(cmd.IsEnable)
               .SetIsReservedRoom(cmd.IsReservedRoom);
         return await PricePlanRepo.AsUpdateable(entity).ExecuteCommandWithOptLockAsync(true) > 0;
+    }
+
+
+    /// <summary>
+    /// 读取库存和价格详情
+    /// </summary>
+    /// <param name="qry"></param>
+    /// <returns></returns>
+    /// <exception cref="InvalidOperationException"></exception>
+    public async Task<InventoryAndPriceDetailsDto> GetInventoryAndPriceDetailsByFilterAsync(InventoryAndPriceDetailsQry qry)
+    {
+
+        var RoomEntitys = await HotelRoomRepo.GetListAsync(x => x.HotelId == qry.HotelId);
+
+        var roomIds = RoomEntitys.Select(x => x.Id).ToList();
+
+        var pricePlanEntities = await PricePlanRepo.GetFirstAsync(x => x.HotelRoomId == qry.RoomId);
+
+
+        var hotelCode = RoomEntitys.FirstOrDefault()?.HotelCode ?? throw new InvalidOperationException("酒店编码不存在！");
+
+        var currentHotelRoomTypeDate = await SqlSugarClient.Queryable<OtaRoomEntity>()
+                              .Where(q => q.pfcode == "D" && q.hotelcode == hotelCode)
+                              .Select(t => new { t.roomcode, t.roomname })
+                              .ToListAsync();
+        var RoomStockEntitys = await RoomStockRepo.GetListAsync(x => x.CurrentDate >= qry.StartDate && x.CurrentDate <= qry.StartDate.AddDays(qry.Days) && roomIds.Contains(qry.RoomId));
+
+        return new()
+        {
+
+
+            RoomTypeDropdownList = RoomEntitys.Select(x => new SelectDataDto<string>() { Value = x.RoomType, Label = currentHotelRoomTypeDate.FirstOrDefault(y => y.roomcode == int.Parse(x.RoomType))?.roomname ?? string.Empty }).ToList(),
+            Room = RoomEntitys.Where(x => x.Id == 5).Select(x => new Room()
+            {
+                Id = x.Id.ToString(),
+                RoomName = currentHotelRoomTypeDate.FirstOrDefault(y => y.roomcode == int.Parse(x.RoomType))?.roomname ?? string.Empty,
+                Status = x.IsEnabled,
+                Inventories = RoomStockEntitys.Select(t => new Inventory()
+                {
+                    Id = t.Id.ToString(),
+                    MonthDay = t.CurrentDate.ToString("MM-dd"),
+                    InventoryNum = t.StockNum,
+                    Status = t.IsEnabled,
+                    DayOfWeek = t.CurrentDate.DayOfWeek.ToString(),
+
+                }).ToList()
+
+            }).FirstOrDefault() ?? new(),
+            PricePlan = new PricePlan
+            {
+                Id = pricePlanEntities.Id.ToString(),
+                Name = "价格计划名称Remark",
+                Status = pricePlanEntities.IsEnable,
+                Prices = RoomStockEntitys.Select(x => new PriceItem()
+                {
+                    Id = x.Id.ToString(),
+                    Price = x.Price,
+                    Status = x.IsEnabled,
+
+                }).ToList()
+            }
+        };
     }
 }
