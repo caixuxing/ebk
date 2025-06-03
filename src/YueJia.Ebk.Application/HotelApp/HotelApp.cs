@@ -273,9 +273,9 @@ public class HotelApp : ApplicationService, IHotelApp
             }).FirstOrDefault() ?? new(),
             PricePlan = new PricePlan
             {
-                Id = pricePlanEntities.Id.ToString(),
+                Id = pricePlanEntities?.Id.ToString() ?? string.Empty,
                 Name = "价格计划名称Remark",
-                Status = pricePlanEntities.IsEnable,
+                Status = pricePlanEntities?.IsEnable ?? YesOrNoType.No,
                 Prices = RoomStockEntitys.Select(x => new PriceItem()
                 {
                     Id = x.Id.ToString(),

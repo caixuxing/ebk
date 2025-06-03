@@ -361,7 +361,7 @@ public class HotelController : AbpController
     /// <returns></returns>
     public async Task<IActionResult> InventoryAndPrice(string id)
     {
-        var entity = await HotelPublishRepo.GetByIdAsync(id) ?? throw new InvalidOperationException("酒店不存在！");
+        var entity = await HotelPublishRepo.GetByIdAsync(id.ToLong()) ?? throw new InvalidOperationException("酒店不存在！");
 
         InventoryAndPriceVo vm = new InventoryAndPriceVo();
         vm.HotelId = entity.Id.ToString();

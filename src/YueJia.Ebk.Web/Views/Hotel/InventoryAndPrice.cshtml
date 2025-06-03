@@ -19,9 +19,11 @@
         <el-form :model="state.formData" label-width="auto" :rules="FormDataRules" ref="FormDataRef">
           
 
-          <el-alert type="primary" show-icon :closable="false" >
-            <p>[我的酒店] / <el-link type="primary" >@($"{Html.Raw(Model.HotelName)}({Html.Raw(Model.HotelNameEn)})")</el-link> / <el-link type="primary" v-on:click="openRoomAndPricePlan">房间与价格计划</el-link> / 库存与价格 / 促销</p>
-             </el-alert>
+       
+
+
+            @Html.PartialAsync("~/Views/Hotel/UserHotelNavigationMgr.cshtml", Model)
+
             <el-form-item style="margin-top:30px">
                 <h1>库存和价格</h1>
 
