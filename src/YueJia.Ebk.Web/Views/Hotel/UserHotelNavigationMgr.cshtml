@@ -2,7 +2,7 @@
 
 <div >
 
-@*     <el-breadcrumb>
+    <el-breadcrumb>
         <el-breadcrumb-item >
             <label onclick="onToDataList()">数据列表</label>
         </el-breadcrumb-item>
@@ -14,29 +14,44 @@
             <label onclick="onToRoomAndPricePlan()">房间与价格计划</label>
          </el-breadcrumb-item>
         <el-breadcrumb-item>
-            <template>
-                 <el-popover placement="bottom"
-                                title="标题"
-                                width="200"
-                                trigger="click"
-                                content="这是一段内容,这是一段内容,这是一段内容,这是一段内容。">
-                              <label slot="reference">库存与价格</label>
-                    </el-popover> 
-            </template>
+            <el-popover placement="top"
+                        width="200">
+                <div style=" margin: 0">
+                    <ul>
+                        <li>
+                            <el-link icon="el-icon-edit">库存和价格</el-link>
+                         </li>
+                        <li>
+                            <div>
+                                <el-link icon="el-icon-edit">库存和价格日历</el-link>
+                            </div>
+                        </li>
+                        <li>
+                            <div>
+                                <el-link icon="el-icon-edit">加载库存与价格</el-link>
+                            </div>
+                        </li>
+                        <li>
+                            <div>
+                                <el-link icon="el-icon-edit">批量编辑库存与价格</el-link>
+                            </div>
+                        </li>
+                    </ul> 
+                </div>
+                <template #reference>
+                    <label>库存与价格</label>
+                </template>
+            </el-popover>
+
          </el-breadcrumb-item>
-    </el-breadcrumb> *@
-    ***
-    <template>
-        <el-popover placement="bottom"
-                    title="标题"
-                    width="200"
-                    trigger="click"
-                    content="这是一段内容,这是一段内容,这是一段内容,这是一段内容。">
-            <label slot="reference">库存与价格</label>
-        </el-popover>
-    </template>
-    ***
+    </el-breadcrumb>
 </div>
+
+<style>
+    .test-popover {
+        position: relative; /* 确保有正确的定位上下文 */
+    }
+</style>
 
 <script type="text/javascript">
      function onToDataList(){
@@ -45,6 +60,10 @@
 
     function onToRoomAndPricePlan(){
         window.location.href = '/Hotel/RoomAndPricePlan?id='+'@Model.Id'
+    }
+
+    function InventoryAndPrice(){
+        
     }
 
 </script>
