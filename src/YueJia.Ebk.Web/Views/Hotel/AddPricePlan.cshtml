@@ -1,5 +1,5 @@
 ﻿@using YueJia.Ebk.Application.Contracts.SysApp
-@model  YueJia.Ebk.Web.ViewModels.Hotel.AddPricePlanVo
+@model YueJia.Ebk.Application.Contracts.HotelApp.Commands.CreateOrUpdatePricePlanCmd
 @inject ISysEnumApp enumApp
 @{
     Layout = "~/Views/Shared/_Layout.cshtml";
@@ -8,137 +8,118 @@
 @section head {
     <title>新增价格计划</title>
     <style scoped>
-		.el-input-number .el-input__inner{
+        .el-input-number .el-input__inner{
         text-align:left !important;
         }
-        </style>
+    </style>
 }
-<el-container style="height:100vh;overflow: hidden;">
+<el-container style="padding:20px" >
     <el-main>
-        <el-form :model="state.formData" label-width="auto" :rules="FormDataRules" ref="FormDataRef">
-          
+        <el-form label-width="auto" :inline="true"  style="width:650px;margin:0px auto" >
+            <div>
+                <el-form-item label="酒店名称：">
+                    <label>@ViewBag.HotelName </label>
+                </el-form-item>
+            </div>
+            <div>
+                <el-form-item label="房型名称："  >
+                    <label>@ViewBag.RoomTypeName </label>
+                </el-form-item>
+            </div>
+            <div>
+                <el-form-item label="床型名称：">
+                    <label>@ViewBag.BedTypeName </label>
+                </el-form-item>
+            </div>
+            <div>
+                <el-form-item label="人数上限：" style="width:120px;" >
+                    <label>@ViewBag.MaximumNumberOfPeople </label>
+                </el-form-item>
+                <el-form-item label="成人上限：" style="width:120px;">
+                    <label>@ViewBag.AdultLimit </label>
+                </el-form-item>
+                <el-form-item label="儿童上限：" style="width:120px;">
+                    <label>@ViewBag.ChildLimit </label>
+                </el-form-item>
+            </div>
 
-          <el-alert type="primary" show-icon :closable="false" >
-            <p>[我的酒店] / <el-link type="primary" v-on:click="openViewHotel">@Html.Raw($"{Model.HotelName}")</el-link> / <el-link type="primary" v-on:click="openRoomAndPricePlan">房间与价格计划</el-link> / 库存与价格 / 促销</p>
-             </el-alert>
-            <el-form-item style="margin-top:30px">
-                <h1>{{ id?.trim() ? "编辑价格计划": "新增价格计划" }}</h1>
+        </el-form>
 
-            </el-form-item>
-            <el-divider content-position="left">房间信息</el-divider>
-            <el-form-item label="酒店编码：">
-                <el-text class="mx-1">{{state.formData.hotelCode}}</el-text>
-            </el-form-item>
+        <el-divider content-position="left" style="width:650px;margin:10px auto 20px auto;">价格计划设置</el-divider>
 
-            <el-form-item label="酒店名称：">
-              
-                       <el-text class="mx-1">{{state.formData.hotelName}}</el-text>
-            </el-form-item>
-
-            <el-form-item label="房型名称：">
-                <el-text class="mx-1">{{state.formData.roomTypeName}}</el-text>
-            </el-form-item>
-
-            <el-form-item label="床型：">
-                 <el-text class="mx-1">{{state.formData.bedTypeName}}</el-text>
-            </el-form-item>
-
-       
-            <el-divider content-position="left">价格计划设置</el-divider>
-
-            <el-form-item label="早餐类型：" required prop="breakfastType">
-                     <el-select v-model="state.formData.breakfastType" placeholder="请选择早餐类型"  filterable   style="width:50%"> 
-                       <el-option v-for="option in state.breakfastTypeData" :key="option.value" :label="option.describe" :value="option.value"  ></el-option>
+        <el-form  label-width="auto"  style="width:650px;margin:0px auto">
+            <el-form-item label="早餐类型：">
+                <el-select v-model="vmodel.model.breakfastType" placeholder="请选择早餐类型" filterable style="width:100px">
+                    @foreach (var ele in enumApp.GetEnumDataList(nameof(BreakfastTypeEnum))) {
+                        <el-option label="@ele.Describe" :value="@ele.Value"></el-option>
+                    }
                     </el-select>
             </el-form-item>
 
-            <el-form-item label="提前天数：">
-                <el-input v-model="state.formData.daysInAdvance" style="width:50%"></el-input>
+            <el-form-item label="提前天数：" >
+                <el-input-number v-model="vmodel.model.daysInAdvance" :controls="false" :precision="0" :min="0" :max="60" style="width:100px"></el-input-number>
             </el-form-item>
 
-            <el-form-item label="连住天数：">
-                <el-input v-model="state.formData.continuousStayDays" style="width:50%"></el-input>
+            <el-form-item label="连住天数：" >
+                <el-input-number v-model="vmodel.model.continuousStayDays" :controls="false" :precision="0" :min="0" :max="15" style="width:100px"></el-input-number>
             </el-form-item>
 
-            <el-form-item label="是否保留房：">
-            <el-switch v-model="state.formData.isReservedRoom" inline-prompt active-text="是" inactive-text="否"/>
+            <el-form-item label="是否保留房：" >
+                <el-switch v-model="vmodel.A_isReservedRoom" inline-prompt active-text="是" inactive-text="否" />
             </el-form-item>
 
             <el-form-item label="是否启用：">
-                 <el-switch v-model="state.formData.isEnable" inline-prompt active-text="是" inactive-text="否"/>
+                <el-switch v-model="vmodel.A_isEnable" inline-prompt active-text="是" inactive-text="否" />
             </el-form-item>
             </el-form>
-                       <el-form-item>
-            <div class="dialog-footer" style="text-align: center; width: 100%;">
-                <el-button type="primary" v-on:click="save">保存 </el-button>
-            </div>
-        </el-form-item>
     </el-main>
- 
+    <el-footer>
+        <div style="text-align: center;">
+            <el-button type="primary" v-on:click="onSave">保存 </el-button>
+        </div>
+    </el-footer>
 </el-container>
 @section scripts {
     <script type="text/javascript">
+            var frameIndex = parent.layer.getFrameIndex(window.name);
+
         const app = Vue.createApp({
         setup() {
-                const state = Vue.reactive({
-                   breakfastTypeData:@(Html.Raw(JsonConvert.SerializeObject(enumApp.GetEnumDataList(nameof(BreakfastTypeEnum)), new JsonSerializerSettings { ContractResolver = new CamelCasePropertyNamesContractResolver() }))),
-                    formData: {
-                        hotelCode:`@Html.Raw(Model.HotelCode)`,
-                        hotelName: `@Html.Raw(Model.HotelName)`,
-                        roomTypeName: '@Html.Raw(Model.RoomTypeName)',
-                        bedTypeName: `@Html.Raw(Model.BedTypeName)`,
-                        breakfastType:@(Html.Raw(Model.BreakfastType.GetHashCode())),
-                        daysInAdvance:@Html.Raw(Model.DaysInAdvance),
-                        continuousStayDays:@Html.Raw(Model.ContinuousStayDays),
-                        isReservedRoom:@(Model.IsReservedRoom==YesOrNoType.Yes? "true":"false"),
-                        isEnable:@(Model.IsEnable==YesOrNoType.Yes? "true":"false"),
-                        hotelRoomId:`@Html.Raw(Model.HotelRoomId)`
-                    }
-                });
 
-                const id=Vue.ref(`@Html.Raw(Model.PricePlanId)`);
-                const hotelId=Vue.ref(`@Html.Raw(Model.HotelId)`);
-                const FormDataRef = Vue.ref(null);
- 
-            const FormDataRules = {
-                    breakfastType: [{ required: true, message: '早餐类型必填!', trigger: 'blur' }]
-                };
+               const vmodel = Vue.reactive({
+                    model :  @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model, new System.Text.Json.JsonSerializerOptions() { PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase })),
+                    A_isReservedRoom :true,
+                    A_isEnable :true,
+               });
 
+                Vue.onMounted(() => {
+                     vmodel.A_isReservedRoom = vmodel.model.isReservedRoom==1;
+                     vmodel.A_isEnable =  vmodel.model.isEnable==1;
+                 });
+   
 
+                /*
+                * 新增=> 保存
+                */
+                const onSave = async () => {
+                    let reqData = { ...vmodel.model };
+                       vmodel.model.isReservedRoom =  vmodel.A_isReservedRoom ==true?1:0;
+                       vmodel.model.isEnable = vmodel.A_isEnable==true?1:0;
 
-
-           const openRoomAndPricePlan=()=> window.parent.mainFrame(`/Hotel/RoomAndPricePlan/${hotelId.value}`,``,``);
-
-           const openViewHotel=()=> window.parent.mainFrame(`/Hotel/ViewHotel/${hotelId.value}`,``,``);
-
-                const cancel=()=>{
-                   window.parent.mainFrame(`/Hotel/HotelPublishList`,`我的酒店`,`page3-1`);
-                 };
-
-
-            const save = async () => {
-                let isValid = await FormDataRef.value.validate(); 
-                if(!isValid) return ElMessage({ message: "请完善表单信息!", type: "error" });
-                let requestData = { ...state.formData,
-                    daysInAdvance:Number(state.formData.daysInAdvance),
-                    continuousStayDays:Number(state.formData.continuousStayDays),
-                    isEnable:state.formData.isEnable?1:0, 
-                    isReservedRoom:state.formData.isReservedRoom?1:0
-                };
-                 let url = id.value  ? `/Hotel/UpdatePricePlan/${id.value}`  : '/Hotel/CreatePricePlan';
-                 let method = id.value  ? 'put' : 'post';
-                 let response = await axios[method](url, requestData);
-                    if (response.status  === 200) {
-                          ElMessage({ message: "保存成功!", type: "success" });
-                          openRoomAndPricePlan();
-                    }
-                  
-                    
-               }
+                           axios['post'](`/Hotel/CreatePricePlan`, reqData).then(res=>{
+                                     top.window.vueElMessage({ message: res.data. message , type:  res.data.isSuccess?'success':'info' })
+                                     if(res.data.isSuccess){
+                                        parent.layer.close(frameIndex); // 关闭当前弹框
+                                     }
+                        })
+                 }
 
 
 
-                return {state,openRoomAndPricePlan,openViewHotel,cancel,save,FormDataRules,FormDataRef,id}
+                return {
+                    vmodel
+                    ,onSave
+                }
         }
         });
         app.use(ElementPlus);

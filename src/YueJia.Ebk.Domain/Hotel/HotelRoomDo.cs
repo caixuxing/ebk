@@ -62,11 +62,7 @@ public partial record HotelRoomDo : EntityTenant
     [SugarColumn(ColumnDescription = "开始日期")]
     public DateTime EndDate { get; private set; }
 
-    /// <summary>
-    /// 库存初始值（Json）
-    /// </summary>
-    [SugarColumn(ColumnDescription = "库存初始值（Json）", Length = 200, IsNullable = true)]
-    public string? StockInitValJosn { get; private set; } = default!;
+
 
     /// <summary>
     /// 是否启用
@@ -80,7 +76,7 @@ public partial record HotelRoomDo
 {
 
 
-    private HotelRoomDo(long id, long hotelId, string hotelCode, string roomType, BedTypeEnum bedType, int maximumNumberOfPeople, int? adultLimit, int? childLimit, DateTime startDate, DateTime endDate, string? stockInitValJosn, YesOrNoType isEnabled)
+    private HotelRoomDo(long id, long hotelId, string hotelCode, string roomType, BedTypeEnum bedType, int maximumNumberOfPeople, int? adultLimit, int? childLimit, DateTime startDate, DateTime endDate,  YesOrNoType isEnabled)
     {
         this.Id = id;
         HotelId = hotelId;
@@ -92,13 +88,12 @@ public partial record HotelRoomDo
         ChildLimit = childLimit;
         StartDate = startDate;
         EndDate = endDate;
-        StockInitValJosn = stockInitValJosn;
         IsEnabled = isEnabled;
     }
 
-    public static HotelRoomDo Create(long hotelId, string hotelCode, string roomType, BedTypeEnum bedType, int maximumNumberOfPeople, int? adultLimit, int? childLimit, DateTime startDate, DateTime endDate, string? stockInitValJosn)
+    public static HotelRoomDo Create(long hotelId, string hotelCode, string roomType, BedTypeEnum bedType, int maximumNumberOfPeople, int? adultLimit, int? childLimit, DateTime startDate, DateTime endDate)
     {
-        return new HotelRoomDo(SnowFlakeSingle.instance.getID(), hotelId, hotelCode, roomType, bedType, maximumNumberOfPeople, adultLimit, childLimit, startDate, endDate, stockInitValJosn, YesOrNoType.Yes);
+        return new HotelRoomDo(SnowFlakeSingle.instance.getID(), hotelId, hotelCode, roomType, bedType, maximumNumberOfPeople, adultLimit, childLimit, startDate, endDate, YesOrNoType.Yes);
     }
 
     public HotelRoomDo SetIsEnabled(YesOrNoType isEnabled)

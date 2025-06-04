@@ -1,4 +1,5 @@
 ﻿using YueJia.Ebk.Application.Contracts.OuterServiceApp.Dto;
+using YueJia.Ebk.Application.Contracts.OuterServiceApp.Entity;
 using YueJia.Ebk.Application.Contracts.OuterServiceApp.Qry;
 
 namespace YueJia.Ebk.Application.Contracts.OuterServiceApp
@@ -25,6 +26,9 @@ namespace YueJia.Ebk.Application.Contracts.OuterServiceApp
         Task<List<SelectDataDto<string>>> GetDropDownRoomTypeByHotelCodeAsync(string hotelCode);
 
 
+        Task<List<OtaRoomEntity>> GetOTARoomAsync(string hotelCode);
+
+        
     }
 }
 

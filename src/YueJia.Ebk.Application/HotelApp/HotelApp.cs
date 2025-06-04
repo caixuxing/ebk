@@ -7,6 +7,7 @@ using YueJia.Ebk.Application.Contracts.OuterServiceApp.Entity;
 using YueJia.Ebk.Application.Contracts.SysUserApp;
 using YueJia.Ebk.Domain.Hotel;
 using YueJia.Ebk.Domain.Shared.Const;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace YueJia.Ebk.Application.HotelApp;
 
@@ -28,32 +29,39 @@ public class HotelApp : ApplicationService, IHotelApp
     private ISimpleClient<RoomInventoryDo> RoomStockRepo => LazyServiceProvider.LazyGetRequiredService<ISimpleClient<RoomInventoryDo>>();
 
 
-    public async Task<long> AddHotelRoomAsync(CreateHotelRoomCmd cmd)
+    public async Task<bool> AddHotelRoomAsync(CreateHotelRoomCmd cmd)
     {
         await LazyServiceProvider.LazyGetRequiredService<FluentValidation.IValidator<CreateHotelRoomCmd>>().ValidateAndThrowAsync(cmd);
 
-        var entity = HotelRoomDo.Create(cmd.HotelId.ToLong(), cmd.HotelCode, cmd.RoomType, cmd.BedType, cmd.MaximumNumberOfPeople,
-            cmd.AdultLimit, cmd.ChildLimit, cmd.StartDate, cmd.EndDate, cmd.StockInitValJosn)
-            ?? throw new InvalidOperationException("床间酒店房间信息失败！");
-
+        //1):验证是否已存在
+        var entity = HotelRoomDo.Create(cmd.HotelId.ToLong(), cmd.HotelCode, cmd.RoomType, cmd.BedType, cmd.MaximumNumberOfPeople, cmd.AdultLimit, cmd.ChildLimit, cmd.StartDate, cmd.EndDate);
+        if (db.Queryable<HotelRoomDo>().Any(vv=> vv.HotelId == SqlFunc.ToInt64(cmd.HotelId) && vv.RoomType == cmd.RoomType  )) {
+            throw new InvalidOperationException("房间已存在");
+        }
 
         List<RoomInventoryDo> roomStockDos = new();
         for (DateTime date = cmd.StartDate; date <= cmd.EndDate; date = date.AddDays(1))
         {
-            // 获取当前日期的星期几
-            DayOfWeek dayOfWeek = date.DayOfWeek;
-            // 如果键不存在，返回 int 的默认值（0）
-            int stockNum = cmd.Stock.GetValueOrDefault(dayOfWeek);
+            int stockNum = 0;
+            switch (date.DayOfWeek)
+            {
+                case DayOfWeek.Monday: stockNum = cmd.Monday ; break;
+                case DayOfWeek.Tuesday: stockNum = cmd.Tuesday; break;
+                case DayOfWeek.Wednesday: stockNum = cmd.Wednesday; break;
+                case DayOfWeek.Thursday: stockNum = cmd.Thursday; break;
+                case DayOfWeek.Friday: stockNum = cmd.Friday; break;
+                case DayOfWeek.Saturday: stockNum = cmd.Saturday; break;
+                case DayOfWeek.Sunday: stockNum = cmd.Sunday; break;
+            }
             roomStockDos.Add(RoomInventoryDo.Create(entity.Id, date, stockNum));
         }
-        return await DbTransaction.ExecuteInTransactionAsync(db, async () =>
+          await DbTransaction.ExecuteInTransactionAsync(db, async () =>
         {
             await db.Insertable(roomStockDos).ExecuteCommandAsync();
             await db.Insertable(entity).ExecuteCommandAsync();
             return entity.Id;
         });
-
-
+        return true;
     }
 
 
@@ -67,13 +75,20 @@ public class HotelApp : ApplicationService, IHotelApp
         return await PricePlanRepo.InsertReturnSnowflakeIdAsync(entity);
     }
 
+    
     public async Task<bool> DeleteHotelRoomAsync(long id)
     {
-        var entity = HotelRoomRepo.GetById(id) ?? throw new InvalidOperationException("酒店房间信息不存在！");
-        if (entity.IsDelete) return true;
+        //房间
+        var entity = HotelRoomRepo.GetById(id);
         entity.IsDelete = true;
+
+        //价格计划
         var pricePlanEntity = PricePlanRepo.AsQueryable().Where(x => x.HotelRoomId == id).ToList();
         pricePlanEntity.ForEach(x => x.IsDelete = true);
+
+        //库存
+        var roomInventoryList = db.Queryable<RoomInventoryDo>().Where(vv => vv.HotelRoomId == entity.Id).ToList();
+        roomInventoryList.ForEach(x => x.IsDelete = true);
 
 
         return await DbTransaction.ExecuteInTransactionAsync(db, async () =>
@@ -82,14 +97,16 @@ public class HotelApp : ApplicationService, IHotelApp
                     .PublicSetColumns(it => it.Version, it => it.Version + 1)
                     .UpdateColumns(it => new { it.IsDelete, it.LastModifiedbyId, it.LastModifiedbyName, it.LastModifiedTime, it.Version })
                     .ExecuteCommandAsync();
+
             await db.Updateable(pricePlanEntity)
                     .PublicSetColumns(it => it.Version, it => it.Version + 1)
                     .UpdateColumns(it => new { it.IsDelete, it.LastModifiedbyId, it.LastModifiedbyName, it.LastModifiedTime, it.Version })
                     .ExecuteCommandAsync();
 
-
-
-
+            await db.Updateable(roomInventoryList)
+                  .PublicSetColumns(it => it.Version, it => it.Version + 1)
+                  .UpdateColumns(it => new { it.IsDelete, it.LastModifiedbyId, it.LastModifiedbyName, it.LastModifiedTime, it.Version })
+                  .ExecuteCommandAsync();
             return true;
         });
     }

@@ -37,7 +37,19 @@ public class AddPricePlanVo
     /// </summary>
     public string BedTypeName { get; set; } = default!;
 
+    /// <summary>
+    /// 人数上限
+    /// </summary>
+    public int MaximumNumberOfPeople { get; set; }
+    /// <summary>
+    /// 成人上限
+    /// </summary>
+    public int? AdultLimit { get; set; }
 
+    /// <summary>
+    /// 儿童上限
+    /// </summary>
+    public int? ChildLimit { get; set; }
 
     /// <summary>
     /// 酒店房间ID

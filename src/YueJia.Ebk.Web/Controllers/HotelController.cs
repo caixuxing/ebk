@@ -152,31 +152,21 @@ public class HotelController : AbpController
     public async Task<IActionResult> AddHotelRoom(string id)
     {
         var hotelPublishDetail = await HotelPublishApp.GetHotelPublishDetailAsync(id.ToLong());
-        AddHotelRoomVo vm = new AddHotelRoomVo()
+        ViewBag.HotelName = $"{hotelPublishDetail.HotelName}({hotelPublishDetail.HotelNameEn})";
+        CreateHotelRoomCmd vm = new CreateHotelRoomCmd()
         {
             HotelId = id,
-            HotelName = $"{hotelPublishDetail.HotelName}({hotelPublishDetail.HotelNameEn})",
             HotelCode = hotelPublishDetail.HotelCode,
-            BedType = "",
             RoomType = "",
             MaximumNumberOfPeople = 2,
             AdultLimit = 2,
             ChildLimit = 0,
-            Stock = new StockVo()
-            {
-                EndDate = DateTime.Now,
-                StartDate = DateTime.Now,
-                Stock = new Dictionary<DayOfWeek, int>() {
-                    { DayOfWeek.Monday, 0 },
-                    { DayOfWeek.Tuesday, 0 },
-                    { DayOfWeek.Wednesday, 0 },
-                    { DayOfWeek.Thursday, 0 },
-                    { DayOfWeek.Friday, 0 },
-                    { DayOfWeek.Saturday, 0 },
-                    { DayOfWeek.Sunday, 0 }
-                }
-            }
+            EndDate = DateTime.Now.AddMonths(1).Date,
+            StartDate =   DateTime.Now.Date,
+            BedType = BedTypeEnum.Unknown,
         };
+
+     
         return View(vm);
     }
 
@@ -186,7 +176,7 @@ public class HotelController : AbpController
     /// <param name="cmd"></param>
     /// <returns></returns>
     [HttpPost, Route("[controller]/AddHotelRoom")]
-    public async Task<IResult> AddHotelRoom([FromBody] CreateHotelRoomCmd cmd) => ApiResult.HandleLongResult(await HotelApp.AddHotelRoomAsync(cmd));
+    public async Task<IResult> AddHotelRoom([FromBody] CreateHotelRoomCmd cmd) => ApiResult.HandleBoolResult(await HotelApp.AddHotelRoomAsync(cmd));
 
 
     /// <summary>
@@ -208,21 +198,7 @@ public class HotelController : AbpController
         var hotel = await HotelPublishApp.GetHotelPublishDetailAsync(id.ToLong());
         var roomAndPricePlan = await HotelApp.GetHotelRoomListByIdAsync(id.ToLong());
 
-        var roomAndPricePlanVm = roomAndPricePlan.Select(x => new
-        {
-            Id = x.Id.ToString(),
-            x.RoomType,
-            x.RoomTypeName,
-            x.BedType,
-            x.BedTypeName,
-            x.MaximumNumberOfPeople,
-            x.AdultLimit,
-            x.ChildLimit,
-            x.IsEnabledName,
-            pricePlans = x.PricePlans,
-            ShowContent = false,
-            ShowFooter = true
-        });
+
 
         ViewBag.mv = new ViewHotelVo()
         {
@@ -236,8 +212,6 @@ public class HotelController : AbpController
             HotelCode = hotel.HotelCode,
             HotelName = hotel.HotelName,
             HotelNameEn = hotel.HotelNameEn,
-            HotelRoomListJson = JsonConvert.SerializeObject(roomAndPricePlanVm, new JsonSerializerSettings { ContractResolver = new CamelCasePropertyNamesContractResolver() })
-
         });
     }
     #endregion
@@ -279,16 +253,18 @@ public class HotelController : AbpController
     {
         var room = await HotelApp.GetHotelRoomByIdAsync(id.ToLong());
         var hotel = await HotelPublishApp.GetHotelPublishDetailAsync(room.HotelId);
-        AddPricePlanVo vm = new AddPricePlanVo()
-        {
-            HotelId = room.HotelId.ToString(),
-            HotelRoomId = room.Id.ToString(),
-            HotelCode = hotel.HotelCode,
-            HotelName = $"{hotel.HotelName}({hotel.HotelNameEn})",
-            BedTypeName = room.BedTypeName,
-            RoomTypeName = room.RoomTypeName,
 
-            BreakfastType = null,
+        ViewBag.HotelName = $"{hotel.HotelName}({hotel.HotelNameEn})";
+        ViewBag.BedTypeName = $"{room.BedTypeName}";
+        ViewBag.RoomTypeName = $"{room.RoomTypeName}";
+        ViewBag.AdultLimit = $"{room.AdultLimit}";
+        ViewBag.ChildLimit = $"{room.ChildLimit}";
+        ViewBag.MaximumNumberOfPeople = $"{hotel.HotelName}({room.MaximumNumberOfPeople})";
+
+        CreateOrUpdatePricePlanCmd vm = new CreateOrUpdatePricePlanCmd()
+        {
+            HotelRoomId = room.Id.ToString(),
+            BreakfastType =  BreakfastTypeEnum.Breakfast,
             DaysInAdvance = 1,
             ContinuousStayDays = 1,
             IsEnable = YesOrNoType.Yes,
@@ -319,7 +295,7 @@ public class HotelController : AbpController
             ContinuousStayDays = data.ContinuousStayDays,
             IsEnable = data.IsEnable,
             IsReservedRoom = data.IsEnable,
-            PricePlanId = data.Id,
+            //PricePlanId = data.Id,
         };
         return View("AddPricePlan", vm);
     }

@@ -19,62 +19,63 @@
        @Html.Partial("~/Views/Hotel/UserHotelNavigationMgr.cshtml", (@ViewBag.mv as YueJia.Ebk.Web.ViewModels.Hotel.ViewHotelVo))
        
        <div style="height:50px;line-height:50px; position:relative ">
-            <h1   >房间与价格计划</h1>
+            <h1>房间与价格计划</h1>
             <el-button type="primary" v-on:click="onAddRoom" size="small" style="position: absolute;top: 13px;left:170px;">新增房间</el-button>
        </div>
 
         <el-divider content-position="left"></el-divider>
 
         <el-scrollbar>
-            <el-card v-for="(item, index) in state.roomData" :key="i" style="width:99%;margin-bottom:20px;" :class="{ 'hide-body': !item.showContent }">
+            <el-card v-for="(item, index) in vmodel.roomList"  :class="{ 'hide-body': !item.showContent }">
             <template #header>
-                <div class="card-header">
-                    <el-row :gutter="20">
-                        <el-col :span="6">
-                            <div class="grid-content ep-bg-purple" >
-                                 <el-text class="mx-1">{{item.roomTypeName}},{{item.bedTypeName}}</el-text>
-                            </div>
-                        </el-col>
-                        <el-col :span="1">
-                            
-                             <el-text class="mx-1" :type="item.isEnabledName=='启用'?'success':'danger'" icon="el-icon-refresh" title="点击可切换状态" style="cursor:pointer" v-on:click="toggleRoomStatus(item.id)">{{item.isEnabledName}}</el-text>
+                @* 头部信息 *@
+                    <el-tag  type="success">上架 </el-tag>
+                    <div style="display: inline-block;margin-left:20px;width:600px;">
+                        <el-link :underline="false" >{{item.roomTypeName}}</el-link>
+                        <el-link :underline="false" >==></el-link>
+                        <el-link :underline="false" >{{item.bedTypeName}}</el-link>
+                    </div>
 
-                            </el-col>
-                                 <el-col :span="11">
-                                <el-button type="danger" size="small" v-on:click="deleteRoom(item.id)">删除</el-button>
-                            </el-col>
+                    <el-button size="small" v-on:click="onDeleteRoom(item)">删除</el-button>
+                    <el-button size="small" v-on:click="onAddPricePlan(item)">新增价格计划</el-button>
 
-                            <el-col :span="6" style="text-align: right">
-                                <el-button type="text" icon="el-icon-refresh" v-on:click="toggleCardContent(index)">
-                                    {{ item.showContent ? '隐藏更多详情' : '显示更多详情' }}
-                                </el-button>
-                                <el-button type="text" icon="el-icon-refresh" v-on:click="openAddPricePlan(item)">新增价格计划</el-button>
-                                <el-button type="text" icon="el-icon-refresh" v-on:click="toggleCardFooter(index)">
-                                    {{ item.showFooter ? '隐藏价格计划' : '显示价格计划' }}
-                                </el-button>
 
-                        </el-col>
-                    </el-row>
-                </div>
+                    <el-link :underline="false" style="margin-left:20px" v-if="item.showContent == false" v-on:click="item.showContent = true">显示更多详情</el-link>
+                    <el-link :underline="false" style="margin-left:20px" v-if="item.showContent ==true "  v-on:click="item.showContent = false">隐藏更多详情</el-link>
+
+                    <el-link :underline="false" style="margin-left:20px" v-if="item.showFooter == false" v-on:click="item.showFooter = true">显示价格计划</el-link>
+                    <el-link :underline="false" style="margin-left:20px" v-if="item.showFooter ==true " v-on:click="item.showFooter = false">隐藏价格计划</el-link>
             </template>
-                <div v-if="item.showContent">
-                <el-row :gutter="20" >
-                        <el-col :span="6"><div class="grid-content ep-bg-purple">床型：{{item.bedTypeName}}</div></el-col>
-                    <el-col :span="6"><div class="grid-content ep-bg-purple">人数上限：{{item.maximumNumberOfPeople}}</div></el-col>
-                    <el-col :span="6"><div class="grid-content ep-bg-purple">成人上限：{{item.adultLimit}}</div></el-col>
-                    <el-col :span="6"><div class="grid-content ep-bg-purple">儿童上线：{{item.childLimit}}</div></el-col>
-                </el-row>
-            
+
+            <div v-if="item.showContent">
+                @* 详情信息 *@
+
+                    <el-form label-width="auto" :inline="true">
+                        <div>
+                            <el-form-item label="床型">
+                                <label>{{item.bedTypeName}}</label>
+                            </el-form-item>
+                        </div>
+                        <div>
+                            <el-form-item label="人数上限">
+                                <label>{{item.maximumNumberOfPeople}}</label>
+                            </el-form-item>
+                            <el-form-item label="成人上限">
+                                <label>{{item.adultLimit}}</label>
+                            </el-form-item>
+                            <el-form-item label="儿童上限">
+                                <label>{{item.childLimit}}</label>
+                            </el-form-item>
+                        </div>
+                    </el-form>
             </div>
-                <template #footer v-if="item.showFooter">
+                <template #footer v-if="item.showFooter" >
 
                     <el-table :data="item.pricePlans"
-                              border
-                              height="100%"
-                              v-loading="state.dataloading">
-                        <el-table-column label="#" width="60" align="center">
-                         
-                        </el-table-column>
+                               border
+                               height="100%" >
+
+                        <el-table-column label="#" width="60" align="center"></el-table-column>
                         <el-table-column label="餐型" width="auto" max-width="200px" align="left">
                             <template #default="scope">
                                 {{scope.row.breakfastTypeName}}
@@ -115,7 +116,7 @@
                             <template #default="scope">
                                 <div style="text-align:center">
                                     <el-button size="small" v-on:click="editPricePlan(scope.row)">编辑</el-button>
-                                    <el-button size="small" type="danger" v-on:click="deletePricePlan(scope.row)">删除 </el-button>
+                                    <el-button size="small" type="danger" v-on:click="onDeletePricePlan(scope.row)">删除 </el-button>
                                 </div>
                             </template>
                         </el-table-column>
@@ -123,7 +124,7 @@
                     </el-table>
 
             </template>
-        </el-card>
+          </el-card>
        </el-scrollbar>
     </el-main>
 </el-container>
@@ -131,14 +132,18 @@
     <script type="text/javascript">
         const app = Vue.createApp({
         setup() {
-            const state = Vue.reactive({
-              roomData:@Html.Raw(Model.HotelRoomListJson),
-            });
-           const id=Vue.ref(`@Html.Raw(Model.Id)`);
-           // 切换内容显示
-           const toggleCardContent=(index)=>state.roomData[index].showContent = !state.roomData[index].showContent;
-            // 切换底部显示
-          const toggleCardFooter=(index)=>state.roomData[index].showFooter = !state.roomData[index].showFooter;
+
+           const vmodel = Vue.reactive({
+                roomList : [],
+           });
+
+           Vue.onMounted(() => {
+              loadData();
+           
+              console.log(@Model.Id);
+              console.log(@Model.Id.ToString());
+           
+           });
 
 
 
@@ -154,7 +159,23 @@
                         maxmin: true,
                         content:  "/Hotel/AddHotelRoom?id=@ViewBag.mv.Id",
                         end: function () {
-                           state.qry.pageIndex = 1;
+                           loadData();
+                        }
+                    });
+          }
+
+          /**
+           * 新增价格计划
+           */
+          const onAddPricePlan =(row)=>{
+                    layer.open({
+                        type: 2,
+                        title: '新增价格计划',
+                        area: ['90%', '80%'],
+                        fix: false,
+                        maxmin: true,
+                        content:  `/Hotel/AddPricePlan/${row.id}`,
+                        end: function () {
                            loadData();
                         }
                     });
@@ -163,52 +184,51 @@
 
 
 
-
-          const openViewHotel=()=> window.parent.mainFrame(`/Hotel/ViewHotel/${id.value}`,``,``);
-          const openAddPricePlan=(row)=> {
-          
-            console.log(row.id);
-              window.parent.mainFrame(`/Hotel/AddPricePlan/${row.id}`,``,``)
-          };
-          const openMyHotel=()=> window.parent.mainFrame(`/Hotel/HotelPublishList`,`我的酒店`,`page3-1`);
-
-
-
-
-            //删除房间
-            const deleteRoom=(id)=> {
-                   ElMessageBox.confirm('您确定删除吗?', { confirmButtonText: '确定', cancelButtonText: '取消', type: 'warning', }) .then(() => {
-
-                             axios.delete(`/Hotel/DeleteHotelRoom/${id}/`).then(res => {
-                                      top.window.vueElMessage({ message: res.data. message , type:  res.data.isSuccess?'success':'info' })
+            /**
+             * 删除房间
+             */
+            const onDeleteRoom=(row)=> {
+                 ElMessageBox.confirm('您确定删除吗?', { confirmButtonText: '确定', cancelButtonText: '取消', type: 'warning', }).then(() => {
+                         axios.delete(`/Hotel/DeleteHotelRoom/${row.id}/`).then(res  => {
+                              top.window.vueElMessage({ message: res.data. message , type:  res.data.isSuccess?'success':'info' })
                                       if(res.data.isSuccess){
                                          loadData();
                                       }
-                            })
-                    })
+                        })
+                 })
             };
-            //删除价格计划
-          const deletePricePlan=(row)=>{
-                   ElMessageBox.confirm('您确定删除吗?', { confirmButtonText: '确定', cancelButtonText: '取消', type: 'warning', }) .then(() => {
-                             axios.delete(`/Hotel/DeletePricePlan/${row.id}`).then(res => {
-                                      top.window.vueElMessage({ message: res.data. message , type:  res.data.isSuccess?'success':'info' })
+            /**
+             * 删除价格计划
+             */
+            const onDeletePricePlan=(row)=>{
+                 ElMessageBox.confirm('您确定删除吗?', { confirmButtonText: '确定', cancelButtonText: '取消', type: 'warning', }).then(() => {
+                         axios.delete(`/Hotel/DeletePricePlan/${row.id}`).then(res  => {
+                              top.window.vueElMessage({ message: res.data. message , type:  res.data.isSuccess?'success':'info' })
                                       if(res.data.isSuccess){
-                                          loadData();
+                                         loadData();
                                       }
-                            })
-                    })
+                        })
+                 })
             };
-        const editPricePlan=(row)=> window.parent.mainFrame(`/Hotel/EditPricePlan/${row.id}`,``,``);
+
+             const editPricePlan=(row)=> window.parent.mainFrame(`/Hotel/EditPricePlan/${row.id}`,``,``);
             
 
 
             const loadData = () => {
-                       axios.get(`/Hotel/RoomAndPricePlanList/${id.value}`).then(response => {
+                       axios.get(`/Hotel/RoomAndPricePlanList/@Model.Id`).then(response => {
                          let {data,status}=response;
-                         state.roomData = data.data;
+                         vmodel.roomList = data.data;
                      })
              };
-          return {state,openViewHotel,onAddRoom,toggleCardContent,toggleCardFooter,openAddPricePlan,openMyHotel,deleteRoom,deletePricePlan,editPricePlan}
+          return {
+              vmodel
+              ,onAddRoom
+              ,onAddPricePlan
+              ,onDeleteRoom
+              ,onDeletePricePlan
+              ,editPricePlan
+          }
 
         }
         });

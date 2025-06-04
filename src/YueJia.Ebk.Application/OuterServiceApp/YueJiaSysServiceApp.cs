@@ -90,11 +90,28 @@ public class YueJiaSysServiceApp : ApplicationService, IYueJiaSysServiceApp
 
     public async Task<List<SelectDataDto<string>>> GetDropDownRoomTypeByHotelCodeAsync(string hotelCode)
     {
-        return await SqlSugarClient.Queryable<OtaRoomEntity>().Where(q => q.status == 1 && q.pfcode == "D" && q.hotelcode == hotelCode)
+        return await SqlSugarClient.Queryable<OtaRoomEntity>().With(SqlWith.NoLock).Where(q => q.status == 1 && q.pfcode == "D" && q.hotelcode == hotelCode)
             .Select(t => new SelectDataDto<string>()
             {
                 Value = t.roomcode.ToString(),
                 Label = $"{t.roomname}({t.roomnameen})"
             }).ToListAsync();
     }
+
+
+
+    public async Task<List<OtaRoomEntity>> GetOTARoomAsync(string hotelCode)
+    {
+        return await SqlSugarClient.Queryable<OtaRoomEntity>().With(SqlWith.NoLock).Where(q => q.status == 1 && q.pfcode == "D" && q.hotelcode == hotelCode)
+                                                              .Select(vv=> new OtaRoomEntity() { 
+                                                                 roomcode = vv.roomcode,
+                                                                 roomname = vv.roomname,
+                                                                 roomnameen = vv.roomnameen,
+                                                                 bedtype = vv.bedtype,
+                                                              }).ToListAsync();
+                        
+    }
+
+
+
 }
