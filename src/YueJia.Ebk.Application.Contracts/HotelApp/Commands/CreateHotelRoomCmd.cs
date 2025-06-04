@@ -49,24 +49,7 @@ public class CreateHotelRoomCmd
     /// 结束日期
     /// </summary>
     public DateTime EndDate { get; set; }
-    /// <summary>
-    /// 库存初始值Json
-    /// </summary>
-    public string StockInitValJosn
-    {
-        get
-        {
-            return JsonSerializer.Serialize(Stock, new JsonSerializerOptions
-            {
-                //WriteIndented = true, // 格式化输出
-                PropertyNamingPolicy = JsonNamingPolicy.CamelCase
-            });
-        }
-    }
-    /// <summary>
-    /// 库存初始值
-    /// </summary>
-    public Dictionary<DayOfWeek, int> Stock { get; set; } = default!;
+
 
     /// <summary>
     /// 星期一
@@ -140,9 +123,6 @@ public class CreateHotelRoomCmdValidator : AbstractValidator<CreateHotelRoomCmd>
             .GreaterThanOrEqualTo(x => x.StartDate).WithMessage("结束日期必须大于等于开始日期！");
 
 
-        RuleFor(x => x.Stock)
-            .Cascade(CascadeMode.Stop)
-            .NotEmpty().WithMessage("库存初始值不能为空！");
 
 
         RuleFor(x => x.BedType).IsInEnum().WithMessage("状态参数无效！");

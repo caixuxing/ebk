@@ -12,8 +12,5 @@ public class RoomAndPricePlanVo
 
     public string HotelNameEn { get; set; }
 
-    /// <summary>
-    /// 房间与价格计划Json
-    /// </summary>
-    public string HotelRoomListJson { get; set; }
+
 }

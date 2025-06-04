@@ -16,8 +16,6 @@
     </style>
 }
 
-
-
 <el-container style="height:100vh;">
     <el-main>
         <h1 :underline="false">@ViewBag.HotelName</h1>
@@ -28,7 +26,7 @@
             <div>
                 <el-form-item label="房型" required >
                     <el-select v-model="model.roomType" placeholder="请选择房型" filterable  style="width:600px"  v-on:change="onRoomChange" >
-                        <el-option v-for="ele in otaRoomList" :label="roomDescribe(ele)" :value="ele.roomcode"   ></el-option>
+                        <el-option v-for="ele in otaRoomList" :label="roomDescribe(ele)" :value="''+ele.roomcode"   ></el-option>
                     </el-select>
                 </el-form-item>
                 @* ele.roomnameen *@
@@ -120,6 +118,8 @@
 </el-container>
 @section scripts {
     <script type="text/javascript">
+        var frameIndex = parent.layer.getFrameIndex(window.name);
+
         const app = Vue.createApp({
         setup() {
                 const maxAdultNumber=Vue.ref(5);
@@ -130,12 +130,7 @@
                 const otaRoomList = @Html.Raw(@Html.Raw(System.Text.Json.JsonSerializer.Serialize(await yueJiaSysServiceApp.GetOTARoomAsync(Model.HotelCode), new System.Text.Json.JsonSerializerOptions() { PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase })));
                
                 Vue.onMounted(() => {
-                     console.log(model);
                      model.dateRange =[`@(Html.Raw(Model.StartDate.ToString("yyyy-MM-dd")))`,`@(Html.Raw(Model.EndDate.ToString("yyyy-MM-dd")))`];
-                     console.log(model);
-
-                  console.log(otaRoomList);
-
                  });
 
 

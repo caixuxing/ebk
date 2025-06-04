@@ -14,7 +14,7 @@ public interface IHotelApp
     /// </summary>
     /// <param name="cmd"></param>
     /// <returns></returns>
-    Task<long> AddHotelRoomAsync(CreateHotelRoomCmd cmd);
+    Task<bool> AddHotelRoomAsync(CreateHotelRoomCmd cmd);
 
 
     /// <summary>

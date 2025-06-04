@@ -176,7 +176,7 @@ public class HotelController : AbpController
     /// <param name="cmd"></param>
     /// <returns></returns>
     [HttpPost, Route("[controller]/AddHotelRoom")]
-    public async Task<IResult> AddHotelRoom([FromBody] CreateHotelRoomCmd cmd) => ApiResult.HandleLongResult(await HotelApp.AddHotelRoomAsync(cmd));
+    public async Task<IResult> AddHotelRoom([FromBody] CreateHotelRoomCmd cmd) => ApiResult.HandleBoolResult(await HotelApp.AddHotelRoomAsync(cmd));
 
 
     /// <summary>
@@ -198,21 +198,7 @@ public class HotelController : AbpController
         var hotel = await HotelPublishApp.GetHotelPublishDetailAsync(id.ToLong());
         var roomAndPricePlan = await HotelApp.GetHotelRoomListByIdAsync(id.ToLong());
 
-        var roomAndPricePlanVm = roomAndPricePlan.Select(x => new
-        {
-            Id = x.Id.ToString(),
-            x.RoomType,
-            x.RoomTypeName,
-            x.BedType,
-            x.BedTypeName,
-            x.MaximumNumberOfPeople,
-            x.AdultLimit,
-            x.ChildLimit,
-            x.IsEnabledName,
-            pricePlans = x.PricePlans,
-            ShowContent = false,
-            ShowFooter = true
-        });
+
 
         ViewBag.mv = new ViewHotelVo()
         {
@@ -226,8 +212,6 @@ public class HotelController : AbpController
             HotelCode = hotel.HotelCode,
             HotelName = hotel.HotelName,
             HotelNameEn = hotel.HotelNameEn,
-            HotelRoomListJson = JsonConvert.SerializeObject(roomAndPricePlanVm, new JsonSerializerSettings { ContractResolver = new CamelCasePropertyNamesContractResolver() })
-
         });
     }
     #endregion
@@ -269,16 +253,18 @@ public class HotelController : AbpController
     {
         var room = await HotelApp.GetHotelRoomByIdAsync(id.ToLong());
         var hotel = await HotelPublishApp.GetHotelPublishDetailAsync(room.HotelId);
-        AddPricePlanVo vm = new AddPricePlanVo()
-        {
-            HotelId = room.HotelId.ToString(),
-            HotelRoomId = room.Id.ToString(),
-            HotelCode = hotel.HotelCode,
-            HotelName = $"{hotel.HotelName}({hotel.HotelNameEn})",
-            BedTypeName = room.BedTypeName,
-            RoomTypeName = room.RoomTypeName,
 
-            BreakfastType = null,
+        ViewBag.HotelName = $"{hotel.HotelName}({hotel.HotelNameEn})";
+        ViewBag.BedTypeName = $"{room.BedTypeName}";
+        ViewBag.RoomTypeName = $"{room.RoomTypeName}";
+        ViewBag.AdultLimit = $"{room.AdultLimit}";
+        ViewBag.ChildLimit = $"{room.ChildLimit}";
+        ViewBag.MaximumNumberOfPeople = $"{hotel.HotelName}({room.MaximumNumberOfPeople})";
+
+        CreateOrUpdatePricePlanCmd vm = new CreateOrUpdatePricePlanCmd()
+        {
+            HotelRoomId = room.Id.ToString(),
+            BreakfastType =  BreakfastTypeEnum.Breakfast,
             DaysInAdvance = 1,
             ContinuousStayDays = 1,
             IsEnable = YesOrNoType.Yes,
