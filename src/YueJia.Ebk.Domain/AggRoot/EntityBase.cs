@@ -7,7 +7,7 @@
 public abstract record EntityBaseId
 {
     [SugarColumn(ColumnDescription = "主键ID", IsPrimaryKey = true, ColumnName = "Id")]
-    public virtual long Id { get; set; }
+    public virtual long Id { get; init; }
 }
 
 
