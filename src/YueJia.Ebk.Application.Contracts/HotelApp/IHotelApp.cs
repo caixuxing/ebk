@@ -24,6 +24,14 @@ public interface IHotelApp
     /// <returns></returns>
     Task<bool> DeleteHotelRoomAsync(long id);
 
+    /// <summary>
+    /// 切换房间状态
+    /// </summary>
+    /// <param name="id"></param>
+    /// <returns></returns>
+    Task<bool> UpdateRoomStateAsync(long id);
+    
+
 
     /// <summary>
     /// 按酒店Id获取酒店房间与价格计划列表
@@ -57,10 +65,9 @@ public interface IHotelApp
     /// <summary>
     /// 更新价格计划
     /// </summary>
-    /// <param name="cmd"></param>
     /// <param name="id"></param>
     /// <returns></returns>
-    Task<bool> UpdatePricePlanAsync(CreateOrUpdatePricePlanCmd cmd, long id);
+    Task<bool> UpdatePricePlanStateAsync( long id);
     /// <summary>
     /// 删除价格计划
     /// </summary>
