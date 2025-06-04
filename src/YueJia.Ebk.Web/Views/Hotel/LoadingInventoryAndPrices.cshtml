@@ -13,6 +13,22 @@
 
         text-align:left !important;
         }
+
+        /* 隐藏全选节点的原生复选框 */
+:deep(.custom-tree-select .el-tree-node__content .all-select-node .el-checkbox) {
+  display: none;
+}
+
+/* 调整自定义复选框的位置 */
+.all-select-node {
+  display: flex;
+  align-items: center;
+}
+
+.all-select-node .el-checkbox {
+  margin-right: 8px;
+}
+
     </style>
 }
 <el-container style="height:100vh;overflow: hidden;">
@@ -21,17 +37,50 @@
         <el-form :model="state.formData" label-width="auto" :rules="FormDataRules" ref="FormDataRef">
             @await Html.PartialAsync("~/Views/Hotel/UserHotelNavigationMgr.cshtml", new ViewHotelVo { Id = Model.HotelId, HotelName = Model.HotelName })
             <el-form-item style="margin-top:30px">
-                <h1>库存和价格</h1>
+                    <h1>批量加载库存与价格</h1>
             </el-form-item>
             <el-form-item label="酒店：">
-                <el-text class="mx-1">现场惺惺惜惺惺</el-text> <el-text class="mx-1">CNY</el-text>
+                <el-text class="mx-1">{{state.formData.hotelName}}</el-text>
             </el-form-item>
             <el-form-item label="房间名称：">
-           
+                    <el-select v-model="state.formData.roomId" placeholder="Select">
+                        <el-option v-for="option in state.roomDropdown" :key="option.value" :label="option.label" :value="option.value"></el-option>
+                    </el-select>
+
+@* 
+                    <el-tree-select v-model="state.formData.roomId" :data="state.roomDropdown"
+                                    :props="defaultProps"
+                    multiple :render-after-expand="true" filterable show-checkbox
+                                    check-strictly check-on-click-node></el-tree-select> *@
+
+
+                                     <el-tree-select
+                                      v-model="selectedValues" :data="state.roomDropdown" :props="defaultProps"
+                                      multiple check-strictly show-checkbox :render-after-expand="false"
+                                      default-expand-all
+                                      v-on:check-change="handleCheckChange" node-key="value"
+                                      ref="treeSelectRef" >
+                                      <template #default="{ node, data }">
+                                        <span v-if="data.value === 'all'" class="all-select-node">
+                                          <el-checkbox  v-model="allChecked"
+                                            v-on:change="handleAllCheckChange"
+                                            v-on:click.stop ></el-checkbox>
+                                          <span>{{ node.label }}</span>
+                                        </span>
+                                        <span v-else>
+                                          {{ node.label }}
+                                        </span>
+                                      </template>
+                                    </el-tree-select>
+
+
+
+
+
             </el-form-item>
 
             <el-form-item label="截至日期：">
-                <el-text class="mx-1">22222222222222222222222</el-text>
+                    <el-date-picker v-model="state.formData.endDate" type="date" placeholder="截至日期" :size="size"> </el-date-picker>
             </el-form-item>
 
             <el-alert title="成本价若不填写，则系统自动以默认价格填入且不售卖，相应日期默认为关房；若选中不同房型，请切换房型进行编辑" type="warning" :closable="false" show-icon></el-alert>
@@ -75,9 +124,6 @@
 
 
        <el-divider content-position="left">价格设置</el-divider>
-
-
-
            
                 <div class="el-table--fit el-table--border el-table--scrollable-y el-table--enable-row-hover el-table el-table--layout-fixed is-scrolling-none" data-prefix="el" style="width: 100%; height:100%;">
                     <div class="el-table__inner-wrapper">
@@ -219,17 +265,74 @@
         const app = Vue.createApp({
          setup() {
             const state = Vue.reactive({
+                roomDropdown: @(Html.Raw(Model.HotelRoomDataJson)),
+               defaultProps: {
+                        children: 'children',
+                        label: 'label'
+                    },
+                formData: {
+                        hotelName: '@Html.Raw(Model.HotelName)',
+                        endDate: '@Html.Raw(DateTime.Now.AddDays(1).ToString("yyyy-MM-dd"))',
+                        roomId: '',
+                }
 
             });
+
+
+            const selectedValues = Vue.ref([])
+            const treeSelectRef = Vue.ref(null)
+            const allChecked = Vue.ref(false)
+
+            // 获取所有子节点的ID
+            const getAllChildIds = (nodes) => {
+              let ids = []
+              nodes.forEach(node => {
+                ids.push(node.value)
+                if (node.children && node.children.length > 0) {
+                  ids = ids.concat(getAllChildIds(node.children))
+                }
+              })
+              return ids
+            }
+
+        // 处理全选复选框变化
+        const handleAllCheckChange = (val) => {
+          if (val) {
+            // 获取所有子节点ID（排除全选节点本身）
+            const allChildren = state.roomDropdown[0].children
+            const allIds = getAllChildIds(allChildren)
+            selectedValues.value = allIds
+          } else {
+            selectedValues.value = []
+          }
+        }
+
+        // 处理节点选中状态变化
+        const handleCheckChange = () => {
+          const allChildren = state.roomDropdown[0].children
+          const allIds = getAllChildIds(allChildren)
+  
+          // 检查是否所有子节点都被选中
+          const allSelected = allIds.every(id => selectedValues.value.includes(id))
+          allChecked.value = allSelected
+        }
+
+        // 监听选中值变化
+        Vue.watch(selectedValues, () => {
+          handleCheckChange()
+        }, { deep: true })
+
+
+
 
             const FormDataRef = Vue.ref(null);
             return {
                 state,
-                FormDataRef,
+                FormDataRef,selectedValues,treeSelectRef,allChecked,getAllChildIds,handleAllCheckChange,handleCheckChange
             };
         }
         });
-        app.use(ElementPlus);
+        app.use(ElementPlus, { locale: ElementPlusLocaleZhCn });
         app.mount('#app');
     </script>
 }
