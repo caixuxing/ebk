@@ -384,16 +384,6 @@ public class HotelController : AbpController
     /// 加载库存和价格（View）
     /// </summary>
     /// <returns></returns>
-    public async Task<IActionResult> LoadingInventoryAndPrices(string id)
-    {
+    public async Task<IActionResult> LoadingInventoryAndPrices(string id) => View(await HotelApp.LoadingInventoryAndPricesViewAsync(id.ToLong()));
 
-        var entity = await HotelPublishRepo.GetByIdAsync(id.ToLong()) ?? throw new InvalidOperationException("酒店不存在！");
-        LoadingInventoryAndPricesVo vm = new LoadingInventoryAndPricesVo();
-        vm.HotelId = entity.Id.ToString();
-        vm.HotelName = entity.HotelName;
-        vm.HotelNameEn = entity.HotelNameEn;
-        vm.HotelRoomDataJson = JsonConvert.SerializeObject(await HotelApp.GetHoteTreeSelectDataByHotelIdAsync(entity.Id), new JsonSerializerSettings { ContractResolver = new CamelCasePropertyNamesContractResolver() });
-
-        return View(vm);
-    }
 }

@@ -1,6 +1,7 @@
 ﻿@using YueJia.Ebk.Application.Contracts.SysApp
 @using YueJia.Ebk.Web.ViewModels.Hotel
-@model YueJia.Ebk.Web.ViewModels.Hotel.LoadingInventoryAndPricesVo
+@using YueJia.Ebk.Application.Contracts.HotelApp.Dto
+@model YueJia.Ebk.Application.Contracts.HotelApp.Dto.LoadingInventoryAndPricesDto
 @inject ISysEnumApp enumApp
 @{
     Layout = "~/Views/Shared/_Layout.cshtml";
@@ -10,25 +11,8 @@
     <title>批量加载库存与价格</title>
     <style scoped>
         .el-input-number .el-input__inner{
-
         text-align:left !important;
         }
-
-        /* 隐藏全选节点的原生复选框 */
-:deep(.custom-tree-select .el-tree-node__content .all-select-node .el-checkbox) {
-  display: none;
-}
-
-/* 调整自定义复选框的位置 */
-.all-select-node {
-  display: flex;
-  align-items: center;
-}
-
-.all-select-node .el-checkbox {
-  margin-right: 8px;
-}
-
     </style>
 }
 <el-container style="height:100vh;overflow: hidden;">
@@ -42,26 +26,15 @@
             <el-form-item label="酒店：">
                 <el-text class="mx-1">{{state.formData.hotelName}}</el-text>
             </el-form-item>
-            <el-form-item label="房间名称：">
-                    <el-select v-model="state.formData.roomId" placeholder="Select">
-                        <el-option v-for="option in state.roomDropdown" :key="option.value" :label="option.label" :value="option.value"></el-option>
-                    </el-select>
-
-@* 
-                    <el-tree-select v-model="state.formData.roomId" :data="state.roomDropdown"
-                                    :props="defaultProps"
-                    multiple :render-after-expand="true" filterable show-checkbox
-                                    check-strictly check-on-click-node></el-tree-select> *@
-
-
-                                     <el-tree-select
+            <el-form-item label="房型名称：">
+                                     <el-tree-select placeholder="请选择房型"
                                       v-model="selectedValues" :data="state.roomDropdown" :props="defaultProps"
                                       multiple check-strictly show-checkbox :render-after-expand="false"
                                       default-expand-all
                                       v-on:check-change="handleCheckChange" node-key="value"
-                                      ref="treeSelectRef" >
+                                       class="custom-tree-select" >
                                       <template #default="{ node, data }">
-                                        <span v-if="data.value === 'all'" class="all-select-node">
+                                        <span v-if="data.value === 'all'" class="all-select-node" >
                                           <el-checkbox  v-model="allChecked"
                                             v-on:change="handleAllCheckChange"
                                             v-on:click.stop ></el-checkbox>
@@ -72,16 +45,19 @@
                                         </span>
                                       </template>
                                     </el-tree-select>
-
-
-
-
-
             </el-form-item>
 
             <el-form-item label="截至日期：">
                     <el-date-picker v-model="state.formData.endDate" type="date" placeholder="截至日期" :size="size"> </el-date-picker>
             </el-form-item>
+
+
+                <el-form-item>
+                   <el-radio-group v-model="state.formData.roomId">
+                      <el-radio-button v-for="option in filteredRooms" :label="option.label" :value="option.value" ></el-radio-button>
+                    </el-radio-group>
+            </el-form-item>
+              
 
             <el-alert title="成本价若不填写，则系统自动以默认价格填入且不售卖，相应日期默认为关房；若选中不同房型，请切换房型进行编辑" type="warning" :closable="false" show-icon></el-alert>
 
@@ -105,14 +81,14 @@
                             </thead>
                             <tbody>
                                 <tr class="el-table__row">
-                                    <td class="el-table__cell" colspan="1" rowspan="1"><div class="cell"> <el-input-number :v-model="11" controls-position="right" style="width:100%"></el-input-number></div></td>
-                                    <td class="el-table__cell" colspan="1" rowspan="1"><div class="cell"> <el-input-number :v-model="11" controls-position="right" style="width:100%"></el-input-number></div></td>
-                                    <td class="el-table__cell" colspan="1" rowspan="1"><div class="cell"> <el-input-number :v-model="11" controls-position="right" style="width:100%"></el-input-number></div></td>
-                                    <td class="el-table__cell" colspan="1" rowspan="1"><div class="cell"> <el-input-number :v-model="11" controls-position="right" style="width:100%"></el-input-number></div></td>
-                                    <td class="el-table__cell" colspan="1" rowspan="1"><div class="cell"> <el-input-number :v-model="11" controls-position="right" style="width:100%"></el-input-number></div></td>
-                                    <td class="el-table__cell" colspan="1" rowspan="1"><div class="cell"> <el-input-number :v-model="11" controls-position="right" style="width:100%"></el-input-number></div></td>
-                                    <td class="el-table__cell" colspan="1" rowspan="1"><div class="cell"> <el-input-number :v-model="11" controls-position="right" style="width:100%"></el-input-number></div></td>
-                                    <td class="el-table__cell" colspan="1" rowspan="1"><div class="cell"> <el-input-number :v-model="11" controls-position="right" style="width:100%"></el-input-number></div></td>
+                                    <td class="el-table__cell" colspan="1" rowspan="1"><div class="cell"> <el-input-number v-model="inventoryBatchSet.value" controls-position="right" style="width:100%"   v-on:input="handleInputChange" ></el-input-number></div></td>
+                                    <td class="el-table__cell" colspan="1" rowspan="1"><div class="cell"> <el-input-number v-model="state.formData.inventory.sunday" controls-position="right" style="width:100%"></el-input-number></div></td>
+                                    <td class="el-table__cell" colspan="1" rowspan="1"><div class="cell"> <el-input-number v-model="state.formData.inventory.monday" controls-position="right" style="width:100%"></el-input-number></div></td>
+                                    <td class="el-table__cell" colspan="1" rowspan="1"><div class="cell"> <el-input-number v-model="state.formData.inventory.tuesday" controls-position="right" style="width:100%"></el-input-number></div></td>
+                                    <td class="el-table__cell" colspan="1" rowspan="1"><div class="cell"> <el-input-number v-model="state.formData.inventory.wednesday" controls-position="right" style="width:100%"></el-input-number></div></td>
+                                    <td class="el-table__cell" colspan="1" rowspan="1"><div class="cell"> <el-input-number v-model="state.formData.inventory.thursday" controls-position="right" style="width:100%"></el-input-number></div></td>
+                                    <td class="el-table__cell" colspan="1" rowspan="1"><div class="cell"> <el-input-number v-model="state.formData.inventory.friday" controls-position="right" style="width:100%"></el-input-number></div></td>
+                                    <td class="el-table__cell" colspan="1" rowspan="1"><div class="cell"> <el-input-number v-model="state.formData.inventory.saturday" controls-position="right" style="width:100%"></el-input-number></div></td>
                                 </tr>
                             </tbody>
                         </table>
@@ -128,9 +104,9 @@
                 <div class="el-table--fit el-table--border el-table--scrollable-y el-table--enable-row-hover el-table el-table--layout-fixed is-scrolling-none" data-prefix="el" style="width: 100%; height:100%;">
                     <div class="el-table__inner-wrapper">
 
-                        <table class="el-table__header" border="0" cellpadding="0" cellspacing="0" style="width: 100%;">
+                        <table class="el-table__header" border="0" cellpadding="0" cellspacing="0" style="width: 100%;" v-for="(item,index) in state.formData.roomPricePlan">
                             <thead>
-                                <tr><th class="el-table__cell" colspan="9"> <div class="cell">  特价 - 含早上架 INC: China Mainland, Hong Kong, Macau, Taiwan</div></th></tr>
+                                <tr><th class="el-table__cell" colspan="9"> <div class="cell"> {{item.pricePlanName}} </div></th></tr>
                                 <tr>
                                     <th class="el-table__cell" colspan="1" rowspan="1"><div class="cell"></div></th>
                                     <th class="el-table__cell" colspan="1" rowspan="1"><div class="cell" style="text-align:center">批量编辑</div></th>
@@ -186,61 +162,7 @@
 
 
 
-                        <table class="el-table__header" border="0" cellpadding="0" cellspacing="0" style="width: 100%;">
-                            <thead>
-                                <tr><th class="el-table__cell" colspan="9"> <div class="cell">  特价 - 含早上架 INC: China Mainland, Hong Kong, Macau, Taiwan</div></th></tr>
-                                <tr>
-                                    <th class="el-table__cell" colspan="1" rowspan="1"><div class="cell"></div></th>
-                                    <th class="el-table__cell" colspan="1" rowspan="1"><div class="cell" style="text-align:center">批量编辑</div></th>
-                                    <th class="el-table__cell" colspan="1" rowspan="1"><div class="cell" style="text-align:center">星期天</div></th>
-                                    <th class="el-table__cell" colspan="1" rowspan="1"><div class="cell" style="text-align:center">星期一</div></th>
-                                    <th class="el-table__cell" colspan="1" rowspan="1"><div class="cell" style="text-align:center">星期二</div></th>
-                                    <th class="el-table__cell" colspan="1" rowspan="1"><div class="cell" style="text-align:center">星期三</div></th>
-                                    <th class="el-table__cell" colspan="1" rowspan="1"><div class="cell" style="text-align:center">星期四</div></th>
-                                    <th class="el-table__cell" colspan="1" rowspan="1"><div class="cell" style="text-align:center">星期五</div></th>
-                                    <th class="el-table__cell" colspan="1" rowspan="1"><div class="cell" style="text-align:center">星期六</div></th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr class="el-table__row">
-                                    <td class="el-table__cell" width="20px"><div class="cell">成本(CNY)</div> </td>
-                                    <td class="el-table__cell" colspan="1" rowspan="1"><div class="cell"> <el-input-number :v-model="11" controls-position="right" style="width:100%"></el-input-number></div></td>
-                                    <td class="el-table__cell" colspan="1" rowspan="1"><div class="cell"> <el-input-number :v-model="11" controls-position="right" style="width:100%"></el-input-number></div></td>
-                                    <td class="el-table__cell" colspan="1" rowspan="1"><div class="cell"> <el-input-number :v-model="11" controls-position="right" style="width:100%"></el-input-number></div></td>
-                                    <td class="el-table__cell" colspan="1" rowspan="1"><div class="cell"> <el-input-number :v-model="11" controls-position="right" style="width:100%"></el-input-number></div></td>
-                                    <td class="el-table__cell" colspan="1" rowspan="1"><div class="cell"> <el-input-number :v-model="11" controls-position="right" style="width:100%"></el-input-number></div></td>
-                                    <td class="el-table__cell" colspan="1" rowspan="1"><div class="cell"> <el-input-number :v-model="11" controls-position="right" style="width:100%"></el-input-number></div></td>
-                                    <td class="el-table__cell" colspan="1" rowspan="1"><div class="cell"> <el-input-number :v-model="11" controls-position="right" style="width:100%"></el-input-number></div></td>
-                                    <td class="el-table__cell" colspan="1" rowspan="1"><div class="cell"> <el-input-number :v-model="11" controls-position="right" style="width:100%"></el-input-number></div></td>
-                                </tr>
-                                <tr class="el-table__row">
-                                    <td class="el-table__cell" colspan="1" rowspan="1"><div class="cell">最小入住天数</div> </td>
-                                    <td class="el-table__cell" colspan="1" rowspan="1"><div class="cell"> <el-input-number :v-model="11" controls-position="right" style="width:100%"></el-input-number></div></td>
-                                    <td class="el-table__cell" colspan="1" rowspan="1"><div class="cell"> <el-input-number :v-model="11" controls-position="right" style="width:100%"></el-input-number></div></td>
-                                    <td class="el-table__cell" colspan="1" rowspan="1"><div class="cell"> <el-input-number :v-model="11" controls-position="right" style="width:100%"></el-input-number></div></td>
-                                    <td class="el-table__cell" colspan="1" rowspan="1"><div class="cell"> <el-input-number :v-model="11" controls-position="right" style="width:100%"></el-input-number></div></td>
-                                    <td class="el-table__cell" colspan="1" rowspan="1"><div class="cell"> <el-input-number :v-model="11" controls-position="right" style="width:100%"></el-input-number></div></td>
-                                    <td class="el-table__cell" colspan="1" rowspan="1"><div class="cell"> <el-input-number :v-model="11" controls-position="right" style="width:100%"></el-input-number></div></td>
-                                    <td class="el-table__cell" colspan="1" rowspan="1"><div class="cell"> <el-input-number :v-model="11" controls-position="right" style="width:100%"></el-input-number></div></td>
-                                    <td class="el-table__cell" colspan="1" rowspan="1"><div class="cell"> <el-input-number :v-model="11" controls-position="right" style="width:100%"></el-input-number></div></td>
-                                </tr>
-                                <tr class="el-table__row">
-                                    <td class="el-table__cell" colspan="1" rowspan="1"><div class="cell">提前预订天数</div> </td>
-                                    <td class="el-table__cell" colspan="1" rowspan="1"><div class="cell"> <el-input-number :v-model="11" controls-position="right" style="width:100%"></el-input-number></div></td>
-                                    <td class="el-table__cell" colspan="1" rowspan="1"><div class="cell"> <el-input-number :v-model="11" controls-position="right" style="width:100%"></el-input-number></div></td>
-                                    <td class="el-table__cell" colspan="1" rowspan="1"><div class="cell"> <el-input-number :v-model="11" controls-position="right" style="width:100%"></el-input-number></div></td>
-                                    <td class="el-table__cell" colspan="1" rowspan="1"><div class="cell"> <el-input-number :v-model="11" controls-position="right" style="width:100%"></el-input-number></div></td>
-                                    <td class="el-table__cell" colspan="1" rowspan="1"><div class="cell"> <el-input-number :v-model="11" controls-position="right" style="width:100%"></el-input-number></div></td>
-                                    <td class="el-table__cell" colspan="1" rowspan="1"><div class="cell"> <el-input-number :v-model="11" controls-position="right" style="width:100%"></el-input-number></div></td>
-                                    <td class="el-table__cell" colspan="1" rowspan="1"><div class="cell"> <el-input-number :v-model="11" controls-position="right" style="width:100%"></el-input-number></div></td>
-                                    <td class="el-table__cell" colspan="1" rowspan="1"><div class="cell"> <el-input-number :v-model="11" controls-position="right" style="width:100%"></el-input-number></div></td>
-                                </tr>
-
-
-
-
-                            </tbody>
-                        </table>
+                  
 
                     </div>
 
@@ -265,7 +187,7 @@
         const app = Vue.createApp({
          setup() {
             const state = Vue.reactive({
-                roomDropdown: @(Html.Raw(Model.HotelRoomDataJson)),
+               roomDropdown:@(Html.Raw(JsonConvert.SerializeObject(Model.RoomTypes, new JsonSerializerSettings { ContractResolver = new CamelCasePropertyNamesContractResolver() }))),
                defaultProps: {
                         children: 'children',
                         label: 'label'
@@ -273,14 +195,41 @@
                 formData: {
                         hotelName: '@Html.Raw(Model.HotelName)',
                         endDate: '@Html.Raw(DateTime.Now.AddDays(1).ToString("yyyy-MM-dd"))',
-                        roomId: '',
-                }
-
+                        roomId: `@Html.Raw(Model.RoomTypeDefaultValue)`,
+                        inventory:{
+                            sunday:null,
+                            monday:null,
+                            tuesday:null,
+                            wednesday:null,
+                            thursday:null,
+                            friday:null,
+                            saturday:null,
+                            
+                        },
+                        roomPricePlan: @(Html.Raw(JsonConvert.SerializeObject(Model.CruuentRoomPricePlan, new JsonSerializerSettings { ContractResolver = new CamelCasePropertyNamesContractResolver() }))),
+                },
+                hotelRoomPricePlanAll: @(Html.Raw(JsonConvert.SerializeObject(Model.HotelRoomPricePlanAll, new JsonSerializerSettings { ContractResolver = new CamelCasePropertyNamesContractResolver() }))),
+                
             });
 
+           const inventoryBatchSet = Vue.ref(1);
 
-            const selectedValues = Vue.ref([])
-            const treeSelectRef = Vue.ref(null)
+            const selectedValues = Vue.ref([`@Html.Raw(Model.RoomTypeDefaultValue)`])
+            
+
+            const handleInputChange = (value) => {
+                    state.formData.inventory = value;
+                    };
+            
+            
+            const filteredRooms = Vue.computed(() => {
+                var data = state.roomDropdown[0].children.filter(room => selectedValues.value.includes(room.value));
+                state.formData.roomId =data[0]?.value??"";
+                return data;
+                })
+
+
+
             const allChecked = Vue.ref(false)
 
             // 获取所有子节点的ID
@@ -298,7 +247,6 @@
         // 处理全选复选框变化
         const handleAllCheckChange = (val) => {
           if (val) {
-            // 获取所有子节点ID（排除全选节点本身）
             const allChildren = state.roomDropdown[0].children
             const allIds = getAllChildIds(allChildren)
             selectedValues.value = allIds
@@ -328,7 +276,7 @@
             const FormDataRef = Vue.ref(null);
             return {
                 state,
-                FormDataRef,selectedValues,treeSelectRef,allChecked,getAllChildIds,handleAllCheckChange,handleCheckChange
+                FormDataRef,selectedValues,allChecked,getAllChildIds,handleAllCheckChange,handleCheckChange,filteredRooms,inventoryBatchSet,handleInputChange
             };
         }
         });
