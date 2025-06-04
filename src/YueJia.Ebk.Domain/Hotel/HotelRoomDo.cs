@@ -9,6 +9,13 @@ public partial record HotelRoomDo : EntityTenant
 {
     public HotelRoomDo() { }
 
+
+    /// <summary>
+    /// 酒店房间标题
+    /// </summary>
+    [SugarColumn(ColumnDescription = "酒店房间标题", IsNullable = true, Length = 60)]
+    public string? HotelRoomTitle { get; set; }
+
     /// <summary>
     /// 酒店ID
     /// </summary>
@@ -62,13 +69,17 @@ public partial record HotelRoomDo : EntityTenant
     [SugarColumn(ColumnDescription = "开始日期")]
     public DateTime EndDate { get; private set; }
 
-
-
     /// <summary>
     /// 是否启用
     /// </summary>
     [SugarColumn(ColumnDescription = "是否启用")]
     public YesOrNoType IsEnabled { get; private set; }
+
+    /// <summary>
+    /// 备注
+    /// </summary>
+    [SugarColumn(ColumnDescription = "备注", IsNullable = true, Length = 100)]
+    public string? Remark { get; private set; }
 }
 
 
@@ -76,7 +87,7 @@ public partial record HotelRoomDo
 {
 
 
-    private HotelRoomDo(long id, long hotelId, string hotelCode, string roomType, BedTypeEnum bedType, int maximumNumberOfPeople, int? adultLimit, int? childLimit, DateTime startDate, DateTime endDate,  YesOrNoType isEnabled)
+    private HotelRoomDo(long id, long hotelId, string hotelCode, string roomType, BedTypeEnum bedType, int maximumNumberOfPeople, int? adultLimit, int? childLimit, DateTime startDate, DateTime endDate, YesOrNoType isEnabled)
     {
         this.Id = id;
         HotelId = hotelId;
