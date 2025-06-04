@@ -114,13 +114,14 @@ public class HotelApp : ApplicationService, IHotelApp
 
     public async Task<bool> DeletePricePlanAsync(long id)
     {
-        var entity = await PricePlanRepo.GetByIdAsync(id) ?? throw new InvalidOperationException("价格计划不存在！");
-
-        if (entity.IsDelete) return true;
+        var entity = await PricePlanRepo.GetByIdAsync(id);
+        if (entity==null) {
+            throw new InvalidOperationException("价格计划不存在！");
+        }
         entity.IsDelete = true;
         return await PricePlanRepo.AsUpdateable(entity)
-            .UpdateColumns(it => new { it.IsDelete, it.LastModifiedbyId, it.LastModifiedbyName, it.LastModifiedTime, it.Version })
-            .ExecuteCommandWithOptLockAsync(true) > 0;
+                                  .UpdateColumns(it => new { it.IsDelete, it.LastModifiedbyId, it.LastModifiedbyName, it.LastModifiedTime, it.Version })
+                                  .ExecuteCommandWithOptLockAsync(true) > 0;
     }
 
     public async Task<HotelRoomDetailsDto> GetHotelRoomByIdAsync(long id)
