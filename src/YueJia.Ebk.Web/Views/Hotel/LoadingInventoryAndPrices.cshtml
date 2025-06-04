@@ -81,7 +81,7 @@
                             </thead>
                             <tbody>
                                 <tr class="el-table__row">
-                                    <td class="el-table__cell" colspan="1" rowspan="1"><div class="cell"> <el-input-number v-model="inventoryBatchSet.value" controls-position="right" style="width:100%"   v-on:input="handleInputChange" ></el-input-number></div></td>
+                                    <td class="el-table__cell" colspan="1" rowspan="1"><div class="cell"> <el-input-number v-model="inventoryBatchSet" controls-position="right" style="width:100%"  v-on:input="handleInputChange" ></el-input-number></div></td>
                                     <td class="el-table__cell" colspan="1" rowspan="1"><div class="cell"> <el-input-number v-model="state.formData.inventory.sunday" controls-position="right" style="width:100%"></el-input-number></div></td>
                                     <td class="el-table__cell" colspan="1" rowspan="1"><div class="cell"> <el-input-number v-model="state.formData.inventory.monday" controls-position="right" style="width:100%"></el-input-number></div></td>
                                     <td class="el-table__cell" colspan="1" rowspan="1"><div class="cell"> <el-input-number v-model="state.formData.inventory.tuesday" controls-position="right" style="width:100%"></el-input-number></div></td>
@@ -186,6 +186,7 @@
     <script type="text/javascript">
         const app = Vue.createApp({
          setup() {
+                    const inventoryBatchSet = Vue.ref(1);
             const state = Vue.reactive({
                roomDropdown:@(Html.Raw(JsonConvert.SerializeObject(Model.RoomTypes, new JsonSerializerSettings { ContractResolver = new CamelCasePropertyNamesContractResolver() }))),
                defaultProps: {
@@ -197,30 +198,33 @@
                         endDate: '@Html.Raw(DateTime.Now.AddDays(1).ToString("yyyy-MM-dd"))',
                         roomId: `@Html.Raw(Model.RoomTypeDefaultValue)`,
                         inventory:{
-                            sunday:null,
-                            monday:null,
-                            tuesday:null,
-                            wednesday:null,
-                            thursday:null,
-                            friday:null,
-                            saturday:null,
+                            sunday:inventoryBatchSet.value,
+                            monday:inventoryBatchSet.value,
+                            tuesday:inventoryBatchSet.value,
+                            wednesday:inventoryBatchSet.value,
+                            thursday:inventoryBatchSet.value,
+                            friday:inventoryBatchSet.value,
+                            saturday:inventoryBatchSet.value,
                             
                         },
+                      
                         roomPricePlan: @(Html.Raw(JsonConvert.SerializeObject(Model.CruuentRoomPricePlan, new JsonSerializerSettings { ContractResolver = new CamelCasePropertyNamesContractResolver() }))),
                 },
                 hotelRoomPricePlanAll: @(Html.Raw(JsonConvert.SerializeObject(Model.HotelRoomPricePlanAll, new JsonSerializerSettings { ContractResolver = new CamelCasePropertyNamesContractResolver() }))),
                 
             });
 
-           const inventoryBatchSet = Vue.ref(1);
+        
 
             const selectedValues = Vue.ref([`@Html.Raw(Model.RoomTypeDefaultValue)`])
             
 
             const handleInputChange = (value) => {
-                    state.formData.inventory = value;
+                    Object.keys(state.formData.inventory).forEach(key =>
+                        {
+                            state.formData.inventory[key] = value;
+                        });
                     };
-            
             
             const filteredRooms = Vue.computed(() => {
                 var data = state.roomDropdown[0].children.filter(room => selectedValues.value.includes(room.value));
