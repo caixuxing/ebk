@@ -187,6 +187,15 @@ public class HotelController : AbpController
     [HttpDelete, Route("[controller]/DeleteHotelRoom/{id}")]
     public async Task<IResult> DeleteHotelRoom([FromRoute] string id) => ApiResult.HandleResult(await HotelApp.DeleteHotelRoomAsync(id.ToLong()));
 
+    /// <summary>
+    /// 切换价格状态
+    /// </summary>
+    /// <param name="id"></param>
+    /// <returns></returns>
+    [HttpPost, Route("[controller]/UpdateRoomState/{id}")]
+    public async Task<IResult> UpdateRoomState(string id) => ApiResult.HandleBoolResult(await HotelApp.UpdateRoomStateAsync(id.ToLong()));
+
+
     #region 房间与价格计划
     /// <summary>
     /// 房间与价格计划（View）
@@ -259,7 +268,7 @@ public class HotelController : AbpController
         ViewBag.RoomTypeName = $"{room.RoomTypeName}";
         ViewBag.AdultLimit = $"{room.AdultLimit}";
         ViewBag.ChildLimit = $"{room.ChildLimit}";
-        ViewBag.MaximumNumberOfPeople = $"{hotel.HotelName}({room.MaximumNumberOfPeople})";
+        ViewBag.MaximumNumberOfPeople = $"{room.MaximumNumberOfPeople}";
 
         CreateOrUpdatePricePlanCmd vm = new CreateOrUpdatePricePlanCmd()
         {
@@ -319,13 +328,13 @@ public class HotelController : AbpController
     public async Task<IResult> DeletePricePlan([FromRoute] string id) => ApiResult.HandleBoolResult(await HotelApp.DeletePricePlanAsync(id.ToLong()));
 
     /// <summary>
-    /// 
+    /// 切换价格计划状态
     /// </summary>
     /// <param name="cmd"></param>
     /// <param name="id"></param>
     /// <returns></returns>
-    [HttpPut, Route("[controller]/UpdatePricePlan/{id}")]
-    public async Task<IResult> UpdatePricePlan([FromBody] CreateOrUpdatePricePlanCmd cmd, string id) => ApiResult.HandleBoolResult(await HotelApp.UpdatePricePlanAsync(cmd, id.ToLong()));
+    [HttpPost, Route("[controller]/UpdatePricePlanState/{id}")]
+    public async Task<IResult> UpdatePricePlanState( string id) => ApiResult.HandleBoolResult(await HotelApp.UpdatePricePlanStateAsync(id.ToLong()));
 
 
 

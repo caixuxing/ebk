@@ -4,13 +4,10 @@
 }
 @section head {
     <style type="text/css">
-        .el-row {
-            margin-bottom: 20px;
-        }
         .hide-body .el-card__body {
-  display: none !important;
-  padding: 0 !important;
-}
+          display: none !important;
+          padding: 0 !important;
+        }
  </style>
 }
 <el-container style="height:100vh;overflow: hidden;">
@@ -26,17 +23,18 @@
         <el-divider content-position="left"></el-divider>
 
         <el-scrollbar>
-            <el-card v-for="(item, index) in vmodel.roomList"  :class="{ 'hide-body': !item.showContent }">
+          <el-card v-for="(item, index) in vmodel.roomList"  :class="{ 'hide-body': !item.showContent }"  style=" margin-bottom:20px "   >
             <template #header>
                 @* 头部信息 *@
-                    <el-tag  type="success">上架 </el-tag>
+                    <el-tag type="success">{{item.isEnabledName}} </el-tag>
                     <div style="display: inline-block;margin-left:20px;width:600px;">
                         <el-link :underline="false" >{{item.roomTypeName}}</el-link>
                         <el-link :underline="false" >==></el-link>
                         <el-link :underline="false" >{{item.bedTypeName}}</el-link>
                     </div>
 
-                    <el-button size="small" v-on:click="onDeleteRoom(item)">删除</el-button>
+                    <el-button size="small" v-on:click="onDeleteRoom(item)" type="danger">删除</el-button>
+                    <el-button size="small" v-on:click="onSwitchRoomState(item)">切换状态</el-button>
                     <el-button size="small" v-on:click="onAddPricePlan(item)">新增价格计划</el-button>
 
 
@@ -48,8 +46,7 @@
             </template>
 
             <div v-if="item.showContent">
-                @* 详情信息 *@
-
+                    @* 详情信息 *@
                     <el-form label-width="auto" :inline="true">
                         <div>
                             <el-form-item label="床型">
@@ -75,28 +72,19 @@
                                border
                                height="100%" >
 
-                        <el-table-column label="#" width="60" align="center"></el-table-column>
-                        <el-table-column label="餐型" width="auto" max-width="200px" align="left">
-                            <template #default="scope">
-                                {{scope.row.breakfastTypeName}}
-                            </template>
-                        </el-table-column>
-                        <el-table-column label="提前天数" width="auto" max-width="200px" align="center">
-                            <template #default="scope" align="right">
-                                {{ scope.row.daysInAdvance }}
-                            </template>
-                        </el-table-column>
 
-                        <el-table-column label="连住天数"width="auto" max-width="200px" align="center">
+                        <el-table-column label="描述" width="auto" align="center">
                             <template #default="scope">
-                                <div style="text-align:center">
-                                    <span>{{  scope.row.continuousStayDays }}</span>
+                                <div style="text-align:left" >
+                                    {{item.roomTypeName}}
+                                    <{{scope.row.breakfastTypeName}}>
+                                    <提前{{scope.row.daysInAdvance}}天>
+                                    <连住{{scope.row.continuousStayDays}}天>
                                 </div>
                             </template>
                         </el-table-column>
-
                         
-                        <el-table-column label="是否保留房" width="auto" max-width="200px" align="center">
+                        <el-table-column label="是否保留房" width="150px" align="center">
                             <template #default="scope">
                                 <div style="text-align:center">
                                     <span>{{  scope.row.isReservedRoomName }}</span>
@@ -104,7 +92,7 @@
                             </template>
                         </el-table-column>
 
-                        <el-table-column label="状态" width="auto" max-width="200px" align="center">
+                        <el-table-column label="状态"  width="150px" align="center">
                             <template #default="scope">
                                 <div style="text-align:center">
                                     <span>{{  scope.row.isEnableName }}</span>
@@ -112,12 +100,10 @@
                             </template>
                         </el-table-column>
 
-                        <el-table-column label="操作" prop="opt" width="140px" align="center">
+                        <el-table-column label="操作" width="180px" align="center">
                             <template #default="scope">
-                                <div style="text-align:center">
-                                    <el-button size="small" v-on:click="editPricePlan(scope.row)">编辑</el-button>
+                                    <el-button size="small" v-on:click="onSwitchPricePlanState(scope.row)">切换状态</el-button>
                                     <el-button size="small" type="danger" v-on:click="onDeletePricePlan(scope.row)">删除 </el-button>
-                                </div>
                             </template>
                         </el-table-column>
 
@@ -180,9 +166,20 @@
                         }
                     });
           }
-   
 
-
+         /**
+          * 切换房间 状态
+          */
+          const onSwitchRoomState = (row)=>{
+                ElMessageBox.confirm('您确定切换房间状态吗?', { confirmButtonText: '确定', cancelButtonText: '取消', type: 'warning', }).then(() => {
+                         axios.post(`/Hotel/UpdateRoomState/${row.id}`).then(res  => {
+                              top.window.vueElMessage({ message: res.data. message , type:  res.data.isSuccess?'success':'info' })
+                                      if(res.data.isSuccess){
+                                         loadData();
+                                      }
+                        })
+                 })
+          }
 
             /**
              * 删除房间
@@ -197,6 +194,9 @@
                         })
                  })
             };
+
+
+
             /**
              * 删除价格计划
              */
@@ -211,8 +211,20 @@
                  })
             };
 
-             const editPricePlan=(row)=> window.parent.mainFrame(`/Hotel/EditPricePlan/${row.id}`,``,``);
-            
+            /**
+             * 切换PricePlan 状态
+             */
+            const onSwitchPricePlanState =(row)=>{
+                ElMessageBox.confirm('您确定切换价格计划状态吗?', { confirmButtonText: '确定', cancelButtonText: '取消', type: 'warning', }).then(() => {
+                         axios.post(`/Hotel/UpdatePricePlanState/${row.id}`).then(res  => {
+                              top.window.vueElMessage({ message: res.data. message , type:  res.data.isSuccess?'success':'info' })
+                                      if(res.data.isSuccess){
+                                         loadData();
+                                      }
+                        })
+                 })
+            }
+             
 
 
             const loadData = () => {
@@ -226,8 +238,9 @@
               ,onAddRoom
               ,onAddPricePlan
               ,onDeleteRoom
+              ,onSwitchRoomState
               ,onDeletePricePlan
-              ,editPricePlan
+              ,onSwitchPricePlanState
           }
 
         }

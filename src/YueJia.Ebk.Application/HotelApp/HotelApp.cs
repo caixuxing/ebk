@@ -111,6 +111,21 @@ public class HotelApp : ApplicationService, IHotelApp
         });
     }
 
+    public async Task<bool> UpdateRoomStateAsync(long id)
+    {
+        //房间
+        var entity = HotelRoomRepo.GetById(id);
+        if (entity == null)
+        {
+            throw new InvalidOperationException("数据不存在！");
+        }
+        entity.SetIsEnabled(entity.IsEnabled == YesOrNoType.Yes ? YesOrNoType.No : YesOrNoType.Yes);
+
+
+        return await db.Updateable<HotelRoomDo>(entity).ExecuteCommandWithOptLockAsync(true) > 0;
+    }
+
+    
 
     public async Task<bool> DeletePricePlanAsync(long id)
     {
@@ -231,15 +246,19 @@ public class HotelApp : ApplicationService, IHotelApp
         return data;
     }
 
-    public async Task<bool> UpdatePricePlanAsync(CreateOrUpdatePricePlanCmd cmd, long id)
+    /// <summary>
+    /// 切换价格计划状态
+    /// </summary>
+    /// <param name="id"></param>
+    /// <returns></returns>
+    public async Task<bool> UpdatePricePlanStateAsync( long id)
     {
-        await LazyServiceProvider.LazyGetRequiredService<FluentValidation.IValidator<CreateOrUpdatePricePlanCmd>>().ValidateAndThrowAsync(cmd);
-        var entity = await PricePlanRepo.GetByIdAsync(id) ?? throw new InvalidOperationException("价格计划不存在！");
-        entity.SetBreakfastType(cmd.BreakfastType)
-              .SetContinuousStayDays(cmd.ContinuousStayDays)
-              .SetDaysInAdvance(cmd.DaysInAdvance)
-              .SetIsEnable(cmd.IsEnable)
-              .SetIsReservedRoom(cmd.IsReservedRoom);
+        var entity = await PricePlanRepo.GetByIdAsync(id);
+        if(entity==null)
+        {
+            throw new InvalidOperationException("价格计划不存在！");
+        } 
+        entity.SetIsEnable(entity.IsEnable == YesOrNoType.Yes? YesOrNoType.No: YesOrNoType.Yes);
         return await PricePlanRepo.AsUpdateable(entity).ExecuteCommandWithOptLockAsync(true) > 0;
     }
 
