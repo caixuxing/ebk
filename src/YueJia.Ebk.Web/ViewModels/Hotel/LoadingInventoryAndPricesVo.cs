@@ -20,4 +20,10 @@ public class LoadingInventoryAndPricesVo
     /// 酒店名称（英文）
     /// </summary>
     public string HotelNameEn { get; set; } = default!;
+
+
+    /// <summary>
+    /// 酒店房间数据Json
+    /// </summary>
+    public string HotelRoomDataJson { get; set; } = default!;
 }

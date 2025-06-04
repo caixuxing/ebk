@@ -78,4 +78,11 @@ public interface IHotelApp
     /// <returns></returns>
     Task<InventoryAndPriceDetailsDto> GetInventoryAndPriceDetailsByFilterAsync(InventoryAndPriceDetailsQry qry);
 
+
+    /// <summary>
+    /// 按酒店ID获取树形下拉数据
+    /// </summary>
+    /// <returns></returns>
+    Task<List<TreeSelectDataDto<string>>> GetHoteTreeSelectDataByHotelIdAsync(long hotelId);
+
 }

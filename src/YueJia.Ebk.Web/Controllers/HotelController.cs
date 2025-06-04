@@ -406,6 +406,7 @@ public class HotelController : AbpController
         vm.HotelId = entity.Id.ToString();
         vm.HotelName = entity.HotelName;
         vm.HotelNameEn = entity.HotelNameEn;
+        vm.HotelRoomDataJson = JsonConvert.SerializeObject(await HotelApp.GetHoteTreeSelectDataByHotelIdAsync(entity.Id), new JsonSerializerSettings { ContractResolver = new CamelCasePropertyNamesContractResolver() });
 
         return View(vm);
     }

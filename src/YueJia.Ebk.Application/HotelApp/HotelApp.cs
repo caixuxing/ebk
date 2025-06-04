@@ -286,4 +286,28 @@ public class HotelApp : ApplicationService, IHotelApp
             }
         };
     }
+
+    public async Task<List<TreeSelectDataDto<string>>> GetHoteTreeSelectDataByHotelIdAsync(long hotelId)
+    {
+        var result = await HotelRoomRepo.GetListAsync(x => x.HotelId == hotelId);
+        var hotelCode = result.FirstOrDefault()?.HotelCode ?? string.Empty;
+        var currentHotelRoomTypeDate = await SqlSugarClient.Queryable<OtaRoomEntity>()
+                            .Where(q => q.pfcode == "D" && q.hotelcode == hotelCode)
+                            .Select(t => new { t.roomcode, t.roomname })
+                            .ToListAsync();
+
+        return new List<TreeSelectDataDto<string>>() { new TreeSelectDataDto<string>()
+           {
+               Label = "全选",
+               Value = "all",
+               Children = result.Select(x => new SelectDataDto<string>()
+               {
+                    Label = $"{x.Id} {currentHotelRoomTypeDate.FirstOrDefault(y => y.roomcode == int.Parse(x.RoomType))?.roomname ?? string.Empty},{x.BedType.ToDescription()}",
+                    Value = x.Id.ToString()
+               }).ToList()
+           }
+        };
+
+
+    }
 }
