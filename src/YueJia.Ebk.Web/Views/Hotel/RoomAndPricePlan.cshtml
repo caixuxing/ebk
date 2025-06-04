@@ -27,10 +27,13 @@
             <template #header>
                 @* 头部信息 *@
                     <el-tag type="success">{{item.isEnabledName}} </el-tag>
+
+                    <el-text style="margin-left:20px;">{{item.startDateString}} 至 {{item.endDateString}}</el-text>
+
                     <div style="display: inline-block;margin-left:20px;width:600px;">
-                        <el-link :underline="false" >{{item.roomTypeName}}</el-link>
-                        <el-link :underline="false" >==></el-link>
-                        <el-link :underline="false" >{{item.bedTypeName}}</el-link>
+                        <el-text >
+                            {{item.roomTypeName}}==>{{item.bedTypeName}}
+                        </el-text>
                     </div>
 
                     <el-button size="small" v-on:click="onDeleteRoom(item)" type="danger">删除</el-button>
@@ -157,7 +160,7 @@
                     layer.open({
                         type: 2,
                         title: '新增价格计划',
-                        area: ['90%', '80%'],
+                        area: ['100%', '100%'],
                         fix: false,
                         maxmin: true,
                         content:  `/Hotel/AddPricePlan/${row.id}`,
@@ -231,6 +234,7 @@
                        axios.get(`/Hotel/RoomAndPricePlanList/@Model.Id`).then(response => {
                          let {data,status}=response;
                          vmodel.roomList = data.data;
+                         console.log( vmodel.roomList);
                      })
              };
           return {

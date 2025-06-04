@@ -74,8 +74,41 @@ public record HotelRoomListDto
     /// </summary>
     public int? ChildLimit { get; set; }
 
+
+    /// <summary>
+    /// 开始日期
+    /// </summary>
+    public DateTime StartDate { get; set; }
+
+    /// <summary>
+    /// 结束日期
+    /// </summary>
+    public DateTime EndDate { get; set; }
+
     /// <summary>
     /// 房间价格计划
     /// </summary>
     public List<PricePlanListDto> PricePlans { get; set; } = new();
+
+    /// <summary>
+    /// 状态名称
+    /// </summary>
+    public string StartDateString
+    {
+        get
+        {
+            return StartDate.ToString("yyyy-MM-dd");
+        }
+    }
+
+    /// <summary>
+    /// 状态名称
+    /// </summary>
+    public string EndDateString
+    {
+        get
+        {
+            return EndDate.ToString("yyyy-MM-dd");
+        }
+    }
 }

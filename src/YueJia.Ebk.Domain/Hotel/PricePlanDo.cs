@@ -58,6 +58,7 @@ public partial record PricePlanDo
 
     public PricePlanDo(long hotelRoomId, string pricePlanName, BreakfastTypeEnum breakfastType, int daysInAdvance, int continuousStayDays, YesOrNoType isReservedRoom, YesOrNoType isEnable)
     {
+        Id = SnowFlakeSingle.instance.getID();
         HotelRoomId = hotelRoomId;
         PricePlanName = pricePlanName;
         BreakfastType = breakfastType;

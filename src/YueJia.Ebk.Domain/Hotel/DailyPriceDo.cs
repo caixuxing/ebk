@@ -23,11 +23,11 @@ public record DailyPriceDo : EntityTenant
     /// 当前日期
     /// </summary>
     [SugarColumn(ColumnDescription = "当前日期", ColumnDataType = "date")]
-    public DateTime CurrentDate { get; private set; }
+    public DateTime CurrentDate { get;  set; }
 
     /// <summary>
     /// 价格
     /// </summary>
     [SugarColumn(ColumnDescription = "价格", ColumnDataType = "decimal(8,2)")]
-    public decimal Price { get; private set; }
+    public decimal Price { get;  set; }
 }

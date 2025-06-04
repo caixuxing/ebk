@@ -205,7 +205,7 @@ public class HotelController : AbpController
     public async Task<IActionResult> RoomAndPricePlan(string id)
     {
         var hotel = await HotelPublishApp.GetHotelPublishDetailAsync(id.ToLong());
-        var roomAndPricePlan = await HotelApp.GetHotelRoomListByIdAsync(id.ToLong());
+
 
 
 
@@ -247,6 +247,8 @@ public class HotelController : AbpController
             x.IsEnabledName,
             pricePlans = x.PricePlans,
             ShowContent = false,
+             x.StartDateString,
+             x.EndDateString,
             ShowFooter = true
         }));
     }
@@ -262,8 +264,9 @@ public class HotelController : AbpController
     {
         var room = await HotelApp.GetHotelRoomByIdAsync(id.ToLong());
         var hotel = await HotelPublishApp.GetHotelPublishDetailAsync(room.HotelId);
-
+        
         ViewBag.HotelName = $"{hotel.HotelName}({hotel.HotelNameEn})";
+        ViewBag.LowestPrice = $"{hotel.LowestPrice}";
         ViewBag.BedTypeName = $"{room.BedTypeName}";
         ViewBag.RoomTypeName = $"{room.RoomTypeName}";
         ViewBag.AdultLimit = $"{room.AdultLimit}";
@@ -283,31 +286,31 @@ public class HotelController : AbpController
         return View(vm);
     }
 
-    /// <summary>
-    /// 
-    /// </summary>
-    /// <param name="id"></param>
-    /// <returns></returns>
-    public async Task<IActionResult> EditPricePlan(string id)
-    {
-        var data = await HotelApp.GetPricePlanDetailsByIdAsync(id.ToLong());
-        AddPricePlanVo vm = new AddPricePlanVo()
-        {
-            HotelId = data.HotelId,
-            HotelRoomId = data.Id,
-            HotelCode = data.HotelCode,
-            HotelName = $"{data.HotelName}({data.HotelNameEn})",
-            BedTypeName = data.BedTypeName,
-            RoomTypeName = data.RoomTypeName,
-            BreakfastType = data.BreakfastType,
-            DaysInAdvance = data.DaysInAdvance,
-            ContinuousStayDays = data.ContinuousStayDays,
-            IsEnable = data.IsEnable,
-            IsReservedRoom = data.IsEnable,
-            //PricePlanId = data.Id,
-        };
-        return View("AddPricePlan", vm);
-    }
+    ///// <summary>
+    ///// 
+    ///// </summary>
+    ///// <param name="id"></param>
+    ///// <returns></returns>
+    //public async Task<IActionResult> EditPricePlan(string id)
+    //{
+    //    var data = await HotelApp.GetPricePlanDetailsByIdAsync(id.ToLong());
+    //    AddPricePlanVo vm = new AddPricePlanVo()
+    //    {
+    //        HotelId = data.HotelId,
+    //        HotelRoomId = data.Id,
+    //        HotelCode = data.HotelCode,
+    //        HotelName = $"{data.HotelName}({data.HotelNameEn})",
+    //        BedTypeName = data.BedTypeName,
+    //        RoomTypeName = data.RoomTypeName,
+    //        BreakfastType = data.BreakfastType,
+    //        DaysInAdvance = data.DaysInAdvance,
+    //        ContinuousStayDays = data.ContinuousStayDays,
+    //        IsEnable = data.IsEnable,
+    //        IsReservedRoom = data.IsEnable,
+    //        //PricePlanId = data.Id,
+    //    };
+    //    return View("AddPricePlan", vm);
+    //}
 
 
 

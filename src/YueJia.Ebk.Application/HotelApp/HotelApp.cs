@@ -39,7 +39,7 @@ public class HotelApp : ApplicationService, IHotelApp
             throw new InvalidOperationException("房间已存在");
         }
 
-        List<RoomInventoryDo> roomStockDos = new();
+        List<DailyInventoryDo> dailyInventoryDoList = new List<DailyInventoryDo>();
         for (DateTime date = cmd.StartDate; date <= cmd.EndDate; date = date.AddDays(1))
         {
             int stockNum = 0;
@@ -53,11 +53,15 @@ public class HotelApp : ApplicationService, IHotelApp
                 case DayOfWeek.Saturday: stockNum = cmd.Saturday; break;
                 case DayOfWeek.Sunday: stockNum = cmd.Sunday; break;
             }
-            roomStockDos.Add(RoomInventoryDo.Create(entity.Id, date, stockNum));
+            dailyInventoryDoList.Add(new DailyInventoryDo() { 
+                 RoomId = entity.Id,
+                 InventoryNum = stockNum,
+                 CurrentDate = date,
+            });
         }
           await DbTransaction.ExecuteInTransactionAsync(db, async () =>
         {
-            await db.Insertable(roomStockDos).ExecuteCommandAsync();
+            await db.Insertable<DailyInventoryDo>(dailyInventoryDoList).ExecuteCommandAsync();
             await db.Insertable(entity).ExecuteCommandAsync();
             return entity.Id;
         });
@@ -68,9 +72,44 @@ public class HotelApp : ApplicationService, IHotelApp
 
     public async Task<long> CreatePricePlanAsync(CreateOrUpdatePricePlanCmd cmd)
     {
-        await LazyServiceProvider.LazyGetRequiredService<FluentValidation.IValidator<CreateOrUpdatePricePlanCmd>>().ValidateAndThrowAsync(cmd);
 
+        var hotelRoomObj = db.Queryable<HotelRoomDo>().Where(vv => vv.Id == SqlFunc.ToInt64(cmd.HotelRoomId)).ToList().First();
         var entity = PricePlanDo.Create(cmd.HotelRoomId.ToLong(), string.Empty, cmd.BreakfastType, cmd.DaysInAdvance, cmd.ContinuousStayDays, cmd.IsReservedRoom, cmd.IsEnable);
+
+        
+
+
+        List<DailyPriceDo> dailyPriceDoList = new List<DailyPriceDo>();
+        for (DateTime date = hotelRoomObj.StartDate; date <= hotelRoomObj.EndDate; date = date.AddDays(1))
+        {
+            decimal price = Convert.ToDecimal(0);
+            switch (date.DayOfWeek)
+            {
+                case DayOfWeek.Monday: price = cmd.Monday; break;
+                case DayOfWeek.Tuesday: price = cmd.Tuesday; break;
+                case DayOfWeek.Wednesday: price = cmd.Wednesday; break;
+                case DayOfWeek.Thursday: price = cmd.Thursday; break;
+                case DayOfWeek.Friday: price = cmd.Friday; break;
+                case DayOfWeek.Saturday: price = cmd.Saturday; break;
+                case DayOfWeek.Sunday: price = cmd.Sunday; break;
+            }
+            dailyPriceDoList.Add(new  DailyPriceDo()
+            {
+                RoomId = hotelRoomObj.HotelId,
+                PricePlanId = entity.Id,
+                Price = price,
+                CurrentDate = date, 
+            });
+        }
+
+
+        await DbTransaction.ExecuteInTransactionAsync(db, async () =>
+        {
+            await db.Insertable<DailyPriceDo>(dailyPriceDoList).ExecuteCommandAsync();
+            await db.Insertable<PricePlanDo>(entity).ExecuteCommandAsync();
+            return entity.Id;
+        });
+
 
         return await PricePlanRepo.InsertReturnSnowflakeIdAsync(entity);
     }
@@ -171,7 +210,9 @@ public class HotelApp : ApplicationService, IHotelApp
                  AdultLimit = x.AdultLimit,
                  ChildLimit = x.ChildLimit,
                  HotelCode = x.HotelCode,
-                 IsEnabled = x.IsEnabled
+                 IsEnabled = x.IsEnabled,
+                 StartDate = x.StartDate,
+                 EndDate = x.EndDate
              })
             .ToListAsync();
 
