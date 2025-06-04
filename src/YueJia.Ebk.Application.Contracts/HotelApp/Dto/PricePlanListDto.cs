@@ -11,6 +11,10 @@ public record PricePlanListDto
     /// </summary>
     public string Id { get; set; }
 
+    /// <summary>
+    /// 价格计划名称
+    /// </summary>
+    public string PricePlanTitle { get; set; }
 
     /// <summary>
     /// 酒店房间ID

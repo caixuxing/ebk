@@ -87,7 +87,7 @@ public partial record HotelRoomDo
 {
 
 
-    private HotelRoomDo(long id, long hotelId, string hotelCode, string roomType, BedTypeEnum bedType, int maximumNumberOfPeople, int? adultLimit, int? childLimit, DateTime startDate, DateTime endDate, YesOrNoType isEnabled)
+    private HotelRoomDo(long id, long hotelId, string hotelCode, string roomType, BedTypeEnum bedType, int maximumNumberOfPeople, int? adultLimit, int? childLimit, DateTime startDate, DateTime endDate, YesOrNoType isEnabled, string hotelRoomTitle)
     {
         this.Id = id;
         HotelId = hotelId;
@@ -100,11 +100,12 @@ public partial record HotelRoomDo
         StartDate = startDate;
         EndDate = endDate;
         IsEnabled = isEnabled;
+        HotelRoomTitle = hotelRoomTitle;
     }
 
-    public static HotelRoomDo Create(long hotelId, string hotelCode, string roomType, BedTypeEnum bedType, int maximumNumberOfPeople, int? adultLimit, int? childLimit, DateTime startDate, DateTime endDate)
+    public static HotelRoomDo Create(long hotelId, string hotelCode, string roomType, BedTypeEnum bedType, int maximumNumberOfPeople, int? adultLimit, int? childLimit, DateTime startDate, DateTime endDate,string hotelRoomTitle)
     {
-        return new HotelRoomDo(SnowFlakeSingle.instance.getID(), hotelId, hotelCode, roomType, bedType, maximumNumberOfPeople, adultLimit, childLimit, startDate, endDate, YesOrNoType.Yes);
+        return new HotelRoomDo(SnowFlakeSingle.instance.getID(), hotelId, hotelCode, roomType, bedType, maximumNumberOfPeople, adultLimit, childLimit, startDate, endDate, YesOrNoType.Yes, hotelRoomTitle);
     }
 
     public HotelRoomDo SetIsEnabled(YesOrNoType isEnabled)

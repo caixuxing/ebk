@@ -131,6 +131,7 @@
                
                 Vue.onMounted(() => {
                      model.dateRange =[`@(Html.Raw(Model.StartDate.ToString("yyyy-MM-dd")))`,`@(Html.Raw(Model.EndDate.ToString("yyyy-MM-dd")))`];
+                     console.log(model);
                  });
 
 
@@ -146,7 +147,9 @@
                   */
                  const onRoomChange=()=>{
 
-                       model.bedType = otaRoomList.find(vv=>vv.roomcode == model.roomType).bedtype;
+                     var roomObj =  otaRoomList.find(vv=>vv.roomcode == model.roomType);
+                       model.bedType =roomObj.bedtype;
+                       model.hotelRoomTitle =  `${roomObj.roomname} ${roomObj.roomnameen}`;
                  }
 
                  /**

@@ -158,6 +158,7 @@ public class HotelController : AbpController
             HotelId = id,
             HotelCode = hotelPublishDetail.HotelCode,
             RoomType = "",
+            HotelRoomTitle="",
             MaximumNumberOfPeople = 2,
             AdultLimit = 2,
             ChildLimit = 0,
@@ -320,7 +321,7 @@ public class HotelController : AbpController
     /// <param name="cmd"></param>
     /// <returns></returns>
     [HttpPost, Route("[controller]/CreatePricePlan")]
-    public async Task<IResult> CreatePricePlan([FromBody] CreateOrUpdatePricePlanCmd cmd) => ApiResult.HandleLongResult(await HotelApp.CreatePricePlanAsync(cmd));
+    public async Task<IResult> CreatePricePlan([FromBody] CreateOrUpdatePricePlanCmd cmd) => ApiResult.HandleBoolResult(await HotelApp.CreatePricePlanAsync(cmd));
 
     /// <summary>
     /// 删除价格计划

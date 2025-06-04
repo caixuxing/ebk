@@ -31,7 +31,7 @@
                     <el-text style="margin-left:20px;">{{item.startDateString}} 至 {{item.endDateString}}</el-text>
 
                     <div style="display: inline-block;margin-left:20px;width:600px;">
-                        <el-text >
+                        <el-text>
                             {{item.roomTypeName}}==>{{item.bedTypeName}}
                         </el-text>
                     </div>
@@ -41,11 +41,11 @@
                     <el-button size="small" v-on:click="onAddPricePlan(item)">新增价格计划</el-button>
 
 
-                    <el-link :underline="false" style="margin-left:20px" v-if="item.showContent == false" v-on:click="item.showContent = true">显示更多详情</el-link>
-                    <el-link :underline="false" style="margin-left:20px" v-if="item.showContent ==true "  v-on:click="item.showContent = false">隐藏更多详情</el-link>
+                    <el-text style="margin-left:20px; cursor:pointer; " v-if="item.showContent == false" v-on:click="item.showContent = true">显示更多详情</el-text>
+                    <el-text style="margin-left:20px; cursor:pointer;" v-if="item.showContent ==true " v-on:click="item.showContent = false">隐藏更多详情</el-text>
 
-                    <el-link :underline="false" style="margin-left:20px" v-if="item.showFooter == false" v-on:click="item.showFooter = true">显示价格计划</el-link>
-                    <el-link :underline="false" style="margin-left:20px" v-if="item.showFooter ==true " v-on:click="item.showFooter = false">隐藏价格计划</el-link>
+                    <el-text style="margin-left:20px; cursor:pointer;" v-if="item.showFooter == false" v-on:click="item.showFooter = true">显示价格计划</el-text>
+                    <el-text style="margin-left:20px; cursor:pointer;" v-if="item.showFooter ==true " v-on:click="item.showFooter = false">隐藏价格计划</el-text>
             </template>
 
             <div v-if="item.showContent">
@@ -53,18 +53,18 @@
                     <el-form label-width="auto" :inline="true">
                         <div>
                             <el-form-item label="床型">
-                                <label>{{item.bedTypeName}}</label>
+                                <el-text>{{item.bedTypeName}}</el-text>
                             </el-form-item>
                         </div>
                         <div>
                             <el-form-item label="人数上限">
-                                <label>{{item.maximumNumberOfPeople}}</label>
+                                <el-text>{{item.maximumNumberOfPeople}}</el-text>
                             </el-form-item>
                             <el-form-item label="成人上限">
-                                <label>{{item.adultLimit}}</label>
+                                <el-text>{{item.adultLimit}}</el-text>
                             </el-form-item>
                             <el-form-item label="儿童上限">
-                                <label>{{item.childLimit}}</label>
+                                <el-text>{{item.childLimit}}</el-text>
                             </el-form-item>
                         </div>
                     </el-form>
@@ -79,10 +79,7 @@
                         <el-table-column label="描述" width="auto" align="center">
                             <template #default="scope">
                                 <div style="text-align:left" >
-                                    {{item.roomTypeName}}
-                                    <{{scope.row.breakfastTypeName}}>
-                                    <提前{{scope.row.daysInAdvance}}天>
-                                    <连住{{scope.row.continuousStayDays}}天>
+                                    <el-text>{{scope.row.pricePlanTitle}}</el-text>
                                 </div>
                             </template>
                         </el-table-column>
@@ -90,7 +87,7 @@
                         <el-table-column label="是否保留房" width="150px" align="center">
                             <template #default="scope">
                                 <div style="text-align:center">
-                                    <span>{{  scope.row.isReservedRoomName }}</span>
+                                    <el-text>{{  scope.row.isReservedRoomName }}</el-text>
                                 </div>
                             </template>
                         </el-table-column>
@@ -98,7 +95,7 @@
                         <el-table-column label="状态"  width="150px" align="center">
                             <template #default="scope">
                                 <div style="text-align:center">
-                                    <span>{{  scope.row.isEnableName }}</span>
+                                    <el-text>{{  scope.row.isEnableName }}</el-text>
                                 </div>
                             </template>
                         </el-table-column>
