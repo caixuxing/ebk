@@ -16,10 +16,10 @@ public partial record PricePlanDo : EntityTenant
     public long HotelRoomId { get; set; }
 
     /// <summary>
-    /// 价格计划名称
+    /// 价格计划标题
     /// </summary>
-    [SugarColumn(ColumnDescription = "价格计划名称", Length = 50)]
-    public string PricePlanName { get; set; }
+    [SugarColumn(ColumnDescription = "价格计划标题", Length = 60, IsNullable = true)]
+    public string? PricePlanTitle { get; set; }
 
     /// <summary>
     /// 早餐类型
@@ -49,6 +49,12 @@ public partial record PricePlanDo : EntityTenant
     /// </summary>
     [SugarColumn(ColumnDescription = "是否启用")]
     public YesOrNoType IsEnable { get; private set; }
+
+    /// <summary>
+    /// 备注
+    /// </summary>
+    [SugarColumn(ColumnDescription = "备注", Length = 100, IsNullable = true)]
+    public string? Remark { get; private set; }
 }
 
 
