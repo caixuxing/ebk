@@ -9,8 +9,14 @@ public partial record RoomInventoryDo : EntityTenant
     /// <summary>
     /// 酒店房间ID
     /// </summary>
-    [SugarColumn(ColumnDescription = "酒店房间ID", IsNullable = true)]
+    [SugarColumn(ColumnDescription = "酒店房间ID")]
     public long HotelRoomId { get; private set; }
+
+    /// <summary>
+    /// 价格计划ID
+    /// </summary>
+    [SugarColumn(ColumnDescription = "价格计划ID")]
+    public long PricePlanId { get; private set; }
 
     /// <summary>
     /// 当前日期
