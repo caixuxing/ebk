@@ -26,4 +26,9 @@ public class LoadingInventoryAndPricesVo
     /// 酒店房间数据Json
     /// </summary>
     public string HotelRoomDataJson { get; set; } = default!;
+
+    /// <summary>
+    /// 房间Id
+    /// </summary>
+    public string RoomId { get; set; } = default!;
 }

@@ -310,4 +310,52 @@ public class HotelApp : ApplicationService, IHotelApp
 
 
     }
+
+    public async Task<LoadingInventoryAndPricesDto> LoadingInventoryAndPricesViewAsync(long hotelId)
+    {
+
+        var hotelEntity = await HotelPublishRepo.GetByIdAsync(hotelId) ?? throw new InvalidOperationException("酒店发布信息不存在！");
+
+        var roomEntity = await HotelRoomRepo.GetListAsync(x => x.HotelId == hotelId);
+
+        var currentHotelRoomTypeDate = await SqlSugarClient.Queryable<OtaRoomEntity>()
+                            .Where(q => q.pfcode == "D" && q.hotelcode == hotelEntity.HotelCode)
+                            .Select(t => new { t.roomcode, t.roomname })
+                            .ToListAsync();
+
+
+        var roomIds = roomEntity.Select(x => x.Id).ToList();
+
+        var pricePlanEntity = await PricePlanRepo.AsQueryable()
+            .Where(x => roomIds.Contains(x.HotelRoomId))
+            .Select(t => new PricePlanItemDto()
+            {
+
+                PricePlanId = t.Id.ToString(),
+                PricePlanName = t.PricePlanName ?? $"{t.Id.ToString()} {t.IsEnable}",
+                RoomId = t.HotelRoomId.ToString(),
+                Status = t.IsEnable
+            })
+            .ToListAsync();
+
+        return new()
+        {
+            HotelId = hotelEntity.Id.ToString(),
+            HotelName = hotelEntity.HotelName,
+            HotelNameEn = hotelEntity.HotelNameEn,
+            HotelCode = hotelEntity.HotelCode,
+
+            RoomTypes = new List<TreeSelectDataDto<string>>() { new TreeSelectDataDto<string>()
+               {
+                   Label = "全选",
+                   Value = "all",
+                   Children = roomEntity.Select(x => new SelectDataDto<string>()
+                   {
+                        Label = $"{x.Id} {currentHotelRoomTypeDate.FirstOrDefault(y => y.roomcode == int.Parse(x.RoomType))?.roomname ?? string.Empty},{x.BedType.ToDescription()}",
+                        Value = x.Id.ToString()
+                   }).ToList()
+               } },
+            HotelRoomPricePlanAll = pricePlanEntity
+        };
+    }
 }

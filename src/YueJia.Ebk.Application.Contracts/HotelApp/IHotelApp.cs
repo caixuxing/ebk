@@ -85,4 +85,12 @@ public interface IHotelApp
     /// <returns></returns>
     Task<List<TreeSelectDataDto<string>>> GetHoteTreeSelectDataByHotelIdAsync(long hotelId);
 
+
+
+    /// <summary>
+    /// 加载库存和价格数据
+    /// </summary>
+    /// <returns></returns>
+    Task<LoadingInventoryAndPricesDto> LoadingInventoryAndPricesViewAsync(long hotelId);
+
 }
