@@ -22,13 +22,13 @@
                     <div style="padding:10px;">
                         <ul>
                             <li style="padding: 5px 12px">
-                                <el-link :underline="false" href="/Hotel/InventoryAndPrice?id=@Model.Id">库存和价格</el-link>
+                                <el-link :underline="false" href="/Hotel/InventoryAndPrice/@Model.Id">库存和价格</el-link>
                             </li>
                             <li style="padding: 5px 12px">
                                 <el-link :underline="false">库存和价格日历</el-link>
                             </li>
                             <li style="padding: 5px 12px">
-                                <el-link :underline="false">加载库存与价格</el-link>
+                                <el-link :underline="false" href="/Hotel/LoadingInventoryAndPrices/@Model.Id">加载库存与价格</el-link>
                             </li>
                             <li style="padding: 5px 12px">
                                 <el-link :underline="false">批量编辑库存与价格</el-link>

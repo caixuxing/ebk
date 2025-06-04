@@ -1,4 +1,5 @@
 ﻿using SqlSugar;
+using YueJia.Ebk.Application.Contracts.Comm.BaseObj;
 using YueJia.Ebk.Application.Contracts.HotelApp;
 using YueJia.Ebk.Application.Contracts.HotelApp.Commands;
 using YueJia.Ebk.Application.Contracts.HotelApp.Query;
@@ -44,7 +45,6 @@ public class HotelController : AbpController
     {
         ViewBag.CountryData = JsonConvert.SerializeObject(await YueJiaSysServiceApp.GetDropDownCountryListAsync(), new JsonSerializerSettings { ContractResolver = new CamelCasePropertyNamesContractResolver() });
         ViewBag.HotelSaleTypeData = JsonConvert.SerializeObject(SysEnumApp.GetEnumDataList(nameof(HotelSaleTypeEnum)), new JsonSerializerSettings { ContractResolver = new CamelCasePropertyNamesContractResolver() });
-        await Task.Delay(1);
         return View();
     }
 
@@ -362,22 +362,28 @@ public class HotelController : AbpController
     public async Task<IActionResult> InventoryAndPrice(string id)
     {
         var entity = await HotelPublishRepo.GetByIdAsync(id.ToLong()) ?? throw new InvalidOperationException("酒店不存在！");
-
         InventoryAndPriceVo vm = new InventoryAndPriceVo();
         vm.HotelId = entity.Id.ToString();
         vm.HotelName = entity.HotelName;
         vm.HotelNameEn = entity.HotelNameEn;
         vm.StartDate = DateTime.Now;
         vm.ShowDays = 7;
+
+        var hotelRoomList = await HotelApp.GetHotelRoomListByIdAsync(id.ToLong());
+        var roomTypes = hotelRoomList.Select(x => new SelectDataDto<string>()
+        {
+            Label = x.RoomTypeName,
+            Value = x.Id.ToString()
+        });
         var data = await HotelApp.GetInventoryAndPriceDetailsByFilterAsync(new InventoryAndPriceDetailsQry()
         {
-
             HotelId = entity.Id,
-            RoomId = 0,
+            RoomId = hotelRoomList.FirstOrDefault()?.Id ?? 0,
             StartDate = vm.StartDate,
             Days = vm.ShowDays,
 
         });
+        vm.RoomJson = JsonConvert.SerializeObject(data, new JsonSerializerSettings { ContractResolver = new CamelCasePropertyNamesContractResolver() });
         return View(vm);
     }
 
@@ -402,9 +408,15 @@ public class HotelController : AbpController
     /// 加载库存和价格（View）
     /// </summary>
     /// <returns></returns>
-    public IActionResult LoadingInventoryAndPrices()
+    public async Task<IActionResult> LoadingInventoryAndPrices(string id)
     {
 
-        return View();
+        var entity = await HotelPublishRepo.GetByIdAsync(id.ToLong()) ?? throw new InvalidOperationException("酒店不存在！");
+        LoadingInventoryAndPricesVo vm = new LoadingInventoryAndPricesVo();
+        vm.HotelId = entity.Id.ToString();
+        vm.HotelName = entity.HotelName;
+        vm.HotelNameEn = entity.HotelNameEn;
+
+        return View(vm);
     }
 }

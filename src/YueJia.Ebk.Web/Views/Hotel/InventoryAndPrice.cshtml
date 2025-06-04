@@ -1,4 +1,5 @@
 ﻿@using YueJia.Ebk.Application.Contracts.SysApp
+@using YueJia.Ebk.Web.ViewModels.Hotel
 @model  YueJia.Ebk.Web.ViewModels.Hotel.InventoryAndPriceVo
 @inject ISysEnumApp enumApp
 @{
@@ -17,22 +18,13 @@
 <el-container style="height:100vh;overflow: hidden;">
     <el-main>
         <el-form :model="state.formData" label-width="auto" :rules="FormDataRules" ref="FormDataRef">
-          
-
-       
-
-
-            @Html.PartialAsync("~/Views/Hotel/UserHotelNavigationMgr.cshtml", Model)
-
+            @await Html.PartialAsync("~/Views/Hotel/UserHotelNavigationMgr.cshtml", new ViewHotelVo{  Id=Model.HotelId,HotelName=Model.HotelName })
             <el-form-item style="margin-top:30px">
                 <h1>库存和价格</h1>
-
             </el-form-item>
-   
             <el-form-item label="酒店：">
                 <el-text class="mx-1">{{state.formData.hotelName}}</el-text> <el-text class="mx-1">CNY</el-text>
             </el-form-item>
-
             <el-form-item label="房间名称：">
                   <el-row :gutter="20" style="width:100%">
                     <el-col :span="16">
@@ -64,21 +56,7 @@
             <el-form-item label="显示选项：">
                  <el-text class="mx-1">222222222222222222cs</el-text>
             </el-form-item>
-
-       
-
-
-
-
-
             <el-form-item>
-
-
-   
-
-
-            
-
               <div class="el-table--fit el-table--border el-table--scrollable-y el-table--enable-row-hover el-table el-table--layout-fixed is-scrolling-none" data-prefix="el" style="width: 100%; height: 360px;">
                       <div class="el-table__inner-wrapper">
                          
@@ -131,13 +109,8 @@
                    </div>
                   
             </el-form-item>
-
-            
             </el-form>
-
             <el-alert title="当前房型暂无库存，前往添加。" type="primary" :closable="false" v-on:click="openRoomAndPricePlan" v-if="state.formData.stock!=null"></el-alert>
-
-
                        <el-form-item>
             <div class="dialog-footer" style="text-align: center; width: 100%;">
                 <el-button type="primary" v-on:click="save">保存 </el-button>
@@ -158,6 +131,9 @@
                     roomType: '111',
                     startDate: `@Html.Raw(Model.StartDate.ToString("yyyy-MM-dd"))`,
                     showDays: `@Html.Raw(Model.ShowDays)`,
+
+                    test:@Html.Raw(Model.RoomJson),
+
                     room: {
                           id: '1136',
                         name: '豪华房, 1 大床 或 1 双床',

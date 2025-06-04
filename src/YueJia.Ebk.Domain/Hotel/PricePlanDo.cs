@@ -3,6 +3,9 @@
 [SugarTable("PricePlan", "价格计划")]
 public partial record PricePlanDo : EntityTenant
 {
+    /// <summary>
+    /// 默认构造函数
+    /// </summary>
     public PricePlanDo() { }
 
 
@@ -11,6 +14,12 @@ public partial record PricePlanDo : EntityTenant
     /// </summary>
     [SugarColumn(ColumnDescription = "酒店房间ID")]
     public long HotelRoomId { get; set; }
+
+    /// <summary>
+    /// 价格计划名称
+    /// </summary>
+    [SugarColumn(ColumnDescription = "价格计划名称", Length = 50)]
+    public string PricePlanName { get; set; }
 
     /// <summary>
     /// 早餐类型
@@ -26,38 +35,44 @@ public partial record PricePlanDo : EntityTenant
     /// <summary>
     /// 连住天数
     /// </summary>
-    [SugarColumn(ColumnDescription = "提前天数")]
+    [SugarColumn(ColumnDescription = "连住天数")]
     public int ContinuousStayDays { get; private set; }
 
     /// <summary>
     /// 是否保留房
     /// </summary>
-    [SugarColumn(ColumnDescription = "提前天数")]
+    [SugarColumn(ColumnDescription = "是否保留房")]
     public YesOrNoType IsReservedRoom { get; private set; }
 
     /// <summary>
     /// 是否启用
     /// </summary>
-    [SugarColumn(ColumnDescription = "提前天数")]
+    [SugarColumn(ColumnDescription = "是否启用")]
     public YesOrNoType IsEnable { get; private set; }
 }
 
 
 public partial record PricePlanDo
 {
-    private PricePlanDo(long hotelRoomId, BreakfastTypeEnum breakfastType, int daysInAdvance, int continuousStayDays, YesOrNoType isReservedRoom, YesOrNoType isEnable)
+
+
+    public PricePlanDo(long hotelRoomId, string pricePlanName, BreakfastTypeEnum breakfastType, int daysInAdvance, int continuousStayDays, YesOrNoType isReservedRoom, YesOrNoType isEnable)
     {
         HotelRoomId = hotelRoomId;
+        PricePlanName = pricePlanName;
         BreakfastType = breakfastType;
         DaysInAdvance = daysInAdvance;
         ContinuousStayDays = continuousStayDays;
         IsReservedRoom = isReservedRoom;
         IsEnable = isEnable;
     }
-    public static PricePlanDo Create(long hotelRoomId, BreakfastTypeEnum breakfastType, int daysInAdvance, int continuousStayDays, YesOrNoType isReservedRoom, YesOrNoType isEnable)
+
+    public static PricePlanDo Create(long hotelRoomId, string pricePlanName, BreakfastTypeEnum breakfastType, int daysInAdvance, int continuousStayDays, YesOrNoType isReservedRoom, YesOrNoType isEnable)
     {
-        return new PricePlanDo(hotelRoomId, breakfastType, daysInAdvance, continuousStayDays, isReservedRoom, isEnable);
+        return new PricePlanDo(hotelRoomId, pricePlanName, breakfastType, daysInAdvance, continuousStayDays, isReservedRoom, isEnable);
     }
+
+
 
     public PricePlanDo SetBreakfastType(BreakfastTypeEnum breakfastType)
     {
