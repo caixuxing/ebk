@@ -37,7 +37,7 @@
                         @foreach (var ele in enumApp.GetEnumDataList(nameof(BedTypeEnum)))
                         {
                             <el-option label='@ele.Describe &nbsp @ele.Name' :value="@ele.Value"></el-option>
-                                    @* `${ option.describe} ${ option.name}` *@
+                             
                         }
                     </el-select>
                 </el-form-item>
@@ -127,7 +127,7 @@
                 const model =  Vue.reactive(
         @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model, new System.Text.Json.JsonSerializerOptions() { PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase }))
                 );
-                const otaRoomList = @Html.Raw(@Html.Raw(System.Text.Json.JsonSerializer.Serialize(await yueJiaSysServiceApp.GetOTARoomAsync(Model.HotelCode), new System.Text.Json.JsonSerializerOptions() { PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase })));
+                const otaRoomList = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(await yueJiaSysServiceApp.GetOTARoomAsync(Model.HotelCode), new System.Text.Json.JsonSerializerOptions() { PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase }));
                
                 Vue.onMounted(() => {
                      model.dateRange =[`@(Html.Raw(Model.StartDate.ToString("yyyy-MM-dd")))`,`@(Html.Raw(Model.EndDate.ToString("yyyy-MM-dd")))`];

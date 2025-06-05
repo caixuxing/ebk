@@ -158,16 +158,16 @@ public class HotelController : AbpController
             HotelId = id,
             HotelCode = hotelPublishDetail.HotelCode,
             RoomType = "",
-            HotelRoomTitle="",
+            HotelRoomTitle = "",
             MaximumNumberOfPeople = 2,
             AdultLimit = 2,
             ChildLimit = 0,
             EndDate = DateTime.Now.AddMonths(1).Date,
-            StartDate =   DateTime.Now.Date,
+            StartDate = DateTime.Now.Date,
             BedType = BedTypeEnum.Unknown,
         };
 
-     
+
         return View(vm);
     }
 
@@ -248,8 +248,8 @@ public class HotelController : AbpController
             x.IsEnabledName,
             pricePlans = x.PricePlans,
             ShowContent = false,
-             x.StartDateString,
-             x.EndDateString,
+            x.StartDateString,
+            x.EndDateString,
             ShowFooter = true
         }));
     }
@@ -265,7 +265,7 @@ public class HotelController : AbpController
     {
         var room = await HotelApp.GetHotelRoomByIdAsync(id.ToLong());
         var hotel = await HotelPublishApp.GetHotelPublishDetailAsync(room.HotelId);
-        
+
         ViewBag.HotelName = $"{hotel.HotelName}({hotel.HotelNameEn})";
         ViewBag.LowestPrice = $"{hotel.LowestPrice}";
         ViewBag.BedTypeName = $"{room.BedTypeName}";
@@ -277,7 +277,7 @@ public class HotelController : AbpController
         CreateOrUpdatePricePlanCmd vm = new CreateOrUpdatePricePlanCmd()
         {
             HotelRoomId = room.Id.ToString(),
-            BreakfastType =  BreakfastTypeEnum.Breakfast,
+            BreakfastType = BreakfastTypeEnum.Breakfast,
             DaysInAdvance = 1,
             ContinuousStayDays = 1,
             IsEnable = YesOrNoType.Yes,
@@ -338,7 +338,7 @@ public class HotelController : AbpController
     /// <param name="id"></param>
     /// <returns></returns>
     [HttpPost, Route("[controller]/UpdatePricePlanState/{id}")]
-    public async Task<IResult> UpdatePricePlanState( string id) => ApiResult.HandleBoolResult(await HotelApp.UpdatePricePlanStateAsync(id.ToLong()));
+    public async Task<IResult> UpdatePricePlanState(string id) => ApiResult.HandleBoolResult(await HotelApp.UpdatePricePlanStateAsync(id.ToLong()));
 
 
 
@@ -398,5 +398,30 @@ public class HotelController : AbpController
     /// </summary>
     /// <returns></returns>
     public async Task<IActionResult> LoadingInventoryAndPrices(string id) => View(await HotelApp.LoadingInventoryAndPricesViewAsync(id.ToLong()));
+
+
+    #region 库存和价格日历模块
+    /// <summary>
+    /// 库存和价格日历
+    /// </summary>
+    /// <returns></returns>
+    public async Task<IActionResult> InventoryAndPriceCalendarMgr(string userHotelId)
+    {
+       //加载酒店信息
+        var hotelModel = await HotelPublishApp.GetHotelPublishDetailAsync(Convert.ToInt64(userHotelId));
+
+        ViewBag.hotelModel = hotelModel;
+        ViewBag.ebkOtaRoomList = await HotelApp.GetEbkOtaRoomList(Convert.ToInt64(userHotelId));
+
+        return View("InventoryAndPriceCalendar/InventoryAndPriceCalendarMgr");
+    }
+
+
+    public async Task<IActionResult> InventoryResult(string userRoomId) { 
+        
+        
+
+    }
+    #endregion
 
 }

@@ -474,4 +474,44 @@ public class HotelApp : ApplicationService, IHotelApp
             HotelRoomPricePlanAll = pricePlanEntity
         };
     }
+
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="userHotelId"></param>
+    /// <returns></returns>
+    public async Task<List<HotelRoomListDto>> GetEbkOtaRoomList(long userHotelId) {
+
+        return await HotelRoomRepo.AsQueryable().Where(x => x.HotelId == userHotelId)
+                                                     .Select(x => new HotelRoomListDto()
+                                                     {
+                                                         Id = x.Id,
+                                                         RoomType = x.RoomType,
+                                                         BedType = x.BedType,
+                                                         AdultLimit = x.AdultLimit,
+                                                         ChildLimit = x.ChildLimit,
+                                                         IsEnabled = x.IsEnabled,
+                                                         HotelRoomTitle = x.HotelRoomTitle
+                                                     })
+                                                    .ToListAsync();
+    }
+
+    public Task<List<DailyInventoryDto>> GetInventoryList(long userRoomId, int dateYear, int dateMonth)
+    {
+        //var sDate = new DateTime(dateYear, dateMonth, 1);
+        //var eDate = sDate.AddMonths(1);
+
+        //db.Queryable<DailyInventoryDo>().Where(vv => vv.RoomId == userRoomId 
+        //                                          && vv.CurrentDate >= sDate
+        //                                          && vv.CurrentDate <eDate )
+        //                               .Select(vv=>new  DailyInventoryDto { 
+        //                                     Id = Convert.ToString(vv.Id),
+        //                                     RoomId = vv.RoomId,
+        //                                     InventoryNum = vv.InventoryNum,
+        //                                     IsEnabled = vv.IsDelete
+        //                               }).ToList();
+        return null;
+
+    }
 }

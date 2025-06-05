@@ -100,4 +100,17 @@ public interface IHotelApp
     /// <returns></returns>
     Task<LoadingInventoryAndPricesDto> LoadingInventoryAndPricesViewAsync(long hotelId);
 
+    /// <summary>
+    /// Ebk房间信息
+    /// </summary>
+    /// <returns></returns>
+    Task<List<HotelRoomListDto>> GetEbkOtaRoomList(long userHotelId);
+
+    /// <summary>
+    /// 获取库存集合
+    /// </summary>
+    /// <returns></returns>
+    Task<List<DailyInventoryDto>> GetInventoryList(long userRoomId,int dateYear,int dateMonth);
+
+
 }

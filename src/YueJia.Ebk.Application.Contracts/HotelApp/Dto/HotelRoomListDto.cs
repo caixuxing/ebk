@@ -17,6 +17,10 @@ public record HotelRoomListDto
     /// </summary>
     public string HotelCode { get; set; } = default!;
 
+    /// <summary>
+    /// 房间标题
+    /// </summary>
+    public string HotelRoomTitle { get; set; }
 
     /// <summary>
     /// 房型

@@ -1,0 +1,167 @@
+﻿@model YueJia.Ebk.Web.ViewModels.Hotel.ViewHotelVo
+
+@using YueJia.Ebk.Application.Contracts.SysApp
+@using YueJia.Ebk.Domain.Shared.Enums
+@using Newtonsoft.Json
+@using Newtonsoft.Json.Serialization
+@using YueJia.Ebk.Application.Contracts.OuterServiceApp
+@inject ISysEnumApp enumApp
+@inject IYueJiaSysServiceApp yueJiaSysServiceApp
+
+
+
+@section head {
+    <style scoped>
+        .el-radio-group {
+            display: flex; /* 使用 flex 布局 */
+            flex-direction: row; /* 确保是横向排列 */
+        }
+
+        .el-calendar-table .el-calendar-day {
+             height: auto !important;
+        }
+        body{
+            overflow:auto;
+        }
+    </style>
+}
+
+
+<el-container >
+    <el-main>
+        <div style="height:50px;line-height:50px;">
+            <h1>库存和价格日历</h1>
+        </div>
+        <el-divider content-position="left"></el-divider>
+
+        <div>
+            <el-text type="primary" size="large"> {{hotelModel.hotelNameEn  }} [{{hotelModel.hotelName}}]</el-text>
+        </div>
+        <el-form :inline="true" label-width="auto">
+            <div>
+                <el-form-item label="房型" >
+                    <el-select v-model="vmodel.model.ebkRoomId" placeholder="请选择房型" filterable style="width:600px" v-on:change="onRoomChange">
+                        <el-option v-for="ele in ebkOtaRoomList" :label="ele.hotelRoomTitle" :value="''+ele.id"   ></el-option>
+                    </el-select>
+
+                </el-form-item>
+                @* ele.roomnameen *@
+            </div>
+            <div>
+                <el-form-item label="日期" >
+                    <el-date-picker v-model="vmodel.model.execData"
+                                    type="month" />
+                </el-form-item>
+                <el-form-item label="类型">
+                    <el-radio-group v-model="vmodel.model.execType">
+                        <el-radio-button label="1" >库存</el-radio-button>
+                        <el-radio-button label="2" >价格</el-radio-button>
+                    </el-radio-group>
+                </el-form-item>
+            </div>
+        </el-form>
+        <el-calendar>
+            <template #header="{ date }">
+            
+                <el-row style="width:100%;" >
+                    <el-col :span="12">
+                        <el-text v-show="vmodel.model.ebkRoom.hotelRoomTitle"> {{ vmodel.model.ebkRoom.hotelRoomTitle }}==></el-text>
+                        @foreach (var ele in enumApp.GetEnumDataList(nameof(BedTypeEnum)))
+                        {
+                            <el-text v-show="  vmodel.model.ebkRoom. bedType == @ele.Value ">@ele.Describe</el-text>
+                        }
+
+                    </el-col>
+                    <el-col :span="12" style="text-align:right" >
+                        <el-button-group>
+                            <el-button type="primary" >撤销</el-button>
+                            <el-button type="primary" >保存</el-button>
+                            <el-button type="primary" >重置</el-button>
+                           
+                        </el-button-group>
+                    </el-col>
+                </el-row>
+            </template>
+            <template #date-cell="{ data }" style=" height: auto !important;">
+            
+                <div style="height:auto;" >
+                    <div>
+                        {{data.day}}
+                    </div>
+                    <div>
+                        <el-text>库存：</el-text>
+                        <el-input-number :controls="false" :precision="0" :min="0" :max="20"></el-input-number>
+                    </div>
+                    <div>
+                        <el-text>状态：</el-text>
+                        <el-checkbox></el-checkbox>
+                    </div>
+                </div>
+
+            </template>
+        </el-calendar>
+    </el-main>
+</el-container>
+@section scripts {
+    <script type="text/javascript">
+
+        const app = Vue.createApp({
+        setup() {
+             const vmodel = Vue.reactive({
+                    model : { roomType:'' 
+                             ,value2:'2025-06'
+                             ,execType:'1'
+                             ,bedType:0
+                             ,ebkRoomId:''
+                      
+                             ,execData:'2025-07'
+                             ,ebkRoom:{}
+                    },
+                    A_isReservedRoom :true,
+                    A_isEnable :true,
+               });
+                 const hotelModel =   @Html.Raw(System.Text.Json.JsonSerializer.Serialize(ViewBag.hotelModel, new System.Text.Json.JsonSerializerOptions() { PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase }))
+                 const ebkOtaRoomList =  @Html.Raw(System.Text.Json.JsonSerializer.Serialize(ViewBag.ebkOtaRoomList, new System.Text.Json.JsonSerializerOptions() { PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase }));
+                 Vue.onMounted(() => {
+                    console.log(hotelModel);
+                    console.log(ebkOtaRoomList);
+
+                    if(ebkOtaRoomList.length>0){
+                       vmodel.model.ebkRoomId = ebkOtaRoomList[0].id;
+                       vmodel.model.ebkRoom = ebkOtaRoomList.find(vv=>vv.id == vmodel.model.ebkRoomId);
+                    }
+
+                 });
+
+               /**
+                 * 房型改变事件
+                 */
+                const onRoomChange=()=>{
+                    if(vmodel.model.ebkRoomId){
+                        vmodel.model.ebkRoom = ebkOtaRoomList.find(vv=>vv.id == vmodel.model.ebkRoomId);
+
+                    }
+                }
+
+
+                /**
+                 * 加载房间以及库存信息
+                 */
+                
+
+
+
+                return {
+                   vmodel,
+                   hotelModel,
+                   ebkOtaRoomList,
+                   onRoomChange
+                }
+        }
+        });
+        app.use(ElementPlus,{ locale: ElementPlusLocaleZhCn });
+        app.mount('#app');
+    </script>
+}
+
+
