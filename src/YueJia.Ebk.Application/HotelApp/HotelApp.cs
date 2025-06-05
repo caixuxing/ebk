@@ -1,4 +1,6 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using Dm.util;
+using Microsoft.Extensions.DependencyInjection;
+using Nito.AsyncEx.Synchronous;
 using YueJia.Ebk.Application.Contracts.HotelApp;
 using YueJia.Ebk.Application.Contracts.HotelApp.Commands;
 using YueJia.Ebk.Application.Contracts.HotelApp.Dto;
@@ -497,21 +499,32 @@ public class HotelApp : ApplicationService, IHotelApp
                                                     .ToListAsync();
     }
 
-    public Task<List<DailyInventoryDto>> GetInventoryList(long userRoomId, int dateYear, int dateMonth)
+    public async Task<List<DailyInventoryDto>> GetInventoryList(long userRoomId, int dateYear, int dateMonth)
     {
-        //var sDate = new DateTime(dateYear, dateMonth, 1);
-        //var eDate = sDate.AddMonths(1);
+        var sDate = new DateTime(dateYear, dateMonth, 1);
+        var eDate = sDate.AddMonths(1);
 
-        //db.Queryable<DailyInventoryDo>().Where(vv => vv.RoomId == userRoomId 
-        //                                          && vv.CurrentDate >= sDate
-        //                                          && vv.CurrentDate <eDate )
-        //                               .Select(vv=>new  DailyInventoryDto { 
-        //                                     Id = Convert.ToString(vv.Id),
-        //                                     RoomId = vv.RoomId,
-        //                                     InventoryNum = vv.InventoryNum,
-        //                                     IsEnabled = vv.IsDelete
-        //                               }).ToList();
-        return null;
+   
+
+        var dataList =await db.Queryable<DailyInventoryDo>().Where(vv => vv.RoomId == userRoomId
+                                                          && vv.CurrentDate >= sDate
+                                                          && vv.CurrentDate < eDate)
+                                               .Select(vv => new DailyInventoryDto
+                                               {
+                                                   CurrentDate = vv.CurrentDate,
+                                                   InventoryNum = vv.InventoryNum,
+                                                   Status = vv.IsEnable
+                                               }).ToListAsync();
+
+        List<DailyInventoryDto> Result = new List<DailyInventoryDto>();
+        for (DateTime date = sDate; date <= eDate; date = date.AddDays(1))
+        {
+            Result.Add(new DailyInventoryDto() { CurrentDate = date, InventoryNum = 0, Status = YesOrNoType.No  });
+            if (dataList.Any(vv=> vv.CurrentDate == date)) { 
+                Result.Last() = dataList.First()
+            }
+        
+        }
 
     }
 }

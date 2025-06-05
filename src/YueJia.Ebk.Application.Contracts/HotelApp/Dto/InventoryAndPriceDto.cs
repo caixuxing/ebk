@@ -113,6 +113,17 @@ public class DailyInventoryDto
             return CurrentDate.ToString("MM-dd");
         }
     }
+
+    /// <summary>
+    /// 月-日（01-01）
+    /// </summary>
+    public string CurrentDateString
+    {
+        get
+        {
+            return CurrentDate.ToString("yyyy-MM-dd");
+        }
+    }
     /// <summary>
     /// 星期
     /// </summary>
