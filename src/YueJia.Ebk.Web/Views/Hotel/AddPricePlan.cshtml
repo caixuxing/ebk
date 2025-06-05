@@ -15,40 +15,50 @@
 }
 <el-container style="padding:20px" >
     <el-main>
-        <el-form label-width="auto" :inline="true"  style="width:650px;margin:0px auto" >
+        <el-form label-width="auto" :inline="true" style="width:810px;margin:0px auto">
             <div>
-                <el-form-item label="酒店名称：">
+                <el-form-item label="酒店名称：" style="margin-bottom:5px;"   >
                     <label>@ViewBag.HotelName </label>
                 </el-form-item>
             </div>
+            @if (Convert.ToDecimal(ViewBag.LowestPrice)>0)
+            {
+                <div>
+                    <el-form-item label="最低报价：" style="margin-bottom:5px;">
+                        <label>@ViewBag.LowestPrice</label>
+                    </el-form-item>
+                </div>
+            }
+
+            
             <div>
-                <el-form-item label="房型名称："  >
+                <el-form-item label="房型名称：" style="margin-bottom:5px;">
                     <label>@ViewBag.RoomTypeName </label>
                 </el-form-item>
             </div>
             <div>
-                <el-form-item label="床型名称：">
+                <el-form-item label="床型名称：" style="margin-bottom:5px;">
                     <label>@ViewBag.BedTypeName </label>
                 </el-form-item>
             </div>
             <div>
-                <el-form-item label="人数上限：" style="width:120px;" >
+                <el-form-item label="人数上限：" style="width:120px;margin-bottom:5px;">
                     <label>@ViewBag.MaximumNumberOfPeople </label>
                 </el-form-item>
-                <el-form-item label="成人上限：" style="width:120px;">
+                <el-form-item label="成人上限：" style="width:120px;margin-bottom:5px;">
                     <label>@ViewBag.AdultLimit </label>
                 </el-form-item>
-                <el-form-item label="儿童上限：" style="width:120px;">
+                <el-form-item label="儿童上限：" style="width:120px;margin-bottom:5px;">
                     <label>@ViewBag.ChildLimit </label>
                 </el-form-item>
             </div>
 
         </el-form>
 
-        <el-divider content-position="left" style="width:650px;margin:10px auto 20px auto;">价格计划设置</el-divider>
+        <el-divider content-position="left" style="width:810px;margin:10px auto 20px auto;">价格计划设置</el-divider>
 
-        <el-form  label-width="auto"  style="width:650px;margin:0px auto">
-            <el-form-item label="早餐类型：">
+        <el-form label-width="auto" style="width:810px;margin:0px auto">
+            <el-form-item label="早餐类型：" style="margin-bottom:5px;">
                 <el-select v-model="vmodel.model.breakfastType" placeholder="请选择早餐类型" filterable style="width:100px">
                     @foreach (var ele in enumApp.GetEnumDataList(nameof(BreakfastTypeEnum))) {
                         <el-option label="@ele.Describe" :value="@ele.Value"></el-option>
@@ -56,22 +66,55 @@
                     </el-select>
             </el-form-item>
 
-            <el-form-item label="提前天数：" >
+            <el-form-item label="提前天数：" style="margin-bottom:5px;">
                 <el-input-number v-model="vmodel.model.daysInAdvance" :controls="false" :precision="0" :min="0" :max="60" style="width:100px"></el-input-number>
             </el-form-item>
 
-            <el-form-item label="连住天数：" >
+            <el-form-item label="连住天数：" style="margin-bottom:5px;">
                 <el-input-number v-model="vmodel.model.continuousStayDays" :controls="false" :precision="0" :min="0" :max="15" style="width:100px"></el-input-number>
             </el-form-item>
 
-            <el-form-item label="是否保留房：" >
+            <el-form-item label="是否保留房：" style="margin-bottom:5px;">
                 <el-switch v-model="vmodel.A_isReservedRoom" inline-prompt active-text="是" inactive-text="否" />
             </el-form-item>
 
-            <el-form-item label="是否启用：">
+            <el-form-item label="是否启用：" style="margin-bottom:5px;">
                 <el-switch v-model="vmodel.A_isEnable" inline-prompt active-text="是" inactive-text="否" />
             </el-form-item>
-            </el-form>
+        </el-form>
+
+        <el-divider content-position="left" style="width:810px;margin:10px auto 20px auto;">价格设置</el-divider>
+
+        <el-form :inline="true" label-width="auto" style="width:810px;margin:0px auto">
+            <div>
+                <el-form-item label="成本 (CNY)">
+                    <el-descriptions direction="vertical" :column="7" border>
+                        <el-descriptions-item label="星期天" label-class-name="my-label">
+                            <el-input-number v-model="vmodel.model.sunday" :controls="false" style="width:80px" :precision="2" :min="0" :max="100000"></el-input-number>
+                        </el-descriptions-item>
+                        <el-descriptions-item label="星期一" label-class-name="my-label">
+                            <el-input-number v-model="vmodel.model.monday" :controls="false" style="width:80px" :precision="2" :min="0" :max="100000"></el-input-number>
+                        </el-descriptions-item>
+                        <el-descriptions-item label="星期二" label-class-name="my-label">
+                            <el-input-number v-model="vmodel.model.tuesday" :controls="false" style="width:80px" :precision="2" :min="0" :max="100000"></el-input-number>
+                        </el-descriptions-item>
+                        <el-descriptions-item label="星期三" label-class-name="my-label">
+                            <el-input-number v-model="vmodel.model.wednesday" :controls="false" style="width:80px" :precision="2" :min="0" :max="100000"></el-input-number>
+                        </el-descriptions-item>
+                        <el-descriptions-item label="星期四" label-class-name="my-label">
+                            <el-input-number v-model="vmodel.model.thursday" :controls="false" style="width:80px" :precision="2" :min="0" :max="100000"></el-input-number>
+                        </el-descriptions-item>
+                        <el-descriptions-item label="星期五" label-class-name="my-label">
+                            <el-input-number v-model="vmodel.model.friday" :controls="false" style="width:80px" :precision="2" :min="0" :max="100000"></el-input-number>
+                        </el-descriptions-item>
+                        <el-descriptions-item label="星期六" label-class-name="my-label">
+                            <el-input-number v-model="vmodel.model.saturday" :controls="false" style="width:80px" :precision="2" :min="0" :max="100000"></el-input-number>
+                        </el-descriptions-item>
+                    </el-descriptions>
+                </el-form-item>
+            </div>
+        </el-form>
+
     </el-main>
     <el-footer>
         <div style="text-align: center;">

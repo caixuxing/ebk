@@ -19,12 +19,13 @@ public record DailyInventoryDo : EntityTenant
     /// 当前日期
     /// </summary>
     [SugarColumn(ColumnDescription = "当前日期", ColumnDataType = "date")]
-    public DateTime CurrentDate { get; private set; }
+    public DateTime CurrentDate { get;  set; }
 
     /// <summary>
     /// 当日库存数
     /// </summary>
     [SugarColumn(ColumnDescription = "当日库存数")]
+    public int InventoryNum { get;  set; }
     public int InventoryNum { get; private set; }
 
     /// <summary>

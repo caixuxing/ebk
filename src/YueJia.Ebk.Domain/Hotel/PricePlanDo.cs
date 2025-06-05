@@ -62,9 +62,11 @@ public partial record PricePlanDo
 {
 
 
-    public PricePlanDo(long hotelRoomId, string pricePlanName, BreakfastTypeEnum breakfastType, int daysInAdvance, int continuousStayDays, YesOrNoType isReservedRoom, YesOrNoType isEnable)
+    public PricePlanDo(long hotelRoomId, string pricePlanTitle, BreakfastTypeEnum breakfastType, int daysInAdvance, int continuousStayDays, YesOrNoType isReservedRoom, YesOrNoType isEnable)
     {
+        Id = SnowFlakeSingle.instance.getID();
         HotelRoomId = hotelRoomId;
+        PricePlanTitle = pricePlanTitle;
         pricePlanName = pricePlanName;
         BreakfastType = breakfastType;
         DaysInAdvance = daysInAdvance;
@@ -73,9 +75,9 @@ public partial record PricePlanDo
         IsEnable = isEnable;
     }
 
-    public static PricePlanDo Create(long hotelRoomId, string pricePlanName, BreakfastTypeEnum breakfastType, int daysInAdvance, int continuousStayDays, YesOrNoType isReservedRoom, YesOrNoType isEnable)
+    public static PricePlanDo Create(long hotelRoomId, string pricePlanTitle, BreakfastTypeEnum breakfastType, int daysInAdvance, int continuousStayDays, YesOrNoType isReservedRoom, YesOrNoType isEnable)
     {
-        return new PricePlanDo(hotelRoomId, pricePlanName, breakfastType, daysInAdvance, continuousStayDays, isReservedRoom, isEnable);
+        return new PricePlanDo(hotelRoomId, pricePlanTitle, breakfastType, daysInAdvance, continuousStayDays, isReservedRoom, isEnable);
     }
 
 

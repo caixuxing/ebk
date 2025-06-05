@@ -34,6 +34,36 @@ public record CreateOrUpdatePricePlanCmd
     /// 是否启用
     /// </summary>
     public YesOrNoType IsEnable { get; set; }
+
+
+    /// <summary>
+    /// 星期一
+    /// </summary>
+    public decimal Monday { get; set; }
+    /// <summary>
+    /// 星期二
+    /// </summary>
+    public decimal Tuesday { get; set; }
+    /// <summary>
+    /// 星期三
+    /// </summary>
+    public decimal Wednesday { get; set; }
+    /// <summary>
+    /// 星期四
+    /// </summary>
+    public decimal Thursday { get; set; }
+    /// <summary>
+    /// 星期五
+    /// </summary>
+    public decimal Friday { get; set; }
+    /// <summary>
+    /// 星期六
+    /// </summary>
+    public decimal Saturday { get; set; }
+    /// <summary>
+    /// 星期天
+    /// </summary>
+    public decimal Sunday { get; set; }
 }
 
 /// <summary>

@@ -53,7 +53,7 @@ public interface IHotelApp
     /// </summary>
     /// <param name="cmd"></param>
     /// <returns></returns>
-    Task<long> CreatePricePlanAsync(CreateOrUpdatePricePlanCmd cmd);
+    Task<bool> CreatePricePlanAsync(CreateOrUpdatePricePlanCmd cmd);
 
     /// <summary>
     /// 价格计划详情

@@ -50,6 +50,10 @@ public class CreateHotelRoomCmd
     /// </summary>
     public DateTime EndDate { get; set; }
 
+    /// <summary>
+    /// 房间名称
+    /// </summary>
+    public string HotelRoomTitle { get; set; }
 
     /// <summary>
     /// 星期一
