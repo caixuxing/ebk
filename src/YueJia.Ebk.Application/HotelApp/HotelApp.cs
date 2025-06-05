@@ -7,7 +7,6 @@ using YueJia.Ebk.Application.Contracts.OuterServiceApp.Entity;
 using YueJia.Ebk.Application.Contracts.SysUserApp;
 using YueJia.Ebk.Domain.Hotel;
 using YueJia.Ebk.Domain.Shared.Const;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace YueJia.Ebk.Application.HotelApp;
 
@@ -24,6 +23,8 @@ public class HotelApp : ApplicationService, IHotelApp
 
     private ISimpleClient<HotelPublishDo> HotelPublishRepo => LazyServiceProvider.LazyGetRequiredService<ISimpleClient<HotelPublishDo>>();
 
+    private ISimpleClient<DailyInventoryDo> DailyInventoryRepo => LazyServiceProvider.LazyGetRequiredService<ISimpleClient<DailyInventoryDo>>();
+    private ISimpleClient<DailyPriceDo> DailyPriceRepo => LazyServiceProvider.LazyGetRequiredService<ISimpleClient<DailyPriceDo>>();
 
 
     private ISimpleClient<RoomInventoryDo> RoomStockRepo => LazyServiceProvider.LazyGetRequiredService<ISimpleClient<RoomInventoryDo>>();
@@ -33,19 +34,20 @@ public class HotelApp : ApplicationService, IHotelApp
     {
         await LazyServiceProvider.LazyGetRequiredService<FluentValidation.IValidator<CreateHotelRoomCmd>>().ValidateAndThrowAsync(cmd);
 
-   
-        var entity = HotelRoomDo.Create(cmd.HotelId.ToLong(), 
-                                        cmd.HotelCode, 
-                                        cmd.RoomType, 
-                                        cmd.BedType, 
-                                        cmd.MaximumNumberOfPeople, 
-                                        cmd.AdultLimit, 
-                                        cmd.ChildLimit, 
-                                        cmd.StartDate, 
+
+        var entity = HotelRoomDo.Create(cmd.HotelId.ToLong(),
+                                        cmd.HotelCode,
+                                        cmd.RoomType,
+                                        cmd.BedType,
+                                        cmd.MaximumNumberOfPeople,
+                                        cmd.AdultLimit,
+                                        cmd.ChildLimit,
+                                        cmd.StartDate,
                                         cmd.EndDate,
                                         cmd.HotelRoomTitle);
-        
-        if (db.Queryable<HotelRoomDo>().Any(vv=> vv.HotelId == SqlFunc.ToInt64(cmd.HotelId) && vv.RoomType == cmd.RoomType  )) {
+
+        if (db.Queryable<HotelRoomDo>().Any(vv => vv.HotelId == SqlFunc.ToInt64(cmd.HotelId) && vv.RoomType == cmd.RoomType))
+        {
             throw new InvalidOperationException("房间已存在");
         }
 
@@ -55,7 +57,7 @@ public class HotelApp : ApplicationService, IHotelApp
             int stockNum = 0;
             switch (date.DayOfWeek)
             {
-                case DayOfWeek.Monday: stockNum = cmd.Monday ; break;
+                case DayOfWeek.Monday: stockNum = cmd.Monday; break;
                 case DayOfWeek.Tuesday: stockNum = cmd.Tuesday; break;
                 case DayOfWeek.Wednesday: stockNum = cmd.Wednesday; break;
                 case DayOfWeek.Thursday: stockNum = cmd.Thursday; break;
@@ -63,18 +65,15 @@ public class HotelApp : ApplicationService, IHotelApp
                 case DayOfWeek.Saturday: stockNum = cmd.Saturday; break;
                 case DayOfWeek.Sunday: stockNum = cmd.Sunday; break;
             }
-            dailyInventoryDoList.Add(new DailyInventoryDo() { 
-                 RoomId = entity.Id,
-                 InventoryNum = stockNum,
-                 CurrentDate = date,
-            });
+
+            dailyInventoryDoList.Add(DailyInventoryDo.Create(entity.Id, date, stockNum, YesOrNoType.Yes));
         }
-          await DbTransaction.ExecuteInTransactionAsync(db, async () =>
-        {
-            await db.Insertable<DailyInventoryDo>(dailyInventoryDoList).ExecuteCommandAsync();
-            await db.Insertable(entity).ExecuteCommandAsync();
-            return entity.Id;
-        });
+        await DbTransaction.ExecuteInTransactionAsync(db, async () =>
+      {
+          await db.Insertable<DailyInventoryDo>(dailyInventoryDoList).ExecuteCommandAsync();
+          await db.Insertable(entity).ExecuteCommandAsync();
+          return entity.Id;
+      });
         return true;
     }
 
@@ -86,7 +85,7 @@ public class HotelApp : ApplicationService, IHotelApp
         var hotelRoomObj = db.Queryable<HotelRoomDo>().Where(vv => vv.Id == SqlFunc.ToInt64(cmd.HotelRoomId)).ToList().First();
         var entity = PricePlanDo.Create(cmd.HotelRoomId.ToLong(), string.Empty, cmd.BreakfastType, cmd.DaysInAdvance, cmd.ContinuousStayDays, cmd.IsReservedRoom, cmd.IsEnable);
 
-        entity.PricePlanTitle = $@"{hotelRoomObj.HotelRoomTitle}<{(cmd.BreakfastType== BreakfastTypeEnum.Breakfast?"含早":"无早")}><提前{cmd.DaysInAdvance}天><连住{cmd.ContinuousStayDays}天><{(cmd.IsReservedRoom == YesOrNoType.Yes? "保留房" : "非保留房")}>";
+        entity.PricePlanTitle = $@"{hotelRoomObj.HotelRoomTitle}<{(cmd.BreakfastType == BreakfastTypeEnum.Breakfast ? "含早" : "无早")}><提前{cmd.DaysInAdvance}天><连住{cmd.ContinuousStayDays}天><{(cmd.IsReservedRoom == YesOrNoType.Yes ? "保留房" : "非保留房")}>";
 
         List<DailyPriceDo> dailyPriceDoList = new List<DailyPriceDo>();
         for (DateTime date = hotelRoomObj.StartDate; date <= hotelRoomObj.EndDate; date = date.AddDays(1))
@@ -102,12 +101,12 @@ public class HotelApp : ApplicationService, IHotelApp
                 case DayOfWeek.Saturday: price = cmd.Saturday; break;
                 case DayOfWeek.Sunday: price = cmd.Sunday; break;
             }
-            dailyPriceDoList.Add(new  DailyPriceDo()
+            dailyPriceDoList.Add(new DailyPriceDo()
             {
                 RoomId = hotelRoomObj.Id,
                 PricePlanId = entity.Id,
                 Price = price,
-                CurrentDate = date, 
+                CurrentDate = date,
             });
         }
 
@@ -122,7 +121,7 @@ public class HotelApp : ApplicationService, IHotelApp
         return true;
     }
 
-    
+
     public async Task<bool> DeleteHotelRoomAsync(long id)
     {
         //房间
@@ -137,7 +136,7 @@ public class HotelApp : ApplicationService, IHotelApp
         var pricePlanEntity = PricePlanRepo.AsQueryable().Where(x => x.HotelRoomId == id).ToList();
         pricePlanEntity.ForEach(x => x.IsDelete = true);
 
-   
+
         //价格计划价格
         var dailyPriceDoList = db.Queryable<DailyPriceDo>().Where(vv => vv.RoomId == entity.Id).ToList();
         dailyPriceDoList.ForEach(x => x.IsDelete = true);
@@ -183,12 +182,13 @@ public class HotelApp : ApplicationService, IHotelApp
         return await db.Updateable<HotelRoomDo>(entity).ExecuteCommandWithOptLockAsync(true) > 0;
     }
 
-    
+
 
     public async Task<bool> DeletePricePlanAsync(long id)
     {
         var entity = await PricePlanRepo.GetByIdAsync(id);
-        if (entity==null) {
+        if (entity == null)
+        {
             throw new InvalidOperationException("价格计划不存在！");
         }
         entity.IsDelete = true;
@@ -330,14 +330,14 @@ public class HotelApp : ApplicationService, IHotelApp
     /// </summary>
     /// <param name="id"></param>
     /// <returns></returns>
-    public async Task<bool> UpdatePricePlanStateAsync( long id)
+    public async Task<bool> UpdatePricePlanStateAsync(long id)
     {
         var entity = await PricePlanRepo.GetByIdAsync(id);
-        if(entity==null)
+        if (entity == null)
         {
             throw new InvalidOperationException("价格计划不存在！");
-        } 
-        entity.SetIsEnable(entity.IsEnable == YesOrNoType.Yes? YesOrNoType.No: YesOrNoType.Yes);
+        }
+        entity.SetIsEnable(entity.IsEnable == YesOrNoType.Yes ? YesOrNoType.No : YesOrNoType.Yes);
         return await PricePlanRepo.AsUpdateable(entity).ExecuteCommandWithOptLockAsync(true) > 0;
     }
 
@@ -351,11 +351,11 @@ public class HotelApp : ApplicationService, IHotelApp
     public async Task<InventoryAndPriceDetailsDto> GetInventoryAndPriceDetailsByFilterAsync(InventoryAndPriceDetailsQry qry)
     {
 
-        var RoomEntitys = await HotelRoomRepo.GetListAsync(x => x.HotelId == qry.HotelId);
+        var RoomEntitys = await HotelRoomRepo.GetListAsync(x => x.HotelId == long.Parse(qry.HotelId));
 
         var roomIds = RoomEntitys.Select(x => x.Id).ToList();
 
-        var pricePlanEntities = await PricePlanRepo.GetFirstAsync(x => x.HotelRoomId == qry.RoomId);
+        var pricePlanEntities = await PricePlanRepo.GetFirstAsync(x => x.HotelRoomId == long.Parse(qry.RoomId));
 
 
         var hotelCode = RoomEntitys.FirstOrDefault()?.HotelCode ?? throw new InvalidOperationException("酒店编码不存在！");
@@ -364,7 +364,7 @@ public class HotelApp : ApplicationService, IHotelApp
                               .Where(q => q.pfcode == "D" && q.hotelcode == hotelCode)
                               .Select(t => new { t.roomcode, t.roomname })
                               .ToListAsync();
-        var RoomStockEntitys = await RoomStockRepo.GetListAsync(x => x.CurrentDate >= qry.StartDate && x.CurrentDate <= qry.StartDate.AddDays(qry.Days) && roomIds.Contains(qry.RoomId));
+        var RoomStockEntitys = await RoomStockRepo.GetListAsync(x => x.CurrentDate >= qry.StartDate && x.CurrentDate <= qry.StartDate.AddDays(qry.Days) && roomIds.Contains(long.Parse(qry.RoomId)));
 
         return new()
         {
@@ -481,7 +481,8 @@ public class HotelApp : ApplicationService, IHotelApp
     /// </summary>
     /// <param name="userHotelId"></param>
     /// <returns></returns>
-    public async Task<List<HotelRoomListDto>> GetEbkOtaRoomList(long userHotelId) {
+    public async Task<List<HotelRoomListDto>> GetEbkOtaRoomList(long userHotelId)
+    {
 
         return await HotelRoomRepo.AsQueryable().Where(x => x.HotelId == userHotelId)
                                                      .Select(x => new HotelRoomListDto()
@@ -513,5 +514,66 @@ public class HotelApp : ApplicationService, IHotelApp
         //                               }).ToList();
         return null;
 
+    }
+
+    public async Task<InventoryAndPriceDto> InventoryAndPriceViewAsync(InventoryAndPriceDetailsQry qry)
+    {
+        var model = new InventoryAndPriceDto();
+        var room = await HotelRoomRepo.GetByIdAsync(qry.RoomId);
+
+        var pricePlan = (await PricePlanRepo.AsQueryable()
+                .LeftJoin<DailyPriceDo>((o, d) => o.Id == d.PricePlanId)
+                .Where((o, d) => o.HotelRoomId == long.Parse(qry.RoomId) && d.CurrentDate >= qry.StartDate && d.CurrentDate <= qry.StartDate.AddDays(qry.Days - 1))
+                .Select((o, d) => new
+                {
+                    pricePlan = o,
+                    dailyPrice = d
+                })
+                .ToListAsync())
+                .GroupBy(x => x.pricePlan)
+                .Select(g => new PricePlanItemDto()
+                {
+                    DailyPrices = g.Select(x => new DailyPriceDto()
+                    {
+                        PriceId = x.dailyPrice.Id.ToString(),
+                        Price = x.dailyPrice.Price,
+                        MonthDay = x.dailyPrice.CurrentDate.ToString("MM-dd"),
+                        PricePlanId = x.dailyPrice.PricePlanId.ToString(),
+                        RoomId = x.dailyPrice.RoomId.ToString(),
+                        Status = x.dailyPrice.IsEnable,
+                    }).ToList(),
+                    PricePlanId = g.Key.Id.ToString(),
+                    PricePlanName = g.Key.PricePlanTitle ?? $"{g.Key.Id.ToString()} {g.Key.IsEnable}",
+                    RoomId = g.Key.HotelRoomId.ToString(),
+                    Status = g.Key.IsEnable,
+                }).ToList();
+
+
+
+
+
+
+
+
+        model.ShowDays = qry.Days;
+        model.StartDate = qry.StartDate;
+        model.RoomTypeInfo = new RoomTypeInfoDto()
+        {
+
+            RoomId = room?.Id.ToString() ?? string.Empty,
+            Status = room?.IsEnabled,
+            HotelRoomTitle = room?.HotelRoomTitle,
+            DailyInventory = await DailyInventoryRepo.AsQueryable()
+            .Where(x => x.RoomId == long.Parse(qry.RoomId) && x.CurrentDate >= qry.StartDate && x.CurrentDate <= qry.StartDate.AddDays(qry.Days - 1))
+            .Select(x => new DailyInventoryDto()
+            {
+                CurrentDate = x.CurrentDate,
+                InventoryId = x.Id.ToString(),
+                InventoryNum = x.InventoryNum,
+                Status = x.IsEnable
+            }).ToListAsync(),
+            PricePlan = pricePlan,
+        };
+        return model;
     }
 }
