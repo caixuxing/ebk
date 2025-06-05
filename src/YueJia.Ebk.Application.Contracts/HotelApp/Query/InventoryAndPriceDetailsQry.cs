@@ -9,20 +9,20 @@
         /// <summary>
         /// 酒店ID
         /// </summary>
-        public long HotelId { get; set; }
+        public string HotelId { get; set; }
         /// <summary>
         /// 房间ID
         /// </summary>
-        public long RoomId { get; set; }
+        public string RoomId { get; set; }
 
         /// <summary>
         /// 开始时间
         /// </summary>
-        public DateTime StartDate { get; set; }
+        public DateTime StartDate { get; set; } = DateTime.Now.Date;
 
         /// <summary>
         /// 天数
         /// </summary>
-        public int Days { get; set; }
+        public int Days { get; set; } = 7;
     }
 }

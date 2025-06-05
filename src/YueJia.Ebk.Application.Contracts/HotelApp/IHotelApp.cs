@@ -30,7 +30,7 @@ public interface IHotelApp
     /// <param name="id"></param>
     /// <returns></returns>
     Task<bool> UpdateRoomStateAsync(long id);
-    
+
 
 
     /// <summary>
@@ -67,7 +67,7 @@ public interface IHotelApp
     /// </summary>
     /// <param name="id"></param>
     /// <returns></returns>
-    Task<bool> UpdatePricePlanStateAsync( long id);
+    Task<bool> UpdatePricePlanStateAsync(long id);
     /// <summary>
     /// 删除价格计划
     /// </summary>
@@ -112,5 +112,14 @@ public interface IHotelApp
     /// <returns></returns>
     Task<List<DailyInventoryDto>> GetInventoryList(long userRoomId,int dateYear,int dateMonth);
 
+
+
+
+    /// <summary>
+    /// 库存和价格
+    /// </summary>
+    /// <param name="qry"></param>
+    /// <returns></returns>
+    Task<InventoryAndPriceDto> InventoryAndPriceViewAsync(InventoryAndPriceDetailsQry qry);
 
 }

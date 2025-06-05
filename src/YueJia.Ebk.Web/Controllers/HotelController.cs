@@ -4,9 +4,11 @@ using YueJia.Ebk.Application.Contracts.HotelApp;
 using YueJia.Ebk.Application.Contracts.HotelApp.Commands;
 using YueJia.Ebk.Application.Contracts.HotelApp.Query;
 using YueJia.Ebk.Application.Contracts.OuterServiceApp;
+using YueJia.Ebk.Application.Contracts.OuterServiceApp.Entity;
 using YueJia.Ebk.Application.Contracts.OuterServiceApp.Qry;
 using YueJia.Ebk.Application.Contracts.SysApp;
 using YueJia.Ebk.Domain.Hotel;
+using YueJia.Ebk.Domain.Shared.Const;
 using YueJia.Ebk.Web.ViewModels.Hotel;
 namespace YueJia.Ebk.Web.Controllers;
 
@@ -34,7 +36,7 @@ public class HotelController : AbpController
     private ISimpleClient<HotelPublishDo> HotelPublishRepo => LazyServiceProvider.LazyGetRequiredService<ISimpleClient<HotelPublishDo>>();
 
 
-
+    private ISqlSugarClient SqlSugarClient => LazyServiceProvider.GetRequiredKeyedService<ISqlSugarClient>(DbConst.YueJiaSysDb);
 
 
     /// <summary>
@@ -350,30 +352,35 @@ public class HotelController : AbpController
     /// <returns></returns>
     public async Task<IActionResult> InventoryAndPrice(string id)
     {
-        var entity = await HotelPublishRepo.GetByIdAsync(id.ToLong()) ?? throw new InvalidOperationException("酒店不存在！");
-        InventoryAndPriceVo vm = new InventoryAndPriceVo();
-        vm.HotelId = entity.Id.ToString();
-        vm.HotelName = entity.HotelName;
-        vm.HotelNameEn = entity.HotelNameEn;
-        vm.StartDate = DateTime.Now;
-        vm.ShowDays = 7;
+        long hotelId = id.ToLong();
 
-        var hotelRoomList = await HotelApp.GetHotelRoomListByIdAsync(id.ToLong());
-        var roomTypes = hotelRoomList.Select(x => new SelectDataDto<string>()
+        var entity = await HotelPublishRepo.GetByIdAsync(hotelId) ?? throw new InvalidOperationException("酒店不存在！");
+
+        var room = await HotelRoomRepo.GetListAsync(x => x.HotelId == hotelId);
+
+        InventoryAndPriceDetailsQry qry = new() { HotelId = id, RoomId = room.FirstOrDefault()?.Id.ToString() ?? "0" };
+        var result = await HotelApp.InventoryAndPriceViewAsync(qry);
+
+        result.HotelId = entity.Id.ToString();
+        result.HotelName = entity.HotelName;
+        result.HotelNameEn = entity.HotelNameEn;
+        result.HotelCode = entity.HotelCode;
+        result.RoomTypeValue = qry?.RoomId.ToString() ?? string.Empty;
+
+        var currentHotelRoomTypeDate = await SqlSugarClient.Queryable<OtaRoomEntity>()
+                            .Where(q => q.pfcode == "D" && q.hotelcode == entity.HotelCode)
+                            .Select(t => new { t.roomcode, t.roomname })
+                            .ToListAsync();
+
+        result.RoomDropDownList = room.Select(x => new SelectDataDto<string>()
         {
-            Label = x.RoomTypeName,
+            Label = $"{x.Id} {currentHotelRoomTypeDate.FirstOrDefault(y => y.roomcode == int.Parse(x.RoomType))?.roomname ?? string.Empty},{x.BedType.ToDescription()}",
             Value = x.Id.ToString()
-        });
-        var data = await HotelApp.GetInventoryAndPriceDetailsByFilterAsync(new InventoryAndPriceDetailsQry()
-        {
-            HotelId = entity.Id,
-            RoomId = hotelRoomList.FirstOrDefault()?.Id ?? 0,
-            StartDate = vm.StartDate,
-            Days = vm.ShowDays,
+        }).ToList();
 
-        });
-        vm.RoomJson = JsonConvert.SerializeObject(data, new JsonSerializerSettings { ContractResolver = new CamelCasePropertyNamesContractResolver() });
-        return View(vm);
+
+
+        return View(result);
     }
 
 
@@ -383,11 +390,11 @@ public class HotelController : AbpController
     /// <param name="qry"></param>
     /// <returns></returns>
     [HttpPost, Route("[controller]/InventoryAndPriceDetailsByFilter")]
-    public async Task<IResult> InventoryAndPriceDetailsByFilter(InventoryAndPriceDetailsQry qry)
+    public async Task<IResult> InventoryAndPriceDetailsByFilter([FromBody] InventoryAndPriceDetailsQry qry)
     {
-        var result = await HotelApp.GetInventoryAndPriceDetailsByFilterAsync(qry);
+        var result = await HotelApp.InventoryAndPriceViewAsync(qry);
 
-        return ApiResult.HandleResult(result);
+        return ApiResult.HandleResult(result.RoomTypeInfo);
 
     }
 
