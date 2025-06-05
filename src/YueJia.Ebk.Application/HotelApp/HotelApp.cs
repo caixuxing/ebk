@@ -521,10 +521,11 @@ public class HotelApp : ApplicationService, IHotelApp
         {
             Result.Add(new DailyInventoryDto() { CurrentDate = date, InventoryNum = 0, Status = YesOrNoType.No  });
             if (dataList.Any(vv=> vv.CurrentDate == date)) { 
-                Result.Last() = dataList.First()
+             //   Result.Last() = dataList.First()
             }
         
         }
+        return null;
 
     }
 }
