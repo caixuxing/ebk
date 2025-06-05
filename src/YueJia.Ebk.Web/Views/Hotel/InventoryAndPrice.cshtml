@@ -17,6 +17,7 @@
 }
 <el-container style="height:100vh;overflow: hidden;">
     <el-main>
+         <el-scrollbar>
         <el-form :model="state.formData" label-width="auto" :rules="FormDataRules" ref="FormDataRef">
             @await Html.PartialAsync("~/Views/Hotel/UserHotelNavigationMgr.cshtml", new ViewHotelVo{  Id=Model.HotelId,HotelName=Model.HotelName })
             <el-form-item style="margin-top:30px">
@@ -29,14 +30,13 @@
                   <el-row :gutter="20" style="width:100%">
                     <el-col :span="16">
 
-                       <el-select v-model="value" placeholder="Select" style="width: 240px">
-                          <el-option key="7" label="7" value="7" ></el-option>
-                          <el-option key="14" label="14" value="14" ></el-option>
-                        </el-select>
+                       <el-select v-model="state.formData.roomTypeValue" filterable placeholder="房型名称"  style="width: 240px" v-on:change="queryRoomAndPricePlan">
+                  <el-option v-for="item in state.roomData" :key="item.value":label="item.label":value="item.value"></el-option>
+                </el-select>
 
-                          开始日期：<el-date-picker v-model="state.formData.startDate" type="date" placeholder="开始日期" :size="size"> </el-date-picker>
+                          开始日期：<el-date-picker v-model="state.formData.startDate" type="date" placeholder="开始日期" format="YYYY-MM-DD" v-on:change="queryRoomAndPricePlan"> </el-date-picker>
                           显示天数：
-                          <el-select v-model="state.formData.showDays" placeholder="Select" style="width: 140px">
+                          <el-select v-model="state.formData.showDays" placeholder="Select" style="width: 140px" v-on:change="queryRoomAndPricePlan">
                           <el-option key="7" label="7天" value="7" ></el-option>
                           <el-option key="14" label="14天" value="14" ></el-option>
                         </el-select>
@@ -49,11 +49,6 @@
 
             </el-form-item>
 
-            <el-form-item label="房型名称：">
-                 <el-select v-model="state.formData.roomTypeValue" filterable placeholder="房型名称"  >
-                  <el-option v-for="item in state.roomData" :key="item.value":label="item.label":value="item.value"></el-option>
-                </el-select>
-            </el-form-item>
 
             <el-form-item >
                  <el-text class="mx-1">等待提交</el-text>
@@ -61,21 +56,20 @@
                          <el-text class="mx-1">无效</el-text>
             </el-form-item>
             <el-form-item>
-              <div class="el-table--fit el-table--border el-table--scrollable-y el-table--enable-row-hover el-table el-table--layout-fixed is-scrolling-none" data-prefix="el" style="width: 100%; height: 360px;">
+              <div class="el-table--fit el-table--border el-table--scrollable-y el-table--enable-row-hover el-table el-table--layout-fixed is-scrolling-none" data-prefix="el" style="width: 100%;height:100%;">
                       <div class="el-table__inner-wrapper">
-                         
                           <table class="el-table__header" border="0" cellpadding="0" cellspacing="0" style="width: 100%;">
                               <thead>
-                                  <tr><th class="el-table__cell" colspan="8"> <div class="cell">  {{state.formData.room.name}} </div></th></tr>
+                                  <tr><th class="el-table__cell" :colspan="Number(state.formData.showDays) + 1"> <div class="cell">  {{state.formData.room.hotelRoomTitle}} </div></th></tr>
                                   <tr><th class="el-table__cell" colspan="1" rowspan="1"><div class="cell"></div></th>
                                      
-                                      <th class="el-table__cell" colspan="1" rowspan="1" v-for="item in state.formData.room.inventory"><div class="cell" style="text-align:center"><p>{{item.monthDay}}</p><p>{{item.dayOfWeek}}</p></div></th>
+                                      <th class="el-table__cell" colspan="1" rowspan="1" v-for="item in state.formData.room.dailyInventory"><div class="cell" style="text-align:center"><p>{{item.monthDay}}</p><p>{{item.dayOfWeek}}</p></div></th>
                                   </tr>
                                 </thead>
                                 <tbody>
                                     <tr class="el-table__row">
                                         <td class="el-table__cell" width="20px"><div class="cell">库存</div> </td>
-                                        <td class="el-table__cell" colspan="1" rowspan="1" v-for="item in state.formData.room.inventory">
+                                        <td class="el-table__cell" colspan="1" rowspan="1" v-for="item in state.formData.room.dailyInventory">
                                             <div class="cell"> <el-input-number v-model="item.inventoryNum" controls-position="right" style="width:100%" ></el-input-number></div> 
                                             </td>
                                     </tr>
@@ -83,35 +77,37 @@
                                         <td class="el-table__cell" colspan="1" rowspan="1"><div class="cell">切换状态</div> </td>
 
 
-                                        <td class="el-table__cell" colspan="1" rowspan="1"  v-for="item in state.formData.room.inventory">
+                                        <td class="el-table__cell" colspan="1" rowspan="1"  v-for="item in state.formData.room.dailyInventory">
                                             <div class="cell" style="text-align:center"> <el-switch v-model="item.status" inline-prompt active-text="是" inactive-text="否" /></div> </td>
          
 
                                     </tr>
-                                    <tr class="el-table__row">
-                                    <td class="el-table__cell" colspan="8" > <div class="cell">{{state.formData.pricePlan.name}}</div> </td>
-                                    </tr>
+                                    <template v-for="(item,index) in state.formData.room.pricePlan">
+
                                         <tr class="el-table__row">
-                                        <td class="el-table__cell" width="20px"><div class="cell">价格(CNY)</div> </td>
-                                        <td class="el-table__cell" colspan="1" rowspan="1"  v-for="item in state.formData.pricePlan.prices">
-                                            <div class="cell"> <el-input-number v-model="item.price" controls-position="right" style="width:100%" ></el-input-number></div>
+                                    <td class="el-table__cell" :colspan="Number(state.formData.showDays) + 1" > <div class="cell">{{item.pricePlanName}}</div> </td>
+                                    </tr>
+                                     <tr class="el-table__row">
+                                        <td class="el-table__cell" width="20px"><div class="cell">价格(CNY)  </div> </td>
+                                        <td class="el-table__cell" colspan="1" rowspan="1"  v-for="c in state.formData.room.pricePlan[index].dailyPrices">
+                                            <div class="cell"> <el-input-number v-model="c.price" controls-position="right" style="width:100%" ></el-input-number></div>
                                         </td>
                                        
                                     </tr>
                                     <tr class="el-table__row">
                                         <td class="el-table__cell" colspan="1" rowspan="1"><div class="cell">切换状态</div> </td>
-                                        <td class="el-table__cell" colspan="1" rowspan="1"  v-for="item in state.formData.pricePlan.prices">
-                                            <div class="cell" style="text-align:center"> <el-switch v-model="item.status" inline-prompt active-text="是" inactive-text="否" /></div>
+                                        <td class="el-table__cell" colspan="1" rowspan="1"  v-for="c in state.formData.room.pricePlan[index].dailyPrices">
+                                            <div class="cell" style="text-align:center"> <el-switch v-model="c.status" inline-prompt active-text="是" inactive-text="否" /></div>
                                        </td>
                                     </tr>
+
+                                    </template>
 
 
                                     </tbody>
                                   </table>
-                               </div>
-                         
+                     </div>
                    </div>
-                  
             </el-form-item>
             </el-form>
             <el-alert title="当前房型暂无库存，前往添加。" type="primary" :closable="false" v-on:click="openRoomAndPricePlan" v-if="state.formData.stock!=null"></el-alert>
@@ -120,6 +116,7 @@
                 <el-button type="primary" v-on:click="save">保存 </el-button>
             </div>
         </el-form-item>
+        </el-scrollbar>
     </el-main>
  
 </el-container>
@@ -130,58 +127,41 @@
             const state = Vue.reactive({
                 roomData:@(Html.Raw(JsonConvert.SerializeObject(Model.RoomDropDownList, new JsonSerializerSettings { ContractResolver = new CamelCasePropertyNamesContractResolver() }))),
                 formData: {
+                    hotelId: `@(Html.Raw(Model.HotelId))`,
                     hotelName: `@(Html.Raw($"{Model.HotelName}({Model.HotelNameEn})"))`,
-                    roomName: '2222222222',
+                    roomName: `2222222222`,
                     roomTypeValue: `@(Html.Raw(Model.RoomTypeValue))`,
                     startDate: `@Html.Raw(Model.StartDate.ToString("yyyy-MM-dd"))`,
                     showDays: `@Html.Raw(Model.ShowDays)`,
                     room:@(Html.Raw(JsonConvert.SerializeObject(Model.RoomTypeInfo, new JsonSerializerSettings { ContractResolver = new CamelCasePropertyNamesContractResolver() }))),
-
-                     FormDataRules: {
-                        stock: {
-                            Monday: [
-                                { required: true, message: '请输入星期一的库存', trigger: 'blur' },
-                                { type: 'number', message: '请输入正确的数字', trigger: 'blur' }
-                            ],
-                            Tuesday: [
-                                { required: true, message: '请输入星期二的库存', trigger: 'blur' },
-                                { type: 'number', message: '请输入正确的数字', trigger: 'blur' }
-                            ],
-                            Wednesday: [
-                                { required: true, message: '请输入星期三的库存', trigger: 'blur' },
-                                { type: 'number', message: '请输入正确的数字', trigger: 'blur' }
-                            ],
-                            Thursday: [
-                                { required: true, message: '请输入星期四的库存', trigger: 'blur' },
-                                { type: 'number', message: '请输入正确的数字', trigger: 'blur' }
-                            ],
-                            Friday: [
-                                { required: true, message: '请输入星期五的库存', trigger: 'blur' },
-                                { type: 'number', message: '请输入正确的数字', trigger: 'blur' }
-                            ],
-                            Saturday: [
-                                { required: true, message: '请输入星期六的库存', trigger: 'blur' },
-                                { type: 'number', message: '请输入正确的数字', trigger: 'blur' }
-                            ],
-                            Sunday: [
-                                { required: true, message: '请输入星期日的库存', trigger: 'blur' },
-                                { type: 'number', message: '请输入正确的数字', trigger: 'blur' }
-                            ]
-                        }
-                    }
                 }
             });
 
             const FormDataRef = Vue.ref(null);
 
-            const openRoomAndPricePlan = () => {
-                window.location.href = '/Hotel/RoomAndPricePlan';
-            }
+           
 
-            const changeRoom = () => {
-                
+          
 
+                const queryRoomAndPricePlan = () => {
+                   
+
+
+               let reqData = { ...state.formData };
+
+                    axios.post(`/Hotel/InventoryAndPriceDetailsByFilter`, {
+                        hotelId:state.formData.hotelId,
+                       roomId:state.formData.roomTypeValue,
+                       startDate:state.formData.startDate,
+                       days:Number(state.formData.showDays)
+                    }).then(function (response) {
+                        state.formData.room = response.data.data;
+                        })
+                       .catch(function (error) {
+                            console.log(error);
+                        });
                 }
+   
 
             const save = () => {
                 FormDataRef.value.validate((valid) => {
@@ -198,12 +178,11 @@
             return {
                 state,
                 FormDataRef,
-                openRoomAndPricePlan,
-                save
+                save,queryRoomAndPricePlan
             };
         }
         });
-        app.use(ElementPlus);
+        app.use(ElementPlus, { locale: ElementPlusLocaleZhCn });
         app.mount('#app');
     </script>
 }

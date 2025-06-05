@@ -101,15 +101,28 @@ public class DailyInventoryDto
     /// 库存Id
     /// </summary>
     public string InventoryId { get; set; } = default!;
+
+    public DateTime CurrentDate { get; set; }
     /// <summary>
     /// 月-日（01-01）
     /// </summary>
-    public string MonthDay { get; set; } = default!;
-
+    public string MonthDay
+    {
+        get
+        {
+            return CurrentDate.ToString("MM-dd");
+        }
+    }
     /// <summary>
     /// 星期
     /// </summary>
-    public string DayOfWeek { get; set; } = default!;
+    public string DayOfWeek
+    {
+        get
+        {
+            return "周" + "日一二三四五六"[(int)CurrentDate.DayOfWeek];
+        }
+    }
     /// <summary>
     /// 库存数量
     /// </summary>

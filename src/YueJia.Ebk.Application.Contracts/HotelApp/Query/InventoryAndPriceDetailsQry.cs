@@ -9,11 +9,11 @@
         /// <summary>
         /// 酒店ID
         /// </summary>
-        public long HotelId { get; set; }
+        public string HotelId { get; set; }
         /// <summary>
         /// 房间ID
         /// </summary>
-        public long RoomId { get; set; }
+        public string RoomId { get; set; }
 
         /// <summary>
         /// 开始时间

@@ -160,7 +160,7 @@ public class HotelController : AbpController
             HotelId = id,
             HotelCode = hotelPublishDetail.HotelCode,
             RoomType = "",
-            HotelRoomTitle="",
+            HotelRoomTitle = "",
             MaximumNumberOfPeople = 2,
             AdultLimit = 2,
             ChildLimit = 0,
@@ -250,8 +250,8 @@ public class HotelController : AbpController
             x.IsEnabledName,
             pricePlans = x.PricePlans,
             ShowContent = false,
-             x.StartDateString,
-             x.EndDateString,
+            x.StartDateString,
+            x.EndDateString,
             ShowFooter = true
         }));
     }
@@ -267,7 +267,7 @@ public class HotelController : AbpController
     {
         var room = await HotelApp.GetHotelRoomByIdAsync(id.ToLong());
         var hotel = await HotelPublishApp.GetHotelPublishDetailAsync(room.HotelId);
-        
+
         ViewBag.HotelName = $"{hotel.HotelName}({hotel.HotelNameEn})";
         ViewBag.LowestPrice = $"{hotel.LowestPrice}";
         ViewBag.BedTypeName = $"{room.BedTypeName}";
@@ -358,7 +358,7 @@ public class HotelController : AbpController
 
         var room = await HotelRoomRepo.GetListAsync(x => x.HotelId == hotelId);
 
-        InventoryAndPriceDetailsQry qry = new() { HotelId = hotelId, RoomId = room.FirstOrDefault()?.Id ?? 0 };
+        InventoryAndPriceDetailsQry qry = new() { HotelId = id, RoomId = room.FirstOrDefault()?.Id.ToString() ?? "0" };
         var result = await HotelApp.InventoryAndPriceViewAsync(qry);
 
         result.HotelId = entity.Id.ToString();
@@ -390,11 +390,11 @@ public class HotelController : AbpController
     /// <param name="qry"></param>
     /// <returns></returns>
     [HttpPost, Route("[controller]/InventoryAndPriceDetailsByFilter")]
-    public async Task<IResult> InventoryAndPriceDetailsByFilter(InventoryAndPriceDetailsQry qry)
+    public async Task<IResult> InventoryAndPriceDetailsByFilter([FromBody] InventoryAndPriceDetailsQry qry)
     {
-        var result = await HotelApp.GetInventoryAndPriceDetailsByFilterAsync(qry);
+        var result = await HotelApp.InventoryAndPriceViewAsync(qry);
 
-        return ApiResult.HandleResult(result);
+        return ApiResult.HandleResult(result.RoomTypeInfo);
 
     }
 

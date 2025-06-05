@@ -67,7 +67,6 @@ public partial record PricePlanDo
         Id = SnowFlakeSingle.instance.getID();
         HotelRoomId = hotelRoomId;
         PricePlanTitle = pricePlanTitle;
-        pricePlanName = pricePlanName;
         BreakfastType = breakfastType;
         DaysInAdvance = daysInAdvance;
         ContinuousStayDays = continuousStayDays;

@@ -1,13 +1,8 @@
-﻿using YueJia.Ebk.Application.CompanyApp;
-using YueJia.Ebk.Application.Contracts.CompanyApp.Commands;
-using YueJia.Ebk.Application.Contracts.CompanyApp.Dto;
-using YueJia.Ebk.Application.Contracts.DeptApp;
+﻿using YueJia.Ebk.Application.Contracts.DeptApp;
 using YueJia.Ebk.Application.Contracts.DeptApp.Commands;
 using YueJia.Ebk.Application.Contracts.DeptApp.Dto;
 using YueJia.Ebk.Application.Contracts.DeptApp.Query;
 using YueJia.Ebk.Application.Contracts.SysApp;
-using YueJia.Ebk.Application.Contracts.SysUserApp.Commands;
-using YueJia.Ebk.Application.DeptApp;
 
 namespace YueJia.Ebk.Web.Controllers
 {
@@ -19,7 +14,8 @@ namespace YueJia.Ebk.Web.Controllers
         private ISysEnumApp SysEnumApp => LazyServiceProvider.LazyGetRequiredService<ISysEnumApp>();
 
 
-        public IActionResult Index() { 
+        public IActionResult Index()
+        {
             ViewBag.YesOrNoTypeList = SysEnumApp.GetEnumDataList(nameof(YesOrNoType));
             return View();
         }
@@ -32,7 +28,7 @@ namespace YueJia.Ebk.Web.Controllers
         /// <returns></returns>
         public async Task<IActionResult> AddEditMgr(long id)
         {
-            var model = new DeptDetailsDto() {  Status = YesOrNoType.Yes ,ParentDeptId =-1 };
+            var model = new DeptDetailsDto() { Status = YesOrNoType.Yes, ParentDeptId = -1 };
             if (id > 0)
             {
                 model = await DeptApp.GetDeptById(id);
@@ -45,7 +41,8 @@ namespace YueJia.Ebk.Web.Controllers
             ViewBag.model = new CreateOrUpdateDeptCmd()
             {
                 Name = model.DeptName,
-                Status = model.Status
+                Status = model.Status,
+                ParentDeptId = model.ParentDeptId.ToString() ?? string.Empty
             };
             return View();
         }
