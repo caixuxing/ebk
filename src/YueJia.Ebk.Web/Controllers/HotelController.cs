@@ -424,8 +424,8 @@ public class HotelController : AbpController
     }
 
 
-    public async Task<IActionResult> InventoryResult(string userRoomId) { 
-        
+    public async Task<IActionResult> InventoryResult(string userRoomId) {
+        return View();
         
 
     }
