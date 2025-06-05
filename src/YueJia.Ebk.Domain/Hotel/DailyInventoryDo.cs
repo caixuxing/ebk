@@ -26,4 +26,10 @@ public record DailyInventoryDo : EntityTenant
     /// </summary>
     [SugarColumn(ColumnDescription = "当日库存数")]
     public int InventoryNum { get; private set; }
+
+    /// <summary>
+    /// 是否启用
+    /// </summary>
+    [SugarColumn(ColumnDescription = "是否启用")]
+    public YesOrNoType IsEnable { get; private set; }
 }

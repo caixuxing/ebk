@@ -1,6 +1,6 @@
 ﻿@using YueJia.Ebk.Application.Contracts.SysApp
 @using YueJia.Ebk.Web.ViewModels.Hotel
-@model  YueJia.Ebk.Web.ViewModels.Hotel.InventoryAndPriceVo
+@model  YueJia.Ebk.Application.Contracts.HotelApp.Dto.InventoryAndPriceDto
 @inject ISysEnumApp enumApp
 @{
     Layout = "~/Views/Shared/_Layout.cshtml";
@@ -50,11 +50,15 @@
             </el-form-item>
 
             <el-form-item label="房型名称：">
-                <el-text class="mx-1">22222222222222222222222</el-text>
+                 <el-select v-model="state.formData.roomTypeValue" filterable placeholder="房型名称"  >
+                  <el-option v-for="item in state.roomData" :key="item.value":label="item.label":value="item.value"></el-option>
+                </el-select>
             </el-form-item>
 
-            <el-form-item label="显示选项：">
-                 <el-text class="mx-1">222222222222222222cs</el-text>
+            <el-form-item >
+                 <el-text class="mx-1">等待提交</el-text>
+                     <el-text class="mx-1">停售</el-text>
+                         <el-text class="mx-1">无效</el-text>
             </el-form-item>
             <el-form-item>
               <div class="el-table--fit el-table--border el-table--scrollable-y el-table--enable-row-hover el-table el-table--layout-fixed is-scrolling-none" data-prefix="el" style="width: 100%; height: 360px;">
@@ -124,46 +128,16 @@
         const app = Vue.createApp({
         setup() { 
             const state = Vue.reactive({
-                roomData:[],
+                roomData:@(Html.Raw(JsonConvert.SerializeObject(Model.RoomDropDownList, new JsonSerializerSettings { ContractResolver = new CamelCasePropertyNamesContractResolver() }))),
                 formData: {
                     hotelName: `@(Html.Raw($"{Model.HotelName}({Model.HotelNameEn})"))`,
                     roomName: '2222222222',
-                    roomType: '111',
+                    roomTypeValue: `@(Html.Raw(Model.RoomTypeValue))`,
                     startDate: `@Html.Raw(Model.StartDate.ToString("yyyy-MM-dd"))`,
                     showDays: `@Html.Raw(Model.ShowDays)`,
+                    room:@(Html.Raw(JsonConvert.SerializeObject(Model.RoomTypeInfo, new JsonSerializerSettings { ContractResolver = new CamelCasePropertyNamesContractResolver() }))),
 
-                    test:@Html.Raw(Model.RoomJson),
-
-                    room: {
-                          id: '1136',
-                        name: '豪华房, 1 大床 或 1 双床',
-                        statusName: '上架',
-                        inventory: [
-                            { id: '9523', monthDay: '06-11', dayOfWeek: '周1二', inventoryNum: 100, status: false },
-                            { id: '9524', monthDay: '06-02', dayOfWeek: '周三', inventoryNum: 100, status: false },
-                            { id: '9525', monthDay: '06-03', dayOfWeek: '周四', inventoryNum: 100, status: true },
-                            { id: '9526', monthDay: '06-04', dayOfWeek: '周五', inventoryNum: 100, status: false },
-                            { id: '9527', monthDay: '06-05', dayOfWeek: '周六', inventoryNum: 100, status: true },
-                            { id: '9528', monthDay: '06-06', dayOfWeek: '周日', inventoryNum: 100, status: true },
-                            { id: '9529', monthDay: '06-07', dayOfWeek: '周一', inventoryNum: 100, status: false }
-                        ]
-
-                    },
-                    pricePlan: {
-                        id: '1136222',
-                        name: '特价【双早】-含早',
-                        statusName: '上架',
-                        prices: [
-                            { id: '11362221', price: 1000, status: true },
-                            { id: '11362222', price: 1000, status: false },
-                            { id: '11362223', price: 1000, status: true },
-                            { id: '11362224', price: 1000, status: true },
-                            { id: '11362225', price: 1000, status: false },
-                            { id: '11362226', price: 1000, status: true },
-                            { id: '11362227', price: 1000, status: true }
-                        ]
-                    },
-                    FormDataRules: {
+                     FormDataRules: {
                         stock: {
                             Monday: [
                                 { required: true, message: '请输入星期一的库存', trigger: 'blur' },

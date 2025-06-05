@@ -54,7 +54,7 @@ public record LoadingInventoryAndPricesDto
     }
 }
 /// <summary>
-/// 房型价格计划
+/// 房间价格计划
 /// </summary>
 public record PricePlanItemDto
 {
@@ -87,4 +87,8 @@ public record PricePlanItemDto
             return Status.ToDescription();
         }
     }
+    /// <summary>
+    /// 每日价格
+    /// </summary>
+    public List<DailyPriceDto> DailyPrices { get; set; } = new();
 }

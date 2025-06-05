@@ -30,4 +30,10 @@ public record DailyPriceDo : EntityTenant
     /// </summary>
     [SugarColumn(ColumnDescription = "价格", ColumnDataType = "decimal(8,2)")]
     public decimal Price { get; private set; }
+
+    /// <summary>
+    /// 是否启用
+    /// </summary>
+    [SugarColumn(ColumnDescription = "是否启用")]
+    public YesOrNoType IsEnable { get; set; }
 }

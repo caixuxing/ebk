@@ -18,11 +18,11 @@
         /// <summary>
         /// 开始时间
         /// </summary>
-        public DateTime StartDate { get; set; }
+        public DateTime StartDate { get; set; } = DateTime.Now.Date;
 
         /// <summary>
         /// 天数
         /// </summary>
-        public int Days { get; set; }
+        public int Days { get; set; } = 7;
     }
 }

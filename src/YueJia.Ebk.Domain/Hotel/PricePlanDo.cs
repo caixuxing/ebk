@@ -65,7 +65,7 @@ public partial record PricePlanDo
     public PricePlanDo(long hotelRoomId, string pricePlanName, BreakfastTypeEnum breakfastType, int daysInAdvance, int continuousStayDays, YesOrNoType isReservedRoom, YesOrNoType isEnable)
     {
         HotelRoomId = hotelRoomId;
-        PricePlanName = pricePlanName;
+        pricePlanName = pricePlanName;
         BreakfastType = breakfastType;
         DaysInAdvance = daysInAdvance;
         ContinuousStayDays = continuousStayDays;
