@@ -461,16 +461,11 @@ public class HotelApp : ApplicationService, IHotelApp
             HotelNameEn = hotelEntity.HotelNameEn,
             HotelCode = hotelEntity.HotelCode,
 
-            RoomTypes = new List<TreeSelectDataDto<string>>() { new TreeSelectDataDto<string>()
-               {
-                   Label = "全选",
-                   Value = "all",
-                   Children = roomEntity.Select(x => new SelectDataDto<string>()
-                   {
-                        Label = $"{x.Id} {currentHotelRoomTypeDate.FirstOrDefault(y => y.roomcode == int.Parse(x.RoomType))?.roomname ?? string.Empty},{x.BedType.ToDescription()}",
-                        Value = x.Id.ToString()
-                   }).ToList()
-               } },
+            RoomTypes = roomEntity.Select(x => new SelectDataDto<string>()
+            {
+                Label = $"{x.Id} {currentHotelRoomTypeDate.FirstOrDefault(y => y.roomcode == int.Parse(x.RoomType))?.roomname ?? string.Empty},{x.BedType.ToDescription()}",
+                Value = x.Id.ToString()
+            }).ToList(),
             HotelRoomPricePlanAll = pricePlanEntity
         };
     }
