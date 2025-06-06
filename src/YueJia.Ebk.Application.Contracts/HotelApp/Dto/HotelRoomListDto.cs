@@ -9,8 +9,7 @@ public record HotelRoomListDto
     /// <summary>
     /// 房间ID
     /// </summary>
-    [JsonNumberHandling(JsonNumberHandling.WriteAsString)]
-    public long Id { get; set; }
+    public string Id { get; set; }
 
     /// <summary>
     /// 酒店代码

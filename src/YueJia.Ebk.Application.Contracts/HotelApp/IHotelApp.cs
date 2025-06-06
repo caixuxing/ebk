@@ -110,7 +110,7 @@ public interface IHotelApp
     /// 获取库存集合
     /// </summary>
     /// <returns></returns>
-    Task<List<DailyInventoryDto>> GetInventoryList(long userRoomId,int dateYear,int dateMonth);
+    Task<List<DailyInventoryModel>> GetInventoryList(long userRoomId,int dateYear,int dateMonth);
 
 
 
@@ -121,5 +121,26 @@ public interface IHotelApp
     /// <param name="qry"></param>
     /// <returns></returns>
     Task<InventoryAndPriceDto> InventoryAndPriceViewAsync(InventoryAndPriceDetailsQry qry);
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="qry"></param>
+    /// <returns></returns>
+    Task<bool> SaveInventory(HotelRoomListDto ebkRoom, List<DailyInventoryModel> dailyInventoryList);
+
+    Task<List<PricePlanListDto>> GetEbkPricePlanList(long userHotelId);
+
+    Task<List<DailyPriceModel>> GetPriceList(long userPlanId, int dateYear, int dateMonth);
+
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="qry"></param>
+    /// <returns></returns>
+    Task<bool> SavePrice(string userPlanId, List<DailyPriceModel> priceList);
+    
+
 
 }

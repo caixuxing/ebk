@@ -1,0 +1,212 @@
+﻿@model YueJia.Ebk.Web.ViewModels.Hotel.ViewHotelVo
+
+@using YueJia.Ebk.Application.Contracts.SysApp
+@using YueJia.Ebk.Domain.Shared.Enums
+@using Newtonsoft.Json
+@using Newtonsoft.Json.Serialization
+@using YueJia.Ebk.Application.Contracts.OuterServiceApp
+@inject ISysEnumApp enumApp
+@inject IYueJiaSysServiceApp yueJiaSysServiceApp
+
+
+
+@section head {
+    <style scoped>
+        .el-radio-group {
+            display: flex; /* 使用 flex 布局 */
+            flex-direction: row; /* 确保是横向排列 */
+        }
+
+        .el-calendar-table .el-calendar-day {
+            height: 90px !important;
+        }
+
+        body {
+            overflow: auto;
+        }
+
+    </style>
+}
+
+<el-container>
+    <el-main>
+
+        @Html.Partial("~/Views/Hotel/UserHotelNavigationMgr.cshtml", (@ViewBag.mv as YueJia.Ebk.Web.ViewModels.Hotel.ViewHotelVo))
+
+        <div style="height:50px;line-height:50px;">
+            <h1>库存日历</h1>
+        </div>
+        <el-divider content-position="left"></el-divider>
+
+        <div style=" margin-bottom:10px; " >
+            <el-text type="primary" size="large"> {{hotelModel.hotelNameEn  }} [{{hotelModel.hotelName}}]</el-text>
+        </div>
+        <el-form :inline="true" label-width="auto">
+            <div>
+                <el-form-item label="房型" style="margin-bottom:5px;"  >
+                    <el-select v-model="vmodel.model.ebkRoomId" placeholder="请选择房型" filterable style="width:600px" v-on:change="onRoomChange">
+                        <el-option v-for="ele in ebkOtaRoomList" :label="ele.hotelRoomTitle" :value="''+ele.id"></el-option>
+                    </el-select>
+                </el-form-item>
+            </div>
+            <div>
+                <el-form-item label="日期" style="margin-bottom:5px;">
+                    <el-date-picker :clearable="false" v-model="vmodel.execData" type="month" format="YYYY-MM" value-format="YYYY-MM" v-on:change="onDateChange" />
+                </el-form-item>
+            </div>
+        </el-form>
+
+        <el-calendar v-model="vmodel.calendarData">
+            <template #header="{ date }">
+                <el-row style="width:100%;">
+                    <el-col :span="12">
+                        <el-text v-show="vmodel.model.ebkRoom.hotelRoomTitle"> {{ vmodel.model.ebkRoom.hotelRoomTitle }}==></el-text>
+                        @foreach (var ele in enumApp.GetEnumDataList(nameof(BedTypeEnum)))
+                        {
+                            <el-text v-show="  vmodel.model.ebkRoom. bedType == @ele.Value ">@ele.Describe</el-text>
+                        }
+                    </el-col>
+                    <el-col :span="12" style="text-align:right">
+                        <el-button-group>
+                            <el-button type="primary" v-on:click="onRevoke">撤销</el-button>
+                            <el-button type="primary" v-on:click="onSaveInventory">保存</el-button>
+                        </el-button-group>
+                    </el-col>
+                </el-row>
+            </template>
+            <template #date-cell="{ data }" style=" height: auto !important;">
+
+                <div>
+                    <el-text>{{data.day}}</el-text>
+                </div>
+
+                <div v-if=" getDailyInventoryList(data.day).length>0  ">
+                    <div>
+                        <el-text>库存：</el-text>
+                        <el-input-number :controls="false" v-model="getDailyInventoryList(data.day)[0].inventoryNum" :precision="0" :min="0" :max="20"></el-input-number>
+                    </div>
+                    <div>
+                        <el-text>状态：</el-text>
+                        <el-checkbox v-model="getDailyInventoryList(data.day)[0].statusBool"></el-checkbox>
+                    </div>
+                </div>
+                <div  v-else >
+                        
+                    <el-text>N/A</el-text>
+                </div>
+
+            </template>
+        </el-calendar>
+
+    </el-main>
+</el-container>
+@section scripts {
+    <script type="text/javascript">
+
+        const app = Vue.createApp({
+        setup() {
+             const vmodel = Vue.reactive({
+                    model : { 
+                        ebkRoom:{},
+                        dailyInventoryList:[],
+                    },
+                    execData:'@DateTime.Now.ToString("yyyy-MM")' ,
+                    calendarData:'@DateTime.Now.ToString("yyyy-MM")' ,
+                 
+               });
+                 const hotelModel =   @Html.Raw(System.Text.Json.JsonSerializer.Serialize(ViewBag.hotelModel, new System.Text.Json.JsonSerializerOptions() { PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase }))
+                 const ebkOtaRoomList =  @Html.Raw(System.Text.Json.JsonSerializer.Serialize(ViewBag.ebkOtaRoomList, new System.Text.Json.JsonSerializerOptions() { PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase }));
+
+                 Vue.onMounted(() => {
+
+                    console.log(hotelModel);
+                    console.log(ebkOtaRoomList);
+
+                    if(ebkOtaRoomList.length>0){
+                       vmodel.model.ebkRoomId = ebkOtaRoomList[0].id;
+                       vmodel.model.ebkRoom = ebkOtaRoomList.find(vv=>vv.id == vmodel.model.ebkRoomId);
+                       loadData();
+                    }
+                 });
+
+
+               /**
+                 * 房型改变事件
+                 */
+                const onRoomChange=()=>{
+                    if(vmodel.model.ebkRoomId){
+                        vmodel.model.ebkRoom = ebkOtaRoomList.find(vv=>vv.id == vmodel.model.ebkRoomId);
+                        loadData();
+                    }
+                }
+
+                /**
+                 * onDateChange
+                 */
+                const onDateChange=()=>{
+                        vmodel.calendarData = vmodel.execData
+                        loadData();
+                }
+
+                /**
+                 * 加载数据
+                 */
+                const loadData =()=>{
+                    var dateYear = vmodel.execData.split('-')[0]
+                    var dateMonth = vmodel.execData.split('-')[1]
+                    axios.get(`/Hotel/GetInventoryListResult?userRoomId=${ vmodel.model.ebkRoom.id}&dateYear=${dateYear}&dateMonth=${dateMonth}`, ).then(response => {
+                        let {data,status}=response;
+                        console.log(data.data);
+                        vmodel.model.dailyInventoryList = data.data
+                        console.log(   vmodel.model.dailyInventoryList );
+                    })
+                };
+
+                /**
+                 * 撤销
+                 */
+                const onRevoke=()=>{
+                    ElMessageBox.confirm('您确定撤销吗?', { confirmButtonText: '确定', cancelButtonText: '取消', type: 'warning', }).then(() => {
+                        loadData();
+                    })
+                }
+
+                const onSaveInventory =()=>{
+
+                    let { ebkRoom,dailyInventoryList } =  vmodel.model;
+                    let reqData={
+                        ebkRoom: JSON.parse(JSON.stringify(ebkRoom)) ,
+                        dailyInventoryList: JSON.parse(JSON.stringify(dailyInventoryList))
+                    }
+                    console.log(reqData);
+                    axios['post'](`/Hotel/SaveInventory`, reqData).then(res=>{
+                        top.window.vueElMessage({ message: res.data. message , type:  res.data.isSuccess?'success':'info' })
+                        if(res.data.isSuccess){
+                           parent.layer.close(frameIndex); // 关闭当前弹框
+                        }
+                    })
+                }
+
+                const getDailyInventoryList=(dateDay)=>{
+                    return  vmodel.model.dailyInventoryList.filter(vv=> vv.currentDateString ==dateDay );
+                }
+
+
+                return {
+                   vmodel,
+                   hotelModel,
+                   ebkOtaRoomList,
+                   onRoomChange,
+                   onDateChange,
+                   onSaveInventory,
+                   onRevoke,
+                   getDailyInventoryList
+                }
+        }
+        });
+        app.use(ElementPlus,{ locale: ElementPlusLocaleZhCn });
+        app.mount('#app');
+    </script>
+}
+
+
