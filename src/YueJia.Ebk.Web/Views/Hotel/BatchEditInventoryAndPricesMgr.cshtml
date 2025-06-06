@@ -1,0 +1,157 @@
+﻿@section head {
+    <style scoped>
+        body {
+            overflow: auto;
+        }
+    </style>
+}
+<el-container>
+    <el-main>
+
+        @Html.Partial("~/Views/Hotel/UserHotelNavigationMgr.cshtml", (@ViewBag.mv as YueJia.Ebk.Web.ViewModels.Hotel.ViewHotelVo))
+
+        <div style="height:50px;line-height:50px;">
+            <h1>批量编辑库存与价格</h1>
+        </div>
+        <el-divider content-position="left"></el-divider>
+
+        <div style=" margin-bottom:10px; ">
+            <el-checkbox v-model="vmodel.AState" >
+                 <el-text type="primary" size="large"> {{hotelModel.hotelName}}</el-text>
+            </el-checkbox>
+        </div>
+
+        <el-card class="box-card" v-for="ele in vmodel.model.userRoomList" style=" margin-bottom:20px ">
+            <template #header>
+                <div class="card-header">
+                    <div>
+                        <el-checkbox v-model="ele.BState">
+                            <el-text>{{ele.startDateString}} 至 {{ele.endDateString}}</el-text>
+                            <el-text style="margin-left:20px;">   {{ele.roomTypeName}}==>{{ele.bedTypeName}}</el-text>
+                        </el-checkbox>
+                       
+                    </div>
+                </div>
+            </template>
+
+            <div v-for="item in ele.pricePlans" >
+                <el-checkbox v-model="item.CState" style="margin-left:30px;">
+                    <el-text  >{{item.pricePlanTitle}}</el-text>
+                </el-checkbox>
+            </div>
+        </el-card>
+
+        <el-form :inline="true" label-width="auto">
+            <div>
+                <el-form-item label="日期范围">
+                    <el-date-picker is-range type="daterange" class="full-width-input"
+                                    v-model="vmodel.dateRange"
+                                    :clearable="false"
+                                    format="YYYY-MM-DD" value-format="YYYY-MM-DD" start-placeholder="开始日期" end-placeholder="结束日期"></el-date-picker>
+
+                </el-form-item>
+            </div>
+        </el-form>
+
+        <el-tabs v-model="vmodel.activeName"
+                 type="card"
+                 class="demo-tabs">
+            <el-tab-pane label="简易模式" name="simple">
+                <el-divider content-position="left">房型维度</el-divider>
+                <el-form :inline="true" label-width="auto">
+                    <div>
+                        <el-form-item label="库存">
+                            <el-select  style="width: 120px"  >
+                                <el-option label="绝对值" value="1" />
+                                <el-option label="增加" value="2" />
+                            </el-select>
+
+                            <el-input-number  :controls="false" style="width:80px" :precision="0" :min="0" :max="20"></el-input-number>
+
+                            <el-button>编辑</el-button>
+                            <el-button>取消</el-button>
+                        </el-form-item>
+                    </div>
+                    <div>
+                        <el-form-item label="状态">
+
+                            <el-checkbox > </el-checkbox>
+                            <el-button >编辑</el-button>
+                            <el-button >取消</el-button>
+                        </el-form-item>
+                    </div>
+               </el-form>
+
+                <el-divider content-position="left">价格计划维度</el-divider>
+
+                <el-form :inline="true" label-width="auto">
+                    <div>
+                        <el-form-item label="价格">
+                            <el-select style="width: 120px">
+                                <el-option label="绝对值" value="1" />
+                                <el-option label="增加" value="2" />
+                                <el-option label="百分比" value="2" />
+                            </el-select>
+
+                            <el-input-number :controls="false" style="width:80px" :precision="0" :min="0" :max="20"></el-input-number>
+
+                            <el-button>编辑</el-button>
+                            <el-button>取消</el-button>
+                        </el-form-item>
+                    </div>
+                    <div>
+                        <el-form-item label="状态">
+
+                            <el-checkbox> </el-checkbox>
+                            <el-button>编辑</el-button>
+                            <el-button>取消</el-button>
+                        </el-form-item>
+                    </div>
+                </el-form>
+
+                <div>
+                    <el-button>提交</el-button>
+                </div>
+
+            </el-tab-pane>
+            <el-tab-pane label="高级模式" name="senior">
+
+            </el-tab-pane>
+        </el-tabs>
+
+    </el-main>
+</el-container>
+@section scripts {
+    <script type="text/javascript">
+
+        const app = Vue.createApp({
+        setup() {
+             const vmodel = Vue.reactive({
+                    model : {
+                        userRoomList:@Html.Raw(System.Text.Json.JsonSerializer.Serialize(ViewBag.userRoomList, new System.Text.Json.JsonSerializerOptions() { PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase }))
+                    },
+                    AState:false,
+                    activeName:'simple',
+                    dateRange:[ '@DateTime.Now.ToString("yyyy-MM-dd")', '@DateTime.Now.AddMonths(1).AddDays(-1).ToString("yyyy-MM-dd")']
+
+               });
+                 const hotelModel =   @Html.Raw(System.Text.Json.JsonSerializer.Serialize(ViewBag.mv, new System.Text.Json.JsonSerializerOptions() { PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase }))
+
+                 Vue.onMounted(() => {
+                     console.log(vmodel.model.userRoomList);
+                        
+                 });
+                   
+                return {
+                    vmodel,
+                   hotelModel,
+         
+                }
+        }
+        });
+        app.use(ElementPlus,{ locale: ElementPlusLocaleZhCn });
+        app.mount('#app');
+    </script>
+}
+
+

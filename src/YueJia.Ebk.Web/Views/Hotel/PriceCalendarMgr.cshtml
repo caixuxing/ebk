@@ -24,9 +24,6 @@
         body {
             overflow: auto;
         }
-
-
-
     </style>
 }
 
@@ -116,10 +113,6 @@
                  const ebkOtaPricePlanList =  @Html.Raw(System.Text.Json.JsonSerializer.Serialize(ViewBag.ebkOtaPricePlanList, new System.Text.Json.JsonSerializerOptions() { PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase }));
 
                  Vue.onMounted(() => {
-
-                    console.log(hotelModel);
-                    console.log(ebkOtaPricePlanList);
-
 
                      if(ebkOtaPricePlanList.length>0){
                          vmodel.userPlanId = ebkOtaPricePlanList[0].id;
