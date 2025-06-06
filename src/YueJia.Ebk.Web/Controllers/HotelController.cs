@@ -1,7 +1,10 @@
-﻿using SqlSugar;
+﻿using DeviceDetectorNET.Class.Device;
+using IdentityModel.Client;
+using SqlSugar;
 using YueJia.Ebk.Application.Contracts.Comm.BaseObj;
 using YueJia.Ebk.Application.Contracts.HotelApp;
 using YueJia.Ebk.Application.Contracts.HotelApp.Commands;
+using YueJia.Ebk.Application.Contracts.HotelApp.Dto;
 using YueJia.Ebk.Application.Contracts.HotelApp.Query;
 using YueJia.Ebk.Application.Contracts.OuterServiceApp;
 using YueJia.Ebk.Application.Contracts.OuterServiceApp.Entity;
@@ -419,29 +422,72 @@ public class HotelController : AbpController
     public async Task<IActionResult> LoadingInventoryAndPrices(string id) => View(await HotelApp.LoadingInventoryAndPricesViewAsync(id.ToLong()));
 
 
-    #region 库存和价格日历模块
+    #region 库存日历
     /// <summary>
-    /// 库存和价格日历
+    /// 库存日历
     /// </summary>
     /// <returns></returns>
-    public async Task<IActionResult> InventoryAndPriceCalendarMgr(string userHotelId)
+    public async Task<IActionResult> InventoryCalendarMgr(string userHotelId)
     {
         //加载酒店信息
-        var hotelModel = await HotelPublishApp.GetHotelPublishDetailAsync(Convert.ToInt64(userHotelId));
+        ViewBag.hotelModel = await HotelPublishApp.GetHotelPublishDetailAsync(Convert.ToInt64(userHotelId));
+        ViewBag.mv = new ViewHotelVo()
+        {
+            Id = userHotelId,
+            HotelName = (ViewBag.hotelModel as HotelPublishDetailDto).HotelName,
+        };
 
-        ViewBag.hotelModel = hotelModel;
         ViewBag.ebkOtaRoomList = await HotelApp.GetEbkOtaRoomList(Convert.ToInt64(userHotelId));
-
-        return View("InventoryAndPriceCalendar/InventoryAndPriceCalendarMgr");
+        return View();
     }
 
-
-    public async Task<IActionResult> InventoryResult(string userRoomId)
+    [HttpGet, Route("[controller]/GetInventoryListResult")]
+    public async Task<IResult> GetInventoryListResult(string userRoomId, int dateYear, int dateMonth)
     {
-        return View();
+        return ApiResult.HandleResult(await HotelApp.GetInventoryList(Convert.ToInt64(userRoomId), dateYear, dateMonth));
+    }
 
-
+    [HttpPost, Route("[controller]/SaveInventory")]
+    public async Task<IResult> SaveInventory([FromBody] SaveInventoryCmd qry)
+    {
+        return ApiResult.HandleResult(await HotelApp.SaveInventory(qry.EbkRoom, qry.DailyInventoryList));
     }
     #endregion
+
+    #region 价格日历
+    /// <summary>
+    /// 价格日历
+    /// </summary>
+    /// <returns></returns>
+    public async Task<IActionResult> PriceCalendarMgr(string userHotelId)
+    {
+        //加载酒店信息
+        ViewBag.hotelModel = await HotelPublishApp.GetHotelPublishDetailAsync(Convert.ToInt64(userHotelId));
+        ViewBag.mv = new ViewHotelVo()
+        {
+            Id = userHotelId,
+            HotelName = (ViewBag.hotelModel as HotelPublishDetailDto).HotelName,
+        };
+        ViewBag.ebkOtaPricePlanList = await HotelApp.GetEbkPricePlanList(Convert.ToInt64(userHotelId));
+        return View();
+    }
+
+    [HttpGet, Route("[controller]/GetPriceListResult")]
+    public async Task<IResult> GetPriceListResult(string userPlanId, int dateYear, int dateMonth)
+    {
+        return ApiResult.HandleResult(await HotelApp.GetPriceList(Convert.ToInt64(userPlanId), dateYear, dateMonth));
+    }
+
+
+
+    [HttpPost, Route("[controller]/SavePrice")]
+    public async Task<IResult> SavePrice([FromBody] SavePriceCmd qry)
+    {
+
+        return ApiResult.HandleResult(await HotelApp.SavePrice(qry.userPlanId, qry.priceList));
+    }
+    #endregion
+
+
 
 }

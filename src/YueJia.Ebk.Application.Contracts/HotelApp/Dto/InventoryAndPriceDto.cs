@@ -175,9 +175,32 @@ public class DailyPriceDto
     /// </summary>
     public decimal Price { get; set; }
 
+    public DateTime CurrentDate { get; set; }
+
+
     /// <summary>
     /// 价格状态
     /// </summary>
     public bool Status { get; set; } = default!;
 
+    public bool StatusBool { get; set; }
+
+    /// <summary>
+    /// 价格状态描述
+    /// </summary>
+    public string StatusName
+    {
+        get
+        {
+            return Status.ToDescription();
+        }
+    }
+
+    public string CurrentDateString
+    {
+        get
+        {
+            return CurrentDate.ToString("yyyy-MM-dd");
+        }
+    }
 }
