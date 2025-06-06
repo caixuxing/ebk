@@ -25,7 +25,7 @@ public record LoadingInventoryAndPricesDto
     /// <summary>
     /// 房型集合
     /// </summary>
-    public List<TreeSelectDataDto<string>> RoomTypes { get; set; } = new();
+    public List<SelectDataDto<string>> RoomTypes { get; set; } = new();
 
     /// <summary>
     /// 房型默认选择中
@@ -34,7 +34,7 @@ public record LoadingInventoryAndPricesDto
     {
         get
         {
-            return RoomTypes.FirstOrDefault()?.Children.FirstOrDefault()?.Value ?? string.Empty;
+            return RoomTypes.FirstOrDefault()?.Value ?? string.Empty;
         }
     }
     /// <summary>

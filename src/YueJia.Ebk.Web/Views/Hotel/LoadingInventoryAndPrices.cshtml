@@ -27,24 +27,17 @@
                 <el-text class="mx-1">{{state.formData.hotelName}}</el-text>
             </el-form-item>
             <el-form-item label="房型名称：">
-                                     <el-tree-select placeholder="请选择房型"
-                                      v-model="selectedValues" :data="state.roomDropdown" :props="defaultProps"
-                                      multiple check-strictly show-checkbox :render-after-expand="false"
-                                      default-expand-all
-                                      v-on:check-change="handleCheckChange" node-key="value"
-                                       class="custom-tree-select" >
-                                      <template #default="{ node, data }">
-                                        <span v-if="data.value === 'all'" class="all-select-node" >
-                                          <el-checkbox  v-model="allChecked"
-                                            v-on:change="handleAllCheckChange"
-                                            v-on:click.stop ></el-checkbox>
-                                          <span>{{ node.label }}</span>
-                                        </span>
-                                        <span v-else>
-                                          {{ node.label }}
-                                        </span>
-                                      </template>
-                                    </el-tree-select>
+                              
+
+                 <el-select v-model="selectedValues"  multiple clearable   placeholder="请选择房型" popper-class="custom-header" >
+                    <template #header>
+                      <el-checkbox v-model="checkAll":indeterminate="indeterminate" v-on:change="handleCheckAll" >
+                        全选
+                      </el-checkbox>
+                    </template>
+                    <el-option v-for="item in state.roomDropdown" :key="item.value" :label="item.label" :value="item.value" ></el-option>
+                  </el-select>
+
             </el-form-item>
 
             <el-form-item label="截至日期：">
@@ -227,46 +220,44 @@
                     };
             
             const filteredRooms = Vue.computed(() => {
-                var data = state.roomDropdown[0].children.filter(room => selectedValues.value.includes(room.value));
+                var data = state.roomDropdown.filter(room => selectedValues.value.includes(room.value));
                 state.formData.roomId =data[0]?.value??"";
                 return data;
                 })
 
 
 
-            const allChecked = Vue.ref(false)
+                
+         const checkAll = Vue.ref(false)
+         const indeterminate = Vue.ref(true)
+      
 
-            // 获取所有子节点的ID
-            const getAllChildIds = (nodes) => {
-              let ids = []
-              nodes.forEach(node => {
-                ids.push(node.value)
-                if (node.children && node.children.length > 0) {
-                  ids = ids.concat(getAllChildIds(node.children))
-                }
-              })
-              return ids
+        const handleCheckAll = (val) => {
+            if(val)
+            {
+                selectedValues.value=state.roomDropdown.map((_) => _.value)
             }
-
-        // 处理全选复选框变化
-        const handleAllCheckChange = (val) => {
-          if (val) {
-            const allChildren = state.roomDropdown[0].children
-            const allIds = getAllChildIds(allChildren)
-            selectedValues.value = allIds
-          } else {
-            selectedValues.value = []
-          }
+            else{
+                selectedValues.value=[]
+            }
         }
 
-        // 处理节点选中状态变化
+              // 处理节点选中状态变化
         const handleCheckChange = () => {
-          const allChildren = state.roomDropdown[0].children
-          const allIds = getAllChildIds(allChildren)
+          const allChildren = state.roomDropdown
+          const allIds = allChildren.map(item => item.value)
   
           // 检查是否所有子节点都被选中
           const allSelected = allIds.every(id => selectedValues.value.includes(id))
-          allChecked.value = allSelected
+          checkAll.value = allSelected;
+
+           if (selectedValues.value.length === 0) {
+            indeterminate.value = false
+          } else if (selectedValues.value.length === state.roomDropdown.length) {
+            indeterminate.value = false
+          } else {
+            indeterminate.value = true
+          }
         }
 
         // 监听选中值变化
@@ -274,13 +265,10 @@
           handleCheckChange()
         }, { deep: true })
 
-
-
-
             const FormDataRef = Vue.ref(null);
             return {
                 state,
-                FormDataRef,selectedValues,allChecked,getAllChildIds,handleAllCheckChange,handleCheckChange,filteredRooms,inventoryBatchSet,handleInputChange
+                FormDataRef,selectedValues,checkAll,filteredRooms,inventoryBatchSet,handleInputChange,handleCheckAll,indeterminate
             };
         }
         });
