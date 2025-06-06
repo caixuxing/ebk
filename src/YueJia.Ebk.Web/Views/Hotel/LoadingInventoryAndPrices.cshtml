@@ -74,14 +74,20 @@
                             </thead>
                             <tbody>
                                 <tr class="el-table__row">
-                                    <td class="el-table__cell" colspan="1" rowspan="1"><div class="cell"> <el-input-number v-model="inventoryBatchSet" controls-position="right" style="width:100%"  v-on:input="handleInputChange" ></el-input-number></div></td>
-                                    <td class="el-table__cell" colspan="1" rowspan="1"><div class="cell"> <el-input-number v-model="state.formData.inventory.sunday" controls-position="right" style="width:100%"></el-input-number></div></td>
-                                    <td class="el-table__cell" colspan="1" rowspan="1"><div class="cell"> <el-input-number v-model="state.formData.inventory.monday" controls-position="right" style="width:100%"></el-input-number></div></td>
-                                    <td class="el-table__cell" colspan="1" rowspan="1"><div class="cell"> <el-input-number v-model="state.formData.inventory.tuesday" controls-position="right" style="width:100%"></el-input-number></div></td>
-                                    <td class="el-table__cell" colspan="1" rowspan="1"><div class="cell"> <el-input-number v-model="state.formData.inventory.wednesday" controls-position="right" style="width:100%"></el-input-number></div></td>
-                                    <td class="el-table__cell" colspan="1" rowspan="1"><div class="cell"> <el-input-number v-model="state.formData.inventory.thursday" controls-position="right" style="width:100%"></el-input-number></div></td>
-                                    <td class="el-table__cell" colspan="1" rowspan="1"><div class="cell"> <el-input-number v-model="state.formData.inventory.friday" controls-position="right" style="width:100%"></el-input-number></div></td>
-                                    <td class="el-table__cell" colspan="1" rowspan="1"><div class="cell"> <el-input-number v-model="state.formData.inventory.saturday" controls-position="right" style="width:100%"></el-input-number></div></td>
+                                    <td class="el-table__cell" colspan="1" rowspan="1"><div class="cell" style="text-align:center">
+                                        <el-input-number v-model="inventoryBatchSet" :controls="false" style="width:80px" :min="0" :max="100000"  v-on:input="handleInputChange"></el-input-number>
+                                        </div></td>
+                                    <td class="el-table__cell" colspan="1" rowspan="1">
+                                        <div class="cell" style="text-align:center">
+                                        <el-input-number v-model="state.formData.inventory.sunday" :controls="false" style="width:80px" :min="0" :max="100000"  ></el-input-number>
+                                        </div>
+                                    </td>
+                                    <td class="el-table__cell" colspan="1" rowspan="1"><div class="cell" style="text-align:center"> <el-input-number v-model="state.formData.inventory.monday" :controls="false" style="width:80px" :min="0" :max="100000"></el-input-number></div></td>
+                                    <td class="el-table__cell" colspan="1" rowspan="1"><div class="cell" style="text-align:center"> <el-input-number v-model="state.formData.inventory.tuesday" :controls="false" style="width:80px" :min="0" :max="100000"></el-input-number></div></td>
+                                    <td class="el-table__cell" colspan="1" rowspan="1"><div class="cell" style="text-align:center"> <el-input-number v-model="state.formData.inventory.wednesday" :controls="false" style="width:80px" :min="0" :max="100000"></el-input-number></div></td>
+                                    <td class="el-table__cell" colspan="1" rowspan="1"><div class="cell" style="text-align:center"> <el-input-number v-model="state.formData.inventory.thursday" :controls="false" style="width:80px" :min="0" :max="100000"></el-input-number></div></td>
+                                    <td class="el-table__cell" colspan="1" rowspan="1"><div class="cell" style="text-align:center"> <el-input-number v-model="state.formData.inventory.friday" :controls="false" style="width:80px" :min="0" :max="100000"></el-input-number></div></td>
+                                    <td class="el-table__cell" colspan="1" rowspan="1"><div class="cell" style="text-align:center"> <el-input-number v-model="state.formData.inventory.saturday" :controls="false" style="width:80px" :min="0" :max="100000"></el-input-number></div></td>
                                 </tr>
                             </tbody>
                         </table>

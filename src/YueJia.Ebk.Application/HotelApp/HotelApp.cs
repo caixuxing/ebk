@@ -1,5 +1,4 @@
-﻿using Dm.util;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 using Nito.AsyncEx.Synchronous;
 using Volo.Abp.Domain.Entities;
 using YueJia.Ebk.Application.Contracts.HotelApp;
@@ -521,7 +520,7 @@ public class HotelApp : ApplicationService, IHotelApp
         var userRoomObj =  db.Queryable<HotelRoomDo>().Where(vv => vv.Id == userRoomId).ToList().First();
 
 
-        var dataList =await db.Queryable<DailyInventoryDo>().Where(vv => vv.RoomId == userRoomId
+        var dataList = await db.Queryable<DailyInventoryDo>().Where(vv => vv.RoomId == userRoomId
                                                           && vv.CurrentDate >= sDate
                                                           && vv.CurrentDate < eDate)
                                                .Select(vv => new DailyInventoryModel
@@ -597,6 +596,9 @@ public class HotelApp : ApplicationService, IHotelApp
         var model = new InventoryAndPriceDto();
         var room = await HotelRoomRepo.GetByIdAsync(qry.RoomId);
 
+
+        var yyx = await PricePlanRepo.GetListAsync(x => x.HotelRoomId == long.Parse(qry.RoomId));
+
         var pricePlan = (await PricePlanRepo.AsQueryable()
                 .LeftJoin<DailyPriceDo>((o, d) => o.Id == d.PricePlanId)
                 .Where((o, d) => o.HotelRoomId == long.Parse(qry.RoomId) && d.CurrentDate >= qry.StartDate && d.CurrentDate <= qry.StartDate.AddDays(qry.Days - 1))
@@ -616,7 +618,7 @@ public class HotelApp : ApplicationService, IHotelApp
                         MonthDay = x.dailyPrice.CurrentDate.ToString("MM-dd"),
                         PricePlanId = x.dailyPrice.PricePlanId.ToString(),
                         RoomId = x.dailyPrice.RoomId.ToString(),
-                        Status = x.dailyPrice.IsEnable,
+                        Status = (x.dailyPrice.IsEnable == YesOrNoType.Yes ? true : false),
                     }).ToList(),
                     PricePlanId = g.Key.Id.ToString(),
                     PricePlanName = g.Key.PricePlanTitle ?? $"{g.Key.Id.ToString()} {g.Key.IsEnable}",
@@ -637,7 +639,7 @@ public class HotelApp : ApplicationService, IHotelApp
         {
 
             RoomId = room?.Id.ToString() ?? string.Empty,
-            Status = room?.IsEnabled,
+            Status = room?.IsEnabled ?? YesOrNoType.No,
             HotelRoomTitle = room?.HotelRoomTitle,
             DailyInventory = await DailyInventoryRepo.AsQueryable()
             .Where(x => x.RoomId == long.Parse(qry.RoomId) && x.CurrentDate >= qry.StartDate && x.CurrentDate <= qry.StartDate.AddDays(qry.Days - 1))
@@ -646,7 +648,7 @@ public class HotelApp : ApplicationService, IHotelApp
                 CurrentDate = x.CurrentDate,
                 InventoryId = x.Id.ToString(),
                 InventoryNum = x.InventoryNum,
-                Status = x.IsEnable
+                Status = (x.IsEnable == YesOrNoType.Yes ? true : false),
             }).ToListAsync(),
             PricePlan = pricePlan,
         };
@@ -701,6 +703,33 @@ public class HotelApp : ApplicationService, IHotelApp
 
                 db.Updateable<DailyPriceDo>(updateObj).ExecuteCommand();
             }
+            return true;
+        });
+    }
+
+    public async Task<bool> SaveInventoryAndPriceAsync(SaveInventoryAndPriceCmd cmd)
+    {
+
+        var inventoryIds = cmd.Inventorys.Select(t => long.Parse(t.InventoryId)).ToList();
+        var oldInventory = await DailyInventoryRepo.GetListAsync(x => inventoryIds.Contains(x.Id));
+        oldInventory.ForEach(item =>
+        {
+            var model = cmd.Inventorys.Single(t => t.InventoryId == item.Id.ToString());
+            item.SetInventoryNum(model.InventoryNum);
+            item.SetIsEnable(model.Status);
+        });
+        var priceIds = cmd.Prices.Select(t => long.Parse(t.PriceId)).ToList();
+        var oldPrice = await DailyPriceRepo.GetListAsync(x => priceIds.Contains(x.Id));
+        oldPrice.ForEach(item =>
+        {
+            var model = cmd.Prices.Single(t => t.PriceId == item.Id.ToString());
+            item.SetPrice(model.Price);
+            item.SetIsEnable(model.Status);
+        });
+        return await DbTransaction.ExecuteInTransactionAsync(db, async () =>
+        {
+            await db.Updateable(oldInventory).ExecuteCommandAsync();
+            await db.Updateable(oldPrice).ExecuteCommandAsync();
             return true;
         });
     }

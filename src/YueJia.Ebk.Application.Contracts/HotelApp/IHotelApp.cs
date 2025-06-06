@@ -10,6 +10,13 @@ namespace YueJia.Ebk.Application.Contracts.HotelApp;
 public interface IHotelApp
 {
     /// <summary>
+    /// 保存库存和价格
+    /// </summary>
+    /// <param name="cmd"></param>
+    /// <returns></returns>
+    Task<bool> SaveInventoryAndPriceAsync(SaveInventoryAndPriceCmd cmd);
+
+    /// <summary>
     /// 添加酒店房间
     /// </summary>
     /// <param name="cmd"></param>

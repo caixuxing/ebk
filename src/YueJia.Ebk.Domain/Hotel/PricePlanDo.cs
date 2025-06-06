@@ -25,36 +25,36 @@ public partial record PricePlanDo : EntityTenant
     /// 早餐类型
     /// </summary>
     [SugarColumn(ColumnDescription = "早餐类型")]
-    public BreakfastTypeEnum BreakfastType { get; private set; }
+    public BreakfastTypeEnum BreakfastType { get; set; }
     /// <summary>
     /// 提前天数
     /// </summary>
     [SugarColumn(ColumnDescription = "提前天数")]
-    public int DaysInAdvance { get; private set; }
+    public int DaysInAdvance { get; set; }
 
     /// <summary>
     /// 连住天数
     /// </summary>
     [SugarColumn(ColumnDescription = "连住天数")]
-    public int ContinuousStayDays { get; private set; }
+    public int ContinuousStayDays { get; set; }
 
     /// <summary>
     /// 是否保留房
     /// </summary>
     [SugarColumn(ColumnDescription = "是否保留房")]
-    public YesOrNoType IsReservedRoom { get; private set; }
+    public YesOrNoType IsReservedRoom { get; set; }
 
     /// <summary>
     /// 是否启用
     /// </summary>
     [SugarColumn(ColumnDescription = "是否启用")]
-    public YesOrNoType IsEnable { get; private set; }
+    public YesOrNoType IsEnable { get; set; }
 
     /// <summary>
     /// 备注
     /// </summary>
     [SugarColumn(ColumnDescription = "备注", Length = 100, IsNullable = true)]
-    public string? Remark { get; private set; }
+    public string? Remark { get; set; }
 }
 
 

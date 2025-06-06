@@ -23,6 +23,6 @@
         /// <summary>
         /// 天数
         /// </summary>
-        public int Days { get; set; } = 7;
+        public int Days { get; set; } = 14;
     }
 }

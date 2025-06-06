@@ -398,8 +398,20 @@ public class HotelController : AbpController
         var result = await HotelApp.InventoryAndPriceViewAsync(qry);
 
         return ApiResult.HandleResult(result.RoomTypeInfo);
-
     }
+
+
+
+
+    /// <summary>
+    /// 保存库存和价格
+    /// </summary>
+    /// <param name="cmd"></param>
+    /// <returns></returns>
+    [HttpPost, Route("[controller]/SaveInventoryAndPrice")]
+    public async Task<IResult> SaveInventoryAndPrice([FromBody] SaveInventoryAndPriceCmd cmd) => ApiResult.HandleBoolResult(await HotelApp.SaveInventoryAndPriceAsync(cmd));
+
+
 
 
 
