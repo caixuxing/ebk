@@ -69,7 +69,7 @@ public class RoomTypeInfoDto
     /// <summary>
     /// 房间状态
     /// </summary>
-    public YesOrNoType? Status { get; set; }
+    public YesOrNoType Status { get; set; }
 
     /// <summary>
     /// 房间状态描述
@@ -78,7 +78,7 @@ public class RoomTypeInfoDto
     {
         get
         {
-            return Status?.ToDescription() ?? string.Empty;
+            return Status == YesOrNoType.Yes ? "启用" : "停用";
         }
     }
     /// <summary>
@@ -141,19 +141,9 @@ public class DailyInventoryDto
     /// <summary>
     /// 库存状态
     /// </summary>
-    public YesOrNoType Status { get; set; } = default!;
+    public bool Status { get; set; } = default!;
 
-    /// <summary>
-    /// 库存状态描述
-    /// </summary>
 
-    public string StatusName
-    {
-        get
-        {
-            return Status.ToDescription();
-        }
-    }
 }
 /// <summary>
 /// 每日价格
@@ -188,16 +178,6 @@ public class DailyPriceDto
     /// <summary>
     /// 价格状态
     /// </summary>
-    public YesOrNoType Status { get; set; } = default!;
+    public bool Status { get; set; } = default!;
 
-    /// <summary>
-    /// 价格状态描述
-    /// </summary>
-    public string StatusName
-    {
-        get
-        {
-            return Status.ToDescription();
-        }
-    }
 }

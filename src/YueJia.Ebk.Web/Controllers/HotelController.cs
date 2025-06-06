@@ -395,8 +395,20 @@ public class HotelController : AbpController
         var result = await HotelApp.InventoryAndPriceViewAsync(qry);
 
         return ApiResult.HandleResult(result.RoomTypeInfo);
-
     }
+
+
+
+
+    /// <summary>
+    /// 保存库存和价格
+    /// </summary>
+    /// <param name="cmd"></param>
+    /// <returns></returns>
+    [HttpPost, Route("[controller]/SaveInventoryAndPrice")]
+    public async Task<IResult> SaveInventoryAndPrice([FromBody] SaveInventoryAndPriceCmd cmd) => ApiResult.HandleBoolResult(await HotelApp.SaveInventoryAndPriceAsync(cmd));
+
+
 
 
 
@@ -414,7 +426,7 @@ public class HotelController : AbpController
     /// <returns></returns>
     public async Task<IActionResult> InventoryAndPriceCalendarMgr(string userHotelId)
     {
-       //加载酒店信息
+        //加载酒店信息
         var hotelModel = await HotelPublishApp.GetHotelPublishDetailAsync(Convert.ToInt64(userHotelId));
 
         ViewBag.hotelModel = hotelModel;
@@ -424,9 +436,10 @@ public class HotelController : AbpController
     }
 
 
-    public async Task<IActionResult> InventoryResult(string userRoomId) {
+    public async Task<IActionResult> InventoryResult(string userRoomId)
+    {
         return View();
-        
+
 
     }
     #endregion

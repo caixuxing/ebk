@@ -40,8 +40,8 @@
                           <el-option key="7" label="7天" value="7" ></el-option>
                           <el-option key="14" label="14天" value="14" ></el-option>
                         </el-select>
-                       <el-button type="primary">前14天</el-button>
-                          <el-button type="primary">后14天</el-button>
+                       <el-button type="primary" v-on:click="daysBeforeAndAfter(-state.formData.showDays)" :disabled="isDisabled"   style="margin-left:10px">前{{state.formData.showDays}}天</el-button>
+                       <el-button type="primary" v-on:click="daysBeforeAndAfter(+state.formData.showDays)">后{{state.formData.showDays}}天</el-button>
 
                     </el-col>
                    
@@ -51,16 +51,26 @@
 
 
             <el-form-item >
-                 <el-text class="mx-1">等待提交</el-text>
-                     <el-text class="mx-1">停售</el-text>
-                         <el-text class="mx-1">无效</el-text>
+              <el-tag style="margin-right: 8px;" color="#2bb3f8" ></el-tag>等待提交
+              <el-tag style="margin-right: 8px;margin-left: 10px" color="#E63415" ></el-tag>停售
+              <el-tag style="margin-right: 8px;margin-left: 10px" color="#ef9d28" ></el-tag>无效（受上层状态影响）
+              <el-tag style="margin-right: 8px; margin-left: 10px" color="#FF6600" ></el-tag>与相邻日期价格差距超过一倍
+               
+       
+
+
             </el-form-item>
-            <el-form-item>
+            <el-form-item v-if="state.formData.room.dailyInventory.length>0">
               <div class="el-table--fit el-table--border el-table--scrollable-y el-table--enable-row-hover el-table el-table--layout-fixed is-scrolling-none" data-prefix="el" style="width: 100%;height:100%;">
                       <div class="el-table__inner-wrapper">
                           <table class="el-table__header" border="0" cellpadding="0" cellspacing="0" style="width: 100%;">
                               <thead>
-                                  <tr><th class="el-table__cell" :colspan="Number(state.formData.showDays) + 1"> <div class="cell">  {{state.formData.room.hotelRoomTitle}} </div></th></tr>
+                                  <tr><th class="el-table__cell" :colspan="state.formData.room.dailyInventory.length+1"> <div class="cell">  {{state.formData.room.hotelRoomTitle}} 
+                                        <el-tag :type="state.formData.room.status==1?'success':'danger'" style="margin-left:20px">{{state.formData.room.statusName}} </el-tag>
+                                  </div>
+                                      
+                           
+                                  </th></tr>
                                   <tr><th class="el-table__cell" colspan="1" rowspan="1"><div class="cell"></div></th>
                                      
                                       <th class="el-table__cell" colspan="1" rowspan="1" v-for="item in state.formData.room.dailyInventory"><div class="cell" style="text-align:center"><p>{{item.monthDay}}</p><p>{{item.dayOfWeek}}</p></div></th>
@@ -70,7 +80,9 @@
                                     <tr class="el-table__row">
                                         <td class="el-table__cell" width="20px"><div class="cell">库存</div> </td>
                                         <td class="el-table__cell" colspan="1" rowspan="1" v-for="item in state.formData.room.dailyInventory">
-                                            <div class="cell"> <el-input-number v-model="item.inventoryNum" controls-position="right" style="width:100%" ></el-input-number></div> 
+                                            <div class="cell" style="text-align:center">
+                                              <el-input-number v-model="item.inventoryNum" :controls="false" style="width:80px"  :min="0" :max="10000"></el-input-number>    
+                                            </div> 
                                             </td>
                                     </tr>
                                     <tr class="el-table__row">
@@ -85,12 +97,17 @@
                                     <template v-for="(item,index) in state.formData.room.pricePlan">
 
                                         <tr class="el-table__row">
-                                    <td class="el-table__cell" :colspan="Number(state.formData.showDays) + 1" > <div class="cell">{{item.pricePlanName}}</div> </td>
+                                    <td class="el-table__cell" :colspan="state.formData.room.pricePlan[index].dailyPrices.length+1" > <div class="cell">{{item.pricePlanName}}
+
+                                        <el-tag :type="item.status==1?'success':'danger'" style="margin-left:20px">{{item.statusName}} </el-tag>
+                                    </div> </td>
                                     </tr>
                                      <tr class="el-table__row">
                                         <td class="el-table__cell" width="20px"><div class="cell">价格(CNY)  </div> </td>
                                         <td class="el-table__cell" colspan="1" rowspan="1"  v-for="c in state.formData.room.pricePlan[index].dailyPrices">
-                                            <div class="cell"> <el-input-number v-model="c.price" controls-position="right" style="width:100%" ></el-input-number></div>
+                                            <div class="cell" style="text-align:center">
+                                             <el-input-number v-model="c.price" :controls="false" style="width:80px" :precision="2" :min="0" :max="100000"></el-input-number>
+                                            </div>
                                         </td>
                                        
                                     </tr>
@@ -110,8 +127,13 @@
                    </div>
             </el-form-item>
             </el-form>
-            <el-alert title="当前房型暂无库存，前往添加。" type="primary" :closable="false" v-on:click="openRoomAndPricePlan" v-if="state.formData.stock!=null"></el-alert>
-                       <el-form-item>
+            <el-alert  type="primary" :closable="false"  v-if="state.formData.room.dailyInventory.length<=0">
+              <el-link type="primary" :underline="false" href="/Hotel/LoadingInventoryAndPrices/@Model.HotelId">当前房型暂无库存，前往添加。</el-link>    
+            </el-alert>
+
+             
+           
+            <el-form-item v-if="state.formData.room.dailyInventory.length>0">
             <div class="dialog-footer" style="text-align: center; width: 100%;">
                 <el-button type="primary" v-on:click="save">保存 </el-button>
             </div>
@@ -121,7 +143,7 @@
  
 </el-container>
 @section scripts {
-    <script type="text/javascript">
+    <script type="text/javascript" setup>
         const app = Vue.createApp({
         setup() { 
             const state = Vue.reactive({
@@ -129,7 +151,6 @@
                 formData: {
                     hotelId: `@(Html.Raw(Model.HotelId))`,
                     hotelName: `@(Html.Raw($"{Model.HotelName}({Model.HotelNameEn})"))`,
-                    roomName: `2222222222`,
                     roomTypeValue: `@(Html.Raw(Model.RoomTypeValue))`,
                     startDate: `@Html.Raw(Model.StartDate.ToString("yyyy-MM-dd"))`,
                     showDays: `@Html.Raw(Model.ShowDays)`,
@@ -137,18 +158,20 @@
                 }
             });
 
-            const FormDataRef = Vue.ref(null);
-
            
+            const isDisabled = Vue.ref(false);
 
-          
 
-                const queryRoomAndPricePlan = () => {
-                   
 
+            const queryRoomAndPricePlan = () => {
+
+
+               const now = new Date();
+               let currentTime = now.toISOString().split('T')[0]; 
+               const targetDate = new Date(state.formData.startDate);
+               isDisabled.value = targetDate<now ;
 
                let reqData = { ...state.formData };
-
                     axios.post(`/Hotel/InventoryAndPriceDetailsByFilter`, {
                         hotelId:state.formData.hotelId,
                        roomId:state.formData.roomTypeValue,
@@ -161,24 +184,46 @@
                             console.log(error);
                         });
                 }
+
+                  const daysBeforeAndAfter=(days) => {
+      
+                   state.formData.startDate=addDays(state.formData.startDate,days);
+                    queryRoomAndPricePlan();
+                  }
+
+                const addDays=(dateString, days)=> {
+                  const date = new Date(dateString);
+                  date.setDate(date.getDate() + days);
+                  const year = date.getFullYear();
+                  const month = String(date.getMonth() + 1).padStart(2, '0');
+                  const day = String(date.getDate()).padStart(2, '0');
+                  return `${year}-${month}-${day}`;
+                }
+
    
 
             const save = () => {
-                FormDataRef.value.validate((valid) => {
-                    if (valid) {
-                        console.log(state.formData);
-                        alert('保存成功');
-                    } else {
-                        console.log('error submit!!');
-                        return false;
-                    }
-                });
+                let inventorys = state.formData.room.dailyInventory.map(({ inventoryId, inventoryNum, status }) => ({ inventoryId,inventoryNum, status:status ? 1 : 0  }));
+                let prices = state.formData.room.pricePlan.flatMap(pricePlan =>pricePlan.dailyPrices.map(({ priceId, price, status }) => ({ priceId, price, status:status ? 1 : 0  })));
+                let reqData = { ...state.formData };
+                    axios.post(`/Hotel/SaveInventoryAndPrice`, { inventorys:inventorys, prices:prices}).then(function (response) {
+                            console.log(response.data);
+                            if (response.data.success) {
+                                ElementPlus.ElMessage.success('保存成功');
+                            } else {
+                                ElementPlus.ElMessage.error('保存失败');
+                            }
+                        })
+                       .catch(function (error) {
+                            console.log(error);
+                        });
+
+
             }
 
             return {
                 state,
-                FormDataRef,
-                save,queryRoomAndPricePlan
+                save,queryRoomAndPricePlan,daysBeforeAndAfter,isDisabled
             };
         }
         });

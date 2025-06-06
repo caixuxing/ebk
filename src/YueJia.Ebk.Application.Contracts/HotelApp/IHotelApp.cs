@@ -10,6 +10,13 @@ namespace YueJia.Ebk.Application.Contracts.HotelApp;
 public interface IHotelApp
 {
     /// <summary>
+    /// 保存库存和价格
+    /// </summary>
+    /// <param name="cmd"></param>
+    /// <returns></returns>
+    Task<bool> SaveInventoryAndPriceAsync(SaveInventoryAndPriceCmd cmd);
+
+    /// <summary>
     /// 添加酒店房间
     /// </summary>
     /// <param name="cmd"></param>
@@ -110,7 +117,7 @@ public interface IHotelApp
     /// 获取库存集合
     /// </summary>
     /// <returns></returns>
-    Task<List<DailyInventoryDto>> GetInventoryList(long userRoomId,int dateYear,int dateMonth);
+    Task<List<DailyInventoryDto>> GetInventoryList(long userRoomId, int dateYear, int dateMonth);
 
 
 

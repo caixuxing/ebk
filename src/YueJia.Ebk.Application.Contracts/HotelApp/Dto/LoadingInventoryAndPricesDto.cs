@@ -84,7 +84,7 @@ public record PricePlanItemDto
     {
         get
         {
-            return Status.ToDescription();
+            return Status == YesOrNoType.Yes ? "启用" : "停用";
         }
     }
     /// <summary>
