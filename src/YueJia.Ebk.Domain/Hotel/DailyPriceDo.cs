@@ -41,6 +41,7 @@ public partial record DailyPriceDo
 {
     private DailyPriceDo(long roomId, long pricePlanId, DateTime currentDate, decimal price, YesOrNoType isEnable)
     {
+        Id = SnowFlakeSingle.instance.getID();
         RoomId = roomId;
         PricePlanId = pricePlanId;
         CurrentDate = currentDate;
@@ -61,6 +62,24 @@ public partial record DailyPriceDo
     public DailyPriceDo SetIsEnable(YesOrNoType isEnable)
     {
         IsEnable = isEnable;
+        return this;
+    }
+
+
+    public DailyPriceDo CreateByInfo(long tenantId, string createdbyId, string createdbyName)
+    {
+        this.TenantId = tenantId;
+        this.CreatedbyId = createdbyId;
+        this.CreatedbyName = createdbyName;
+        this.CreateTime = DateTime.Now;
+        return this;
+    }
+
+    public DailyPriceDo UpdateByInfo(string updatedbyId, string updatedbyName)
+    {
+        this.LastModifiedbyId = updatedbyId;
+        this.LastModifiedbyName = updatedbyName;
+        this.LastModifiedTime = DateTime.Now;
         return this;
     }
 }

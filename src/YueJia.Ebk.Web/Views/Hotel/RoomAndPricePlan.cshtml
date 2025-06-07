@@ -13,7 +13,7 @@
 <el-container style="height:100vh;overflow: hidden;">
     <el-main>
 
-       @Html.Partial("~/Views/Hotel/UserHotelNavigationMgr.cshtml", (@ViewBag.mv as YueJia.Ebk.Web.ViewModels.Hotel.ViewHotelVo))
+       @await Html.PartialAsync("~/Views/Hotel/UserHotelNavigationMgr.cshtml", (@ViewBag.mv as YueJia.Ebk.Web.ViewModels.Hotel.ViewHotelVo))
        
        <div style="height:50px;line-height:50px; position:relative ">
             <h1>房间与价格计划</h1>

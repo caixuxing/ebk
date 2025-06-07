@@ -34,7 +34,10 @@
                   <el-option v-for="item in state.roomData" :key="item.value":label="item.label":value="item.value"></el-option>
                 </el-select>
 
-                          开始日期：<el-date-picker v-model="state.formData.startDate" type="date" placeholder="开始日期" format="YYYY-MM-DD" v-on:change="queryRoomAndPricePlan"> </el-date-picker>
+                          开始日期：<el-date-picker v-model="state.formData.startDate" type="date" placeholder="开始日期"   value-format="YYYY-MM-DD"
+  format="YYYY-MM-DD"  v-on:change="queryRoomAndPricePlan"> </el-date-picker>
+                          
+                          
                           显示天数：
                           <el-select v-model="state.formData.showDays" placeholder="Select" style="width: 140px" v-on:change="queryRoomAndPricePlan">
                           <el-option key="7" label="7天" value="7" ></el-option>
@@ -207,8 +210,7 @@
                 let prices = state.formData.room.pricePlan.flatMap(pricePlan =>pricePlan.dailyPrices.map(({ priceId, price, status }) => ({ priceId, price, status:status ? 1 : 0  })));
                 let reqData = { ...state.formData };
                     axios.post(`/Hotel/SaveInventoryAndPrice`, { inventorys:inventorys, prices:prices}).then(function (response) {
-                            console.log(response.data);
-                            if (response.data.success) {
+                            if (response.data.isSuccess) {
                                 ElementPlus.ElMessage.success('保存成功');
                             } else {
                                 ElementPlus.ElMessage.error('保存失败');

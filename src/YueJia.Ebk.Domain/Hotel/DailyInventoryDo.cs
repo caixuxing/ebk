@@ -40,6 +40,7 @@ public partial record DailyInventoryDo
 
     private DailyInventoryDo(long roomId, DateTime currentDate, int inventoryNum, YesOrNoType isEnable)
     {
+        Id = SnowFlakeSingle.instance.getID();
         RoomId = roomId;
         CurrentDate = currentDate;
         InventoryNum = inventoryNum;
@@ -60,6 +61,28 @@ public partial record DailyInventoryDo
     {
 
         IsEnable = isEnable;
+        return this;
+    }
+    public DailyInventoryDo SetTenantId(long tenantId)
+    {
+        this.TenantId = tenantId;
+        return this;
+    }
+
+    public DailyInventoryDo CreateByInfo(long tenantId, string createdbyId, string createdbyName)
+    {
+        this.TenantId = tenantId;
+        this.CreatedbyId = createdbyId;
+        this.CreatedbyName = createdbyName;
+        this.CreateTime = DateTime.Now;
+        return this;
+    }
+
+    public DailyInventoryDo UpdateByInfo(string updatedbyId, string updatedbyName)
+    {
+        this.LastModifiedbyId = updatedbyId;
+        this.LastModifiedbyName = updatedbyName;
+        this.LastModifiedTime = DateTime.Now;
         return this;
     }
 }
