@@ -165,18 +165,18 @@
                         <el-form :inline="true" label-width="auto" label-position="top">
                             <div>
                                 <el-form-item label="价格">
-                                    <el-select style="width: 100px" v-model="ele.priceExecType">
+                                    <el-select style="width: 100px" v-model="item.priceExecType">
                                         <el-option label="绝对值" value="1"></el-option>
                                         <el-option label="增加" value="2"></el-option>
                                         <el-option label="无变化" value="0"></el-option>
                                     </el-select>
 
-                                    <el-input-number :controls="false" v-model="ele.price" style="width:65px;margin-left:10px;" :precision="0" :min="0" :max="20"></el-input-number>
+                                    <el-input-number :controls="false" v-model="item.price" style="width:65px;margin-left:10px;" :precision="0" :min="0" :max="20"></el-input-number>
                                 </el-form-item>
                             </div>
                             <div>
                                 <el-form-item label="价格状态">
-                                    <el-select style="width: 100px" v-model="ele.priceState">
+                                    <el-select style="width: 100px" v-model="item.priceState">
                                         <el-option label="启用" value="1"></el-option>
                                         <el-option label="停用" value="2"></el-option>
                                         <el-option label="无变化" value="0"></el-option>
