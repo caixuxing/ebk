@@ -25,5 +25,19 @@ namespace YueJia.Ebk.Application.Contracts.HotelApp.Dto
                 return CurrentDate.ToString("yyyy-MM-dd");
             }
         }
+
+        public decimal InitialPrice
+        {
+            get {
+                return Price;
+            }
+        }
+        public bool InitialStatusBool {
+            get
+            {
+                return StatusBool;
+            }
+        }
+
     }
 }

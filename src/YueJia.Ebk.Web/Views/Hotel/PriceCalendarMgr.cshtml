@@ -73,8 +73,11 @@
                     <el-text>{{data.day}}</el-text>
                 </div>
 
-                <div v-if=" getDailyPriceList(data.day).length>0  "     >
-
+                <div v-if=" getDailyPriceList(data.day).length>0  "    style="position:relative"  >
+                    <div v-show=" getDailyPriceList(data.day)[0].price != getDailyPriceList(data.day)[0].initialPrice || getDailyPriceList(data.day)[0].initialStatusBool != getDailyPriceList(data.day)[0].statusBool   "
+                         style="position:absolute;right:-5px;top:-20px; width:20px; height:20px; background:#2bb3f8">
+                      
+                    </div>
                     <div>
                         <el-text>价格：</el-text>
                         <el-input-number style="pointer-events: auto;" :controls="false" v-model="getDailyPriceList(data.day)[0].price" :precision="2" :min="0" :max="100000"></el-input-number>

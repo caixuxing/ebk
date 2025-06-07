@@ -24,7 +24,6 @@
         body {
             overflow: auto;
         }
-
     </style>
 }
 
@@ -56,7 +55,8 @@
             </div>
         </el-form>
 
-        <el-calendar v-model="vmodel.calendarData">
+        <el-calendar v-model="vmodel.calendarData"
+                     style="pointer-events: none">
             <template #header="{ date }">
                 <el-row style="width:100%;">
                     <el-col :span="12">
@@ -68,8 +68,8 @@
                     </el-col>
                     <el-col :span="12" style="text-align:right">
                         <el-button-group>
-                            <el-button type="primary" v-on:click="onRevoke">撤销</el-button>
-                            <el-button type="primary" v-on:click="onSaveInventory">保存</el-button>
+                            <el-button type="primary" style=" pointer-events: auto; " v-on:click="onRevoke">撤销</el-button>
+                            <el-button type="primary" style=" pointer-events: auto; " v-on:click="onSaveInventory">保存</el-button>
                         </el-button-group>
                     </el-col>
                 </el-row>
@@ -77,17 +77,25 @@
             <template #date-cell="{ data }" style=" height: auto !important;">
 
                 <div>
-                    <el-text>{{data.day}}</el-text>
+                    <el-text>{{data.day}} </el-text>
                 </div>
 
-                <div v-if=" getDailyInventoryList(data.day).length>0  ">
+                <div v-if=" getDailyInventoryList(data.day).length>0  " style="position:relative"  >
+
+                    <div v-show=" getDailyInventoryList(data.day)[0].initialInventoryNum != getDailyInventoryList(data.day)[0].inventoryNum || getDailyInventoryList(data.day)[0].initialStatusBool != getDailyInventoryList(data.day)[0].statusBool   "
+                         style="position:absolute;right:-5px;top:-20px; width:20px; height:20px; background:#2bb3f8">
+                    </div>
+
                     <div>
                         <el-text>库存：</el-text>
-                        <el-input-number :controls="false" v-model="getDailyInventoryList(data.day)[0].inventoryNum" :precision="0" :min="0" :max="20"></el-input-number>
+                        <el-input-number :controls="false"
+                                         style=" pointer-events: auto; " 
+                                         v-model="getDailyInventoryList(data.day)[0].inventoryNum" 
+                                         :precision="0" :min="0" :max="100"></el-input-number>
                     </div>
                     <div>
                         <el-text>状态：</el-text>
-                        <el-checkbox v-model="getDailyInventoryList(data.day)[0].statusBool"></el-checkbox>
+                        <el-checkbox style=" pointer-events: auto; "  v-model="getDailyInventoryList(data.day)[0].statusBool"></el-checkbox>
                     </div>
                 </div>
                 <div  v-else >
@@ -116,7 +124,6 @@
                });
                  const hotelModel =   @Html.Raw(System.Text.Json.JsonSerializer.Serialize(ViewBag.hotelModel, new System.Text.Json.JsonSerializerOptions() { PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase }))
                  const ebkOtaRoomList =  @Html.Raw(System.Text.Json.JsonSerializer.Serialize(ViewBag.ebkOtaRoomList, new System.Text.Json.JsonSerializerOptions() { PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase }));
-
                  Vue.onMounted(() => {
 
                     console.log(hotelModel);
@@ -156,9 +163,10 @@
                     var dateMonth = vmodel.execData.split('-')[1]
                     axios.get(`/Hotel/GetInventoryListResult?userRoomId=${ vmodel.model.ebkRoom.id}&dateYear=${dateYear}&dateMonth=${dateMonth}`, ).then(response => {
                         let {data,status}=response;
-                        console.log(data.data);
                         vmodel.model.dailyInventoryList = data.data
+
                         console.log(   vmodel.model.dailyInventoryList );
+
                     })
                 };
 
@@ -170,6 +178,9 @@
                         loadData();
                     })
                 }
+
+
+
 
                 const onSaveInventory =()=>{
 
@@ -191,7 +202,6 @@
                     return  vmodel.model.dailyInventoryList.filter(vv=> vv.currentDateString ==dateDay );
                 }
 
-
                 return {
                    vmodel,
                    hotelModel,
@@ -200,7 +210,7 @@
                    onDateChange,
                    onSaveInventory,
                    onRevoke,
-                   getDailyInventoryList
+                   getDailyInventoryList,
                 }
         }
         });

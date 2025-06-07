@@ -18,6 +18,8 @@ namespace YueJia.Ebk.Application.Contracts.HotelApp.Dto
         /// </summary>
         public int InventoryNum { get; set; }
 
+   
+
         public bool StatusBool { get; set; }
 
 
@@ -27,6 +29,20 @@ namespace YueJia.Ebk.Application.Contracts.HotelApp.Dto
             }
         }
 
+        public int InitialInventoryNum
+        {
+            get {
+                return InventoryNum;
+            }
+        }
+
+        public bool InitialStatusBool
+        {
+            get
+            {
+                return StatusBool;
+            }
+        }
 
     }
 }
