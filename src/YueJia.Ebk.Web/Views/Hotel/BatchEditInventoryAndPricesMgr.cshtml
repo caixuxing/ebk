@@ -297,6 +297,8 @@
                        let reqData =  JSON.parse(JSON.stringify(vmodel.simpleModel))
                        reqData.userRoomIdList =userRoomIdList.value;
                        reqData.userPlanIdList =  userPlanIdList.value;
+                       reqData.startDate =vmodel.dateRange[0];
+                       reqData.endDate=vmodel.dateRange[1];
                  
                          axios['post'](`/Hotel/BatchSaveInventoryAndPricesSimple`, reqData).then(res=>{
                              top.window.vueElMessage({ message: res.data. message , type:  res.data.isSuccess?'success':'info' })
@@ -336,6 +338,8 @@
                        let reqData = {
                             userRoomList:userRoomList,
                             userPlanList:userPlanList,
+                            startDate :vmodel.dateRange[0],
+                            endDate:vmodel.dateRange[1]
                        }
                        console.log(reqData);
 

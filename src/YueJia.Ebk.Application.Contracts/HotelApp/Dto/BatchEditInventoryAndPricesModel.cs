@@ -8,6 +8,10 @@ namespace YueJia.Ebk.Application.Contracts.HotelApp.Dto
 {
     public class BatchEditInventoryAndPricesModel
     {
+
+        public string startDate { get; set; }
+        public string endDate { get; set; }
+
         public List<string> userRoomIdList { get; set; }
         public List<string> userPlanIdList { get; set; }
 

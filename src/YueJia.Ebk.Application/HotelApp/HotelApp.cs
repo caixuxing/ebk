@@ -740,11 +740,12 @@ public class HotelApp : ApplicationService, IHotelApp
     public async Task<bool> BatchSaveInventoryAndPricesSimple(BatchEditInventoryAndPricesModel qry)
     {
 
-        var currentDate = DateTime.Now.Date;
+        var startDate = Convert.ToDateTime(qry.startDate);
+        var endDate = Convert.ToDateTime(qry.endDate);
         //处理库存
         foreach (var userRoomId in qry.userRoomIdList)
         {
-            var dailyInventoryList = await db.Queryable<DailyInventoryDo>().Where(vv => vv.RoomId == SqlFunc.ToInt64(userRoomId) && vv.CurrentDate >= currentDate).ToArrayAsync();
+            var dailyInventoryList = await db.Queryable<DailyInventoryDo>().Where(vv => vv.RoomId == SqlFunc.ToInt64(userRoomId) && vv.CurrentDate >= startDate && vv.CurrentDate<= endDate).ToArrayAsync();
             foreach (var dailyInventoryObj in dailyInventoryList)
             {
                 if (qry.numFlag && qry.numExecType == "1")
@@ -768,7 +769,7 @@ public class HotelApp : ApplicationService, IHotelApp
         //处理价格
         foreach (var userPlanId in qry.userPlanIdList)
         {
-            var dailyPriceList = await db.Queryable<DailyPriceDo>().Where(vv => vv.PricePlanId == SqlFunc.ToInt64(userPlanId) && vv.CurrentDate >= currentDate).ToArrayAsync();
+            var dailyPriceList = await db.Queryable<DailyPriceDo>().Where(vv => vv.PricePlanId == SqlFunc.ToInt64(userPlanId) && vv.CurrentDate >= startDate && vv.CurrentDate <= endDate).ToArrayAsync();
             foreach (var dailyPriceListObj in dailyPriceList)
             {
                 if (qry.priceFlag && qry.priceExecType == "1")
@@ -799,10 +800,11 @@ public class HotelApp : ApplicationService, IHotelApp
     public async Task<bool> BatchSaveInventoryAndPricesSenior([FromBody] BatchEditInventoryAndPricesSeniorModel qry)
     {
 
-        var currentDate = DateTime.Now.Date;
+        var startDate = Convert.ToDateTime(qry.startDate);
+        var endDate = Convert.ToDateTime(qry.endDate);
         foreach (var ele in qry.userRoomList) { 
 
-            var dailyInventoryList = await db.Queryable<DailyInventoryDo>().Where(vv => vv.RoomId == SqlFunc.ToInt64(ele.Id) && vv.CurrentDate >= currentDate).ToArrayAsync();
+            var dailyInventoryList = await db.Queryable<DailyInventoryDo>().Where(vv => vv.RoomId == SqlFunc.ToInt64(ele.Id) && vv.CurrentDate >= startDate && vv.CurrentDate <= endDate).ToArrayAsync();
             foreach (var dailyInventoryObj in dailyInventoryList) {
                 if (ele.numExecType == "1")
                 {
@@ -829,7 +831,7 @@ public class HotelApp : ApplicationService, IHotelApp
         //处理价格
         foreach (var ele in qry.userPlanList)
         {
-            var dailyPriceList = await db.Queryable<DailyPriceDo>().Where(vv => vv.PricePlanId == SqlFunc.ToInt64(ele.Id) && vv.CurrentDate >= currentDate).ToArrayAsync();
+            var dailyPriceList = await db.Queryable<DailyPriceDo>().Where(vv => vv.PricePlanId == SqlFunc.ToInt64(ele.Id) && vv.CurrentDate >= startDate && vv.CurrentDate <= endDate).ToArrayAsync();
             foreach (var dailyPriceListObj in dailyPriceList)
             {
                 if (ele.priceExecType == "1")
