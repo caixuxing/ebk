@@ -1,5 +1,8 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.DependencyInjection;
 using Nito.AsyncEx.Synchronous;
+using System.Runtime.CompilerServices;
 using Volo.Abp.Domain.Entities;
 using YueJia.Ebk.Application.Contracts.HotelApp;
 using YueJia.Ebk.Application.Contracts.HotelApp.Commands;
@@ -732,5 +735,124 @@ public class HotelApp : ApplicationService, IHotelApp
             await db.Updateable(oldPrice).ExecuteCommandAsync();
             return true;
         });
+    }
+
+    public async Task<bool> BatchSaveInventoryAndPricesSimple(BatchEditInventoryAndPricesModel qry)
+    {
+
+        var currentDate = DateTime.Now.Date;
+        //处理库存
+        foreach (var userRoomId in qry.userRoomIdList)
+        {
+            var dailyInventoryList = await db.Queryable<DailyInventoryDo>().Where(vv => vv.RoomId == SqlFunc.ToInt64(userRoomId) && vv.CurrentDate >= currentDate).ToArrayAsync();
+            foreach (var dailyInventoryObj in dailyInventoryList)
+            {
+                if (qry.numFlag && qry.numExecType == "1")
+                {
+                    dailyInventoryObj.SetInventoryNum(qry.num);
+                }
+                if (qry.numFlag && qry.numExecType == "2")
+                {
+                    dailyInventoryObj.SetInventoryNum(qry.num + dailyInventoryObj.InventoryNum);
+                }
+
+                if (qry.numStateFlag)
+                {
+                    dailyInventoryObj.SetIsEnable(qry.numState ? YesOrNoType.Yes : YesOrNoType.No);
+                }
+            }
+            db.Updateable<DailyInventoryDo>(dailyInventoryList).ExecuteCommand();
+        }
+
+
+        //处理价格
+        foreach (var userPlanId in qry.userPlanIdList)
+        {
+            var dailyPriceList = await db.Queryable<DailyPriceDo>().Where(vv => vv.PricePlanId == SqlFunc.ToInt64(userPlanId) && vv.CurrentDate >= currentDate).ToArrayAsync();
+            foreach (var dailyPriceListObj in dailyPriceList)
+            {
+                if (qry.priceFlag && qry.priceExecType == "1")
+                {
+                    dailyPriceListObj.SetPrice(qry.price);
+                }
+                if (qry.priceFlag && qry.priceExecType == "2")
+                {
+                    dailyPriceListObj.SetPrice(qry.price + dailyPriceListObj.Price);
+                }
+                if (qry.priceFlag && qry.priceExecType == "3")
+                {
+                    dailyPriceListObj.SetPrice(qry.price * (1 + (dailyPriceListObj.Price / 100)));
+                }
+
+                if (qry.priceFlag)
+                {
+                    dailyPriceListObj.SetIsEnable(qry.priceState ? YesOrNoType.Yes : YesOrNoType.No);
+                }
+            }
+            db.Updateable<DailyPriceDo>(dailyPriceList).ExecuteCommand();
+        }
+
+        return true;
+
+    }
+
+    public async Task<bool> BatchSaveInventoryAndPricesSenior([FromBody] BatchEditInventoryAndPricesSeniorModel qry)
+    {
+
+        var currentDate = DateTime.Now.Date;
+        foreach (var ele in qry.userRoomList) { 
+
+            var dailyInventoryList = await db.Queryable<DailyInventoryDo>().Where(vv => vv.RoomId == SqlFunc.ToInt64(ele.Id) && vv.CurrentDate >= currentDate).ToArrayAsync();
+            foreach (var dailyInventoryObj in dailyInventoryList) {
+                if (ele.numExecType == "1")
+                {
+                    dailyInventoryObj.SetInventoryNum(ele.num);
+                }
+                else if (ele.numExecType == "2")
+                {
+                    dailyInventoryObj.SetInventoryNum(ele.num + dailyInventoryObj.InventoryNum);
+                }
+
+
+                if (ele.numState=="1")
+                {
+                    dailyInventoryObj.SetIsEnable(YesOrNoType.Yes);
+                }
+                else if (ele.numState == "2") { 
+                    dailyInventoryObj.SetIsEnable(YesOrNoType.No);
+                }
+            }
+            db.Updateable<DailyInventoryDo>(dailyInventoryList).ExecuteCommand();
+        }
+
+
+        //处理价格
+        foreach (var ele in qry.userPlanList)
+        {
+            var dailyPriceList = await db.Queryable<DailyPriceDo>().Where(vv => vv.PricePlanId == SqlFunc.ToInt64(ele.Id) && vv.CurrentDate >= currentDate).ToArrayAsync();
+            foreach (var dailyPriceListObj in dailyPriceList)
+            {
+                if (ele.priceExecType == "1")
+                {
+                    dailyPriceListObj.SetPrice(ele.price);
+                }
+                else if (ele.priceExecType == "2")
+                {
+                    dailyPriceListObj.SetPrice(ele.price + dailyPriceListObj.Price);
+                }
+
+                if (ele.priceState == "1")
+                {
+                    dailyPriceListObj.SetIsEnable(YesOrNoType.Yes);
+                }
+                else if (ele.priceState == "2")
+                {
+                    dailyPriceListObj.SetIsEnable(YesOrNoType.No);
+                }
+            }
+            db.Updateable<DailyPriceDo>(dailyPriceList).ExecuteCommand();
+        }
+        return true;
+
     }
 }

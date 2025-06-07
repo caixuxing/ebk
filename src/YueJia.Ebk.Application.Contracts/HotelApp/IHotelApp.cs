@@ -1,4 +1,6 @@
-﻿using YueJia.Ebk.Application.Contracts.HotelApp.Commands;
+﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using YueJia.Ebk.Application.Contracts.HotelApp.Commands;
 using YueJia.Ebk.Application.Contracts.HotelApp.Dto;
 using YueJia.Ebk.Application.Contracts.HotelApp.Query;
 
@@ -147,7 +149,11 @@ public interface IHotelApp
     /// <param name="qry"></param>
     /// <returns></returns>
     Task<bool> SavePrice(string userPlanId, List<DailyPriceModel> priceList);
-    
+
+
+    Task<bool> BatchSaveInventoryAndPricesSimple(BatchEditInventoryAndPricesModel qry);
+
+    Task<bool> BatchSaveInventoryAndPricesSenior([FromBody] BatchEditInventoryAndPricesSeniorModel qry);
 
 
 }

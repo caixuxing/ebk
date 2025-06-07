@@ -508,7 +508,20 @@ public class HotelController : AbpController
     }
 
 
+    public async Task<IResult> BatchSaveInventoryAndPricesSimple([FromBody] BatchEditInventoryAndPricesModel qry)
+    {
 
+        return ApiResult.HandleResult(await HotelApp.BatchSaveInventoryAndPricesSimple(qry));
+    }
+
+
+
+    public async Task<IResult> BatchSaveInventoryAndPricesSenior([FromBody] BatchEditInventoryAndPricesSeniorModel qry)
+    {
+
+        return ApiResult.HandleResult(await HotelApp.BatchSaveInventoryAndPricesSenior(qry));
+    }
+    
     #endregion
 
 }
