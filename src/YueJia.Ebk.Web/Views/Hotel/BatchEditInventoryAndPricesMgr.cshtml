@@ -141,10 +141,15 @@
                                     <el-select v-model="ele.inventoryNumExecType" style="width: 100px">
                                         <el-option label="绝对值" value="1"></el-option>
                                         <el-option label="增加" value="2"></el-option>
-                                        <el-option label="无变化" value=""></el-option>
+                                        <el-option label="无变化" value="*"></el-option>
                                     </el-select>
 
-                                    <el-input-number v-model="ele.inventoryNum" :controls="false" style="width:65px;margin-left:10px;" :precision="0" :min="0" :max="20"></el-input-number>
+                                    <el-input-number v-model="ele.inventoryNum" 
+                                                    :controls="false" 
+                                                     :value-on-clear="0"
+                                                     style="width:65px;margin-left:10px;" 
+                                                    :precision="0" 
+                                                    :min="0" :max="100"></el-input-number>
                                 </el-form-item>
                             </div>
                             <div>
@@ -152,7 +157,7 @@
                                     <el-select style="width: 100px" v-model="ele.inventoryStateType">
                                         <el-option label="启用" value="1"></el-option>
                                         <el-option label="停用" value="2"></el-option>
-                                        <el-option label="无变化" value="0"></el-option>
+                                        <el-option label="无变化" value="*"></el-option>
                                     </el-select>
                                 </el-form-item>
                             </div>
@@ -173,10 +178,13 @@
                                     <el-select style="width: 100px" v-model="item.planPriceExecType">
                                         <el-option label="绝对值" value="1"></el-option>
                                         <el-option label="增加" value="2"></el-option>
-                                        <el-option label="无变化" value=""></el-option>
+                                        <el-option label="无变化" value="*"></el-option>
                                     </el-select>
 
-                                    <el-input-number :controls="false" v-model="item.planPrice" style="width:65px;margin-left:10px;" :precision="0" :min="0" :max="20"></el-input-number>
+                                    <el-input-number :controls="false"
+                                                     :value-on-clear="0"
+                                                     v-model="item.planPrice"
+                                                     style="width:65px;margin-left:10px;" :precision="2" :min="0" :max="100000"></el-input-number>
                                 </el-form-item>
                             </div>
                             <div>
@@ -184,7 +192,7 @@
                                     <el-select style="width: 100px" v-model="item.planPriceStateType">
                                         <el-option label="启用" value="1"></el-option>
                                         <el-option label="停用" value="2"></el-option>
-                                        <el-option label="无变化" value=""></el-option>
+                                        <el-option label="无变化" value="*"></el-option>
                                     </el-select>
                                 </el-form-item>
                             </div>
