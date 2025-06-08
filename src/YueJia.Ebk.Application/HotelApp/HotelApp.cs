@@ -1,5 +1,4 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using YueJia.Ebk.Application.Contracts.HotelApp;
 using YueJia.Ebk.Application.Contracts.HotelApp.Commands;
@@ -746,7 +745,7 @@ public class HotelApp : ApplicationService, IHotelApp
         //处理库存
         foreach (var userRoomId in qry.userRoomIdList)
         {
-            var dailyInventoryList = await db.Queryable<DailyInventoryDo>().Where(vv => vv.RoomId == SqlFunc.ToInt64(userRoomId) && vv.CurrentDate >= startDate && vv.CurrentDate<= endDate).ToArrayAsync();
+            var dailyInventoryList = await db.Queryable<DailyInventoryDo>().Where(vv => vv.RoomId == SqlFunc.ToInt64(userRoomId) && vv.CurrentDate >= startDate && vv.CurrentDate <= endDate).ToArrayAsync();
             foreach (var dailyInventoryObj in dailyInventoryList)
             {
                 if (qry.numFlag && qry.numExecType == "1")
@@ -803,10 +802,12 @@ public class HotelApp : ApplicationService, IHotelApp
 
         var startDate = Convert.ToDateTime(qry.startDate);
         var endDate = Convert.ToDateTime(qry.endDate);
-        foreach (var ele in qry.userRoomList) { 
+        foreach (var ele in qry.userRoomList)
+        {
 
             var dailyInventoryList = await db.Queryable<DailyInventoryDo>().Where(vv => vv.RoomId == SqlFunc.ToInt64(ele.Id) && vv.CurrentDate >= startDate && vv.CurrentDate <= endDate).ToArrayAsync();
-            foreach (var dailyInventoryObj in dailyInventoryList) {
+            foreach (var dailyInventoryObj in dailyInventoryList)
+            {
                 if (ele.numExecType == "1")
                 {
                     dailyInventoryObj.SetInventoryNum(ele.num);
@@ -817,11 +818,12 @@ public class HotelApp : ApplicationService, IHotelApp
                 }
 
 
-                if (ele.numState=="1")
+                if (ele.numState == "1")
                 {
                     dailyInventoryObj.SetIsEnable(YesOrNoType.Yes);
                 }
-                else if (ele.numState == "2") { 
+                else if (ele.numState == "2")
+                {
                     dailyInventoryObj.SetIsEnable(YesOrNoType.No);
                 }
             }
@@ -879,18 +881,18 @@ public class HotelApp : ApplicationService, IHotelApp
     /// <returns></returns>
     public async Task<bool> SaveLoadingInventoryAndPricesAsync(SaveLoadingInventoryAndPricesCmd cmd)
     {
-        DateTime startDate = DateTime.Now;
+        DateTime startDate = DateTime.Now.Date;
 
         var roomIds = cmd.Rooms.Select(t => long.Parse(t.RoomId)).ToList();
         //查询房间日期范围内的库存数据
         var oldInventory = await DailyInventoryRepo.AsQueryable()
-             .Where(x => x.CurrentDate >= startDate.Date && x.CurrentDate <= cmd.EndDate.Date && roomIds.Contains(x.RoomId))
+             .Where(x => x.CurrentDate >= startDate && x.CurrentDate <= cmd.EndDate.Date && roomIds.Contains(x.RoomId))
              .ToListAsync();
 
 
         //查询房间日期范围内的价格数据
         var oldPrice = await DailyPriceRepo.AsQueryable()
-            .Where(x => x.CurrentDate >= startDate.Date && x.CurrentDate <= cmd.EndDate.Date && roomIds.Contains(x.RoomId))
+            .Where(x => x.CurrentDate >= startDate && x.CurrentDate <= cmd.EndDate.Date && roomIds.Contains(x.RoomId))
             .ToListAsync();
 
         List<DailyInventoryDo> insertDailyInventoryDos = new();
