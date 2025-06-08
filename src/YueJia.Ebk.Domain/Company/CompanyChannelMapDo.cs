@@ -17,10 +17,10 @@ public partial record CompanyChannelMapDo : EntityTenant
     public long CompanyId { get; private set; } = default!;
 
     /// <summary>
-    /// 渠道ID
+    /// 销售平台Code
     /// </summary>
-    [SugarColumn(ColumnDescription = "公司ID")]
-    public long ChannelId { get; private set; } = default!;
+    [SugarColumn(ColumnDescription = "销售平台Code")]
+    public string SalePlatCode { get; private set; } = default!;
 
     /// <summary>
     /// 是否启用
@@ -31,17 +31,17 @@ public partial record CompanyChannelMapDo : EntityTenant
 
 public partial record CompanyChannelMapDo
 {
-    private CompanyChannelMapDo(long companyId, long channelId, YesOrNoType status, long tenantId)
+    private CompanyChannelMapDo(long companyId, string salePlatCode, YesOrNoType status, long tenantId)
     {
         CompanyId = companyId;
-        ChannelId = channelId;
+        SalePlatCode = salePlatCode;
         Status = status;
         TenantId = tenantId;
     }
 
-    public static CompanyChannelMapDo Create(long companyId, long channelId, long tenantId)
+    public static CompanyChannelMapDo Create(long companyId, string salePlatCode, long tenantId)
     {
-        return new CompanyChannelMapDo(companyId, channelId, YesOrNoType.Yes, tenantId);
+        return new CompanyChannelMapDo(companyId, salePlatCode, YesOrNoType.Yes, tenantId);
     }
 
     public CompanyChannelMapDo SetCompanyId(long companyId)
@@ -50,9 +50,9 @@ public partial record CompanyChannelMapDo
         return this;
     }
 
-    public CompanyChannelMapDo SetChannelId(long channelId)
+    public CompanyChannelMapDo SetChannelId(string salePlatCode)
     {
-        ChannelId = channelId;
+        SalePlatCode = salePlatCode;
         return this;
     }
 

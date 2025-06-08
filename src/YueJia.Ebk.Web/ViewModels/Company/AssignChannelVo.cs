@@ -9,9 +9,9 @@ namespace YueJia.Ebk.Web.ViewModels.Company
 
         public string? CompanyName { get; set; }
 
-        public string? SelectedChannelJosn { get; set; }
+        public List<string> SelectedChannelList { get; set; }
 
-        public string? ChannelDataJosn { get; set; }
+
 
     }
 }

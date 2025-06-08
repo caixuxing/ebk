@@ -19,6 +19,6 @@ public record AssignChannelDetailsDto
     /// <summary>
     /// 渠道集合
     /// </summary>
-    public List<long>? ChannelData { get; init; }
+    public List<string> SalePlatCodeList { get; init; }
 
 }

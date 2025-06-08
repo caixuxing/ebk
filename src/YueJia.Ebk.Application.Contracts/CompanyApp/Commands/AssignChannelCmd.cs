@@ -7,5 +7,5 @@ public record AssignChannelCmd
     /// 渠道集合
     /// </summary>
     [Required]
-    public List<int> ChannelData { get; set; } = default!;
+    public List<string> SalePlatCodeList { get; set; } = default!;
 }

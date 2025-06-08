@@ -68,9 +68,9 @@ public class CompanyController : AbpController
         {
             CompanyId = result.CompanyId,
             CompanyName = result.CompanyName,
-            SelectedChannelJosn = JsonConvert.SerializeObject(result.ChannelData),
-            ChannelDataJosn = JsonConvert.SerializeObject(SysEnumApp.GetEnumDataList(nameof(ChannelType)))
+            SelectedChannelList = result.SalePlatCodeList,
         };
+
         return View(modes);
     }
 
@@ -148,16 +148,3 @@ public class CompanyController : AbpController
 
 }
 
-
-
-///// <summary>
-///// 获取公司详情
-///// </summary>
-///// <param name="id"></param>
-///// <returns></returns>
-//[HttpGet, Route("[controller]/{id}/details")]
-//public async Task<IResult> GetCompanyById([FromRoute] string id)
-//{
-//    var result = await CompanyApp.GetCompanyById(id.ToLong());
-//    return ApiResult.HandleResult(result);
-//}

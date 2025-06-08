@@ -2,27 +2,29 @@
 
 <el-container style="height:100vh;overflow: hidden;">
     <el-main>
-        <el-form :model="state.formData" label-width="auto">
-            <el-form-item label="公司名称" required>
-                <el-input v-model="state.formData.companyName" autocomplete="off" clearable placeholder="请输入公司名称" disabled maxlength="30"></el-input>
+        <el-form  label-width="auto"  >
+            <el-form-item label="公司名称"  style="margin-bottom:5px;" >
+                <el-text>@Model.CompanyName</el-text>
             </el-form-item>
 
             <el-form-item label="渠道">
-                <el-checkbox-group v-model="state.formData.channelData">
-                    <template v-for="obj in state.channelData">
-                        <el-checkbox :label="obj.Describe" :value="obj.Value" border style="margin:10px"></el-checkbox>
-                    </template>
+                <el-checkbox-group v-model="vmodel.salePlatCodeList">
+                    @foreach (var ele in Program.SalePlat)
+                        {
+                        @* <el-checkbox label="@ele.Value" value="@ele.Key" border style="margin:10px"></el-checkbox> *@
+                        <el-checkbox label="@ele.Key" border style="margin:5px">@ele.Value</el-checkbox>
+                        }
                 </el-checkbox-group>
-
             </el-form-item>
-              <el-form-item label-width="0" >
-                <div class="dialog-footer" style="width:100%;display: flex;justify-content: flex-end">
-                    <el-button type="primary" v-on:click="save">保存 </el-button>
-                </div>
-               </el-form-item>
         </el-form>
     </el-main>
+
+    <el-footer style="text-align:center" >
+        <el-button type="primary" v-on:click="onSave">保存 </el-button>
+    </el-footer>
+
 </el-container>
+
 
 @section scripts {
     <script type="text/javascript">
@@ -30,29 +32,33 @@
         var frameIndex = parent.layer.getFrameIndex(window.name);
         const app = Vue.createApp({
             setup() {
-                const state = Vue.reactive({
-                    dataLoading: false,
-                    formData: {
-                        companyName:`@Html.Raw(Model.CompanyName)`,
-                        channelData: @Html.Raw(Model.SelectedChannelJosn),
-                    },
-                    channelData:@Html.Raw(Model.ChannelDataJosn)
-                });
 
-              const id =Vue.ref(`@Model.CompanyId`);
+               const vmodel =  Vue.reactive({
+                   salePlatCodeList:  @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.SelectedChannelList, new System.Text.Json.JsonSerializerOptions() { PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase }))
+               });
 
-              const save = async () => {
-                let reqData = { ...state.formData };
-           
-                         axios['post'](`/Company/${id.value}/AssignChannel`, reqData).then(res=>{
-                             top.window.vueElMessage({ message: res.data. message , type:  res.data.isSuccess?'success':'info' })
-                             if(res.data.isSuccess){
-                                parent.layer.close(frameIndex); // 关闭当前弹框
-                             }
-                         })
-               }
 
-                return { state, save }
+                /*
+                * 保存
+                */
+                const onSave =  () => {
+
+                      let reqData = { ...vmodel };
+                  
+                      axios['post'](`/Company/${'@Model.CompanyId'}/AssignChannel`, reqData).then(res=>{
+                          top.window.vueElMessage({ message: res.data. message , type:  res.data.isSuccess?'success':'info' })
+                          if(res.data.isSuccess){
+                             parent.layer.close(frameIndex); // 关闭当前弹框
+                          }
+                      })
+ 
+                 }
+
+                 return {
+                       vmodel,
+                       onSave,
+                 };
+
             }
         });
         app.use(ElementPlus, { locale: ElementPlusLocaleZhCn });

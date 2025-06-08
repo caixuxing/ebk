@@ -23,23 +23,22 @@ public class CompanyChannelMapApp : ApplicationService, ICompanyChannelMapApp
     public async Task<bool> AssignChannelAsync(AssignChannelCmd cmd, long companyId)
     {
 
-
-
         var entityOld = CompanyChannelMapRepo.AsQueryable().Where(e => e.CompanyId == companyId).ToList();
 
-        var entityNew = await CompanyRepo.GetByIdAsync(companyId);
+        var companyEntry = await CompanyRepo.GetByIdAsync(companyId);
 
-        var entity = cmd.ChannelData.Select(e => CompanyChannelMapDo.Create(
+        var newEntityList = cmd.SalePlatCodeList.Select(e => CompanyChannelMapDo.Create(
             companyId,
             e,
-            !string.IsNullOrWhiteSpace(CurrentUserApp.TenantId) ? CurrentUserApp.TenantId.ToLong() : entityNew.TenantId.GetValueOrDefault()))
-            .ToList();
+            companyEntry.TenantId.GetValueOrDefault())
+            ).ToList();
 
         return await DbTransaction.ExecuteInTransactionAsync(db, async () =>
         {
-            await db.Deleteable(entityOld).ExecuteCommandAsync();
-
-            await db.Insertable(entity).ExecuteReturnSnowflakeIdListAsync();
+            //删除
+            await db.Deleteable<CompanyChannelMapDo>().Where(vv => vv.CompanyId == companyId).ExecuteCommandAsync();
+            //新增
+            await db.Insertable(newEntityList).ExecuteReturnSnowflakeIdListAsync();
 
             return true;
         });
@@ -48,14 +47,13 @@ public class CompanyChannelMapApp : ApplicationService, ICompanyChannelMapApp
     public async Task<AssignChannelDetailsDto> GetAssignChannelDetailsAsync(long companyId)
     {
         var entity = CompanyChannelMapRepo.AsQueryable().Where(e => e.CompanyId == companyId).ToList();
-        var channels = entity.Select(e => e.ChannelId).ToList();
         var companyEntity = await CompanyRepo.GetByIdAsync(companyId);
 
         return new AssignChannelDetailsDto
         {
             CompanyId = companyId,
             CompanyName = companyEntity?.Name,
-            ChannelData = channels
+            SalePlatCodeList = entity.Select(e => e.SalePlatCode.ToString()).ToList()
         };
     }
 }

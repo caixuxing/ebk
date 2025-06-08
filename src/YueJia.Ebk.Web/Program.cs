@@ -40,4 +40,17 @@ public class Program
         }
     }
 
+
+
+    public static Dictionary<string, string> SalePlat = new Dictionary<string, string>() {
+      { "A", "携程" },
+      { "B", "飞猪" },
+      { "D", "去哪" },
+      { "F", "途灵" },
+      { "G", "美团" },
+      { "H", "道旅" },
+      { "I", "Etg" },
+      { "Z", "Agoda" },
+    };
+
 }
