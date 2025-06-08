@@ -1,18 +1,8 @@
 ﻿@using YueJia.Ebk.Application.Contracts.SysApp
 @model YueJia.Ebk.Application.Contracts.HotelApp.Commands.CreateOrUpdatePricePlanCmd
 @inject ISysEnumApp enumApp
-@{
-    Layout = "~/Views/Shared/_Layout.cshtml";
-}
 
-@section head {
-    <title>新增价格计划</title>
-    <style scoped>
-        .el-input-number .el-input__inner{
-        text-align:left !important;
-        }
-    </style>
-}
+
 <el-container style="padding:20px" >
     <el-main>
         <el-form label-width="auto" :inline="true" style="width:810px;margin:0px auto">
@@ -29,8 +19,6 @@
                     </el-form-item>
                 </div>
             }
-
-            
             <div>
                 <el-form-item label="房型名称：" style="margin-bottom:5px;">
                     <label>@ViewBag.RoomTypeName </label>
@@ -67,14 +55,14 @@
             </el-form-item>
 
             <el-form-item label="提前天数：" style="margin-bottom:5px;">
-                <el-input-number v-model="vmodel.model.daysInAdvance" :controls="false" :precision="0" :min="0" :max="60" style="width:100px"></el-input-number>
+                <el-input-number v-model="vmodel.model.daysInAdvance" :controls="false" :value-on-clear="1" :precision="0" :min="0" :max="30" style="width:100px"></el-input-number>
             </el-form-item>
 
             <el-form-item label="连住天数：" style="margin-bottom:5px;">
-                <el-input-number v-model="vmodel.model.continuousStayDays" :controls="false" :precision="0" :min="0" :max="15" style="width:100px"></el-input-number>
+                <el-input-number v-model="vmodel.model.continuousStayDays" :controls="false" :value-on-clear="1" :precision="0" :min="1" :max="5" style="width:100px"></el-input-number>
             </el-form-item>
 
-            <el-form-item label="是否保留房：" style="margin-bottom:5px;">
+            <el-form-item label="是否保留房：" style="margin-bottom:5px; display:none "    >
                 <el-switch v-model="vmodel.A_isReservedRoom" inline-prompt active-text="是" inactive-text="否" />
             </el-form-item>
 
@@ -90,25 +78,25 @@
                 <el-form-item label="成本 (CNY)">
                     <el-descriptions direction="vertical" :column="7" border>
                         <el-descriptions-item label="星期天" label-class-name="my-label">
-                            <el-input-number v-model="vmodel.model.sunday" :controls="false" style="width:80px" :precision="2" :min="0" :max="100000"></el-input-number>
+                            <el-input-number v-model="vmodel.model.sunday" :controls="false" :value-on-clear="0" style="width:80px" :precision="2" :min="0" :max="100000"></el-input-number>
                         </el-descriptions-item>
                         <el-descriptions-item label="星期一" label-class-name="my-label">
-                            <el-input-number v-model="vmodel.model.monday" :controls="false" style="width:80px" :precision="2" :min="0" :max="100000"></el-input-number>
+                            <el-input-number v-model="vmodel.model.monday" :controls="false" :value-on-clear="0" style="width:80px" :precision="2" :min="0" :max="100000"></el-input-number>
                         </el-descriptions-item>
                         <el-descriptions-item label="星期二" label-class-name="my-label">
-                            <el-input-number v-model="vmodel.model.tuesday" :controls="false" style="width:80px" :precision="2" :min="0" :max="100000"></el-input-number>
+                            <el-input-number v-model="vmodel.model.tuesday" :controls="false" :value-on-clear="0" style="width:80px" :precision="2" :min="0" :max="100000"></el-input-number>
                         </el-descriptions-item>
                         <el-descriptions-item label="星期三" label-class-name="my-label">
-                            <el-input-number v-model="vmodel.model.wednesday" :controls="false" style="width:80px" :precision="2" :min="0" :max="100000"></el-input-number>
+                            <el-input-number v-model="vmodel.model.wednesday" :controls="false" :value-on-clear="0" style="width:80px" :precision="2" :min="0" :max="100000"></el-input-number>
                         </el-descriptions-item>
                         <el-descriptions-item label="星期四" label-class-name="my-label">
-                            <el-input-number v-model="vmodel.model.thursday" :controls="false" style="width:80px" :precision="2" :min="0" :max="100000"></el-input-number>
+                            <el-input-number v-model="vmodel.model.thursday" :controls="false" :value-on-clear="0" style="width:80px" :precision="2" :min="0" :max="100000"></el-input-number>
                         </el-descriptions-item>
                         <el-descriptions-item label="星期五" label-class-name="my-label">
-                            <el-input-number v-model="vmodel.model.friday" :controls="false" style="width:80px" :precision="2" :min="0" :max="100000"></el-input-number>
+                            <el-input-number v-model="vmodel.model.friday" :controls="false" :value-on-clear="0" style="width:80px" :precision="2" :min="0" :max="100000"></el-input-number>
                         </el-descriptions-item>
                         <el-descriptions-item label="星期六" label-class-name="my-label">
-                            <el-input-number v-model="vmodel.model.saturday" :controls="false" style="width:80px" :precision="2" :min="0" :max="100000"></el-input-number>
+                            <el-input-number v-model="vmodel.model.saturday" :controls="false" :value-on-clear="0" style="width:80px" :precision="2" :min="0" :max="100000"></el-input-number>
                         </el-descriptions-item>
                     </el-descriptions>
                 </el-form-item>

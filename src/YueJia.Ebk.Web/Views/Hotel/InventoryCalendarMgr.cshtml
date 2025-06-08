@@ -85,12 +85,12 @@
                     <div v-show=" getDailyInventoryList(data.day)[0].initialInventoryNum != getDailyInventoryList(data.day)[0].inventoryNum || getDailyInventoryList(data.day)[0].initialStatusBool != getDailyInventoryList(data.day)[0].statusBool   "
                          style="position:absolute;right:-5px;top:-20px; width:20px; height:20px; background:#2bb3f8">
                     </div>
-
                     <div>
                         <el-text>库存：</el-text>
                         <el-input-number :controls="false"
                                          style=" pointer-events: auto; " 
-                                         v-model="getDailyInventoryList(data.day)[0].inventoryNum" 
+                                         v-model="getDailyInventoryList(data.day)[0].inventoryNum"
+                                         :value-on-clear="0"
                                          :precision="0" :min="0" :max="100"></el-input-number>
                     </div>
                     <div>
@@ -125,10 +125,6 @@
                  const hotelModel =   @Html.Raw(System.Text.Json.JsonSerializer.Serialize(ViewBag.hotelModel, new System.Text.Json.JsonSerializerOptions() { PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase }))
                  const ebkOtaRoomList =  @Html.Raw(System.Text.Json.JsonSerializer.Serialize(ViewBag.ebkOtaRoomList, new System.Text.Json.JsonSerializerOptions() { PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase }));
                  Vue.onMounted(() => {
-
-                    console.log(hotelModel);
-                    console.log(ebkOtaRoomList);
-
                     if(ebkOtaRoomList.length>0){
                        vmodel.model.ebkRoomId = ebkOtaRoomList[0].id;
                        vmodel.model.ebkRoom = ebkOtaRoomList.find(vv=>vv.id == vmodel.model.ebkRoomId);
@@ -164,9 +160,6 @@
                     axios.get(`/Hotel/GetInventoryListResult?userRoomId=${ vmodel.model.ebkRoom.id}&dateYear=${dateYear}&dateMonth=${dateMonth}`, ).then(response => {
                         let {data,status}=response;
                         vmodel.model.dailyInventoryList = data.data
-
-                        console.log(   vmodel.model.dailyInventoryList );
-
                     })
                 };
 
@@ -179,11 +172,13 @@
                     })
                 }
 
-
-
-
                 const onSaveInventory =()=>{
-
+                  
+                    if(vmodel.model.dailyInventoryList .length == 0 ){
+                        top.window.vueElMessage({ message: '库存数据为空，无法提交' , type:  'error' })
+                        return;
+                    }
+                
                     let { ebkRoom,dailyInventoryList } =  vmodel.model;
                     let reqData={
                         ebkRoom: JSON.parse(JSON.stringify(ebkRoom)) ,
@@ -193,7 +188,7 @@
                     axios['post'](`/Hotel/SaveInventory`, reqData).then(res=>{
                         top.window.vueElMessage({ message: res.data. message , type:  res.data.isSuccess?'success':'info' })
                         if(res.data.isSuccess){
-                           parent.layer.close(frameIndex); // 关闭当前弹框
+                            loadData();
                         }
                     })
                 }

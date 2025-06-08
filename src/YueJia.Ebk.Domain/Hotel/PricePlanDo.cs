@@ -18,7 +18,7 @@ public partial record PricePlanDo : EntityTenant
     /// <summary>
     /// 价格计划标题
     /// </summary>
-    [SugarColumn(ColumnDescription = "价格计划标题", Length = 60, IsNullable = true)]
+    [SugarColumn(ColumnDescription = "价格计划标题", Length = 300, IsNullable = true)]
     public string? PricePlanTitle { get; set; }
 
     /// <summary>
