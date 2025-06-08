@@ -1,5 +1,4 @@
-﻿using System.Threading.Channels;
-
+﻿namespace YueJia.Ebk.Domain.Dept;
 
 /// <summary>
 /// 公司渠道关联映射表
@@ -27,7 +26,7 @@ public partial record DepartmentChannelMapDo : EntityTenant
 
 public partial record DepartmentChannelMapDo
 {
-    private DepartmentChannelMapDo(long deptId, string salePlatCode,  long tenantId)
+    private DepartmentChannelMapDo(long deptId, string salePlatCode, long tenantId)
     {
         DeptId = deptId;
         SalePlatCode = salePlatCode;
@@ -36,7 +35,7 @@ public partial record DepartmentChannelMapDo
 
     public static DepartmentChannelMapDo Create(long deptId, string salePlatCode, long tenantId)
     {
-        return new DepartmentChannelMapDo(deptId, salePlatCode,  tenantId);
+        return new DepartmentChannelMapDo(deptId, salePlatCode, tenantId);
     }
 
     public DepartmentChannelMapDo SetCompanyId(long deptId)
