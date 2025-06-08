@@ -202,13 +202,11 @@
                             })
                     })
               }
-           
-                //重置查询表单
-              const resetQueryForm=()=>{
-                 state.qry  = JSON.parse(JSON.stringify( qry))
-               };
 
-             const assignChannels = (row) => {
+              /**
+               * 编辑渠道
+               */
+              const assignChannels = (row) => {
                     layui.use(function () {
                         var layer = layui.layer;
                         layer.open({
@@ -222,6 +220,12 @@
                         });
                     });
                 }
+                //重置查询表单
+              const resetQueryForm=()=>{
+                 state.qry  = JSON.parse(JSON.stringify( qry))
+               };
+
+
 
             return {
                 state,

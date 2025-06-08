@@ -513,6 +513,40 @@ public class HotelController : AbpController
     }
     #endregion
 
+    #region 批量编辑库存与价格
 
+    /// <summary>
+    /// 批量编辑库存与价格
+    /// </summary>
+    /// <returns></returns>
+    public async Task<IActionResult> BatchEditInventoryAndPricesMgr(string userHotelId)
+    {
+        //加载酒店信息
+        ViewBag.hotelModel = await HotelPublishApp.GetHotelPublishDetailAsync(Convert.ToInt64(userHotelId));
+        ViewBag.mv = new ViewHotelVo()
+        {
+            Id = userHotelId,
+            HotelName = $@"{(ViewBag.hotelModel as HotelPublishDetailDto).HotelNameEn} [{(ViewBag.hotelModel as HotelPublishDetailDto).HotelName}]"
+        };
+        ViewBag.userRoomList = await HotelApp.GetHotelRoomListByIdAsync(userHotelId.ToLong());
+        return View();
+    }
+
+
+    public async Task<IResult> BatchSaveInventoryAndPricesSimple([FromBody] BatchEditInventoryAndPricesModel qry)
+    {
+
+        return ApiResult.HandleResult(await HotelApp.BatchSaveInventoryAndPricesSimple(qry));
+    }
+
+
+
+    public async Task<IResult> BatchSaveInventoryAndPricesSenior([FromBody] BatchEditInventoryAndPricesSeniorModel qry)
+    {
+
+        return ApiResult.HandleResult(await HotelApp.BatchSaveInventoryAndPricesSenior(qry));
+    }
+    
+    #endregion
 
 }
