@@ -15,45 +15,51 @@ namespace YueJia.Ebk.Application.Contracts.HotelApp.Dto
         public List<string> userRoomIdList { get; set; }
         public List<string> userPlanIdList { get; set; }
 
+
+
+
         /// <summary>
         /// 修改标识[库存数量]
         /// </summary>
-        public bool numFlag { get; set; }
+        public bool inventoryNumFlag { get; set; }
         /// <summary>
         /// 1:绝对值
         /// 2：增加
         /// </summary>
-        public string numExecType { get; set; }
+        public string inventoryNumExecType { get; set; }
         /// <summary>
         /// 数量
         /// </summary>
-        public int num { get; set; }
+        public int inventoryNum { get; set; }
         /// <summary>
         /// 修改标识[库存状态]
         /// </summary>
 
-        public bool numStateFlag { get; set; }
+        public bool inventoryStateFlag { get; set; }
 
-        public bool numState { get; set; }
+        public bool inventoryState { get; set; }
+
+
+
+
 
 
         /// <summary>
         /// 修改标识[价格]
         /// </summary>
-
-        public bool priceFlag { get; set; }
+        public bool planPriceFlag { get; set; }
         /// <summary>
         /// 1:绝对值
         /// 2：增加
         /// 3：百分比
         /// </summary>
-        public string priceExecType { get; set; }
+        public string planPriceExecType { get; set; }
         /// <summary>
         /// 价格
         /// </summary>
-        public decimal price { get; set; }
-        public bool priceStateFlag { get; set; }
-        public bool priceState { get; set; }
+        public decimal planPrice { get; set; }
+        public bool planPriceStateFlag { get; set; }
+        public bool planPriceState { get; set; }
 
         
     }

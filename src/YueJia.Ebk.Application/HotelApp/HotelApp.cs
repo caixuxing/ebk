@@ -658,22 +658,27 @@ public class HotelApp : ApplicationService, IHotelApp
         return model;
     }
 
+    /// <summary>
+    /// 保存==> 库存日历
+    /// </summary>
+    /// <param name="ebkRoom"></param>
+    /// <param name="dailyInventoryList"></param>
+    /// <returns></returns>
     public async Task<bool> SaveInventory(HotelRoomListDto ebkRoom, List<DailyInventoryModel> dailyInventoryList)
     {
         return await DbTransaction.ExecuteInTransactionAsync(db, async () =>
         {
             var dataList = await db.Queryable<DailyInventoryDo>().Where(vv => vv.RoomId == SqlFunc.ToInt64(ebkRoom.Id) &&
-                                                         vv.CurrentDate >= dailyInventoryList.Min(vv => vv.CurrentDate) &&
-                                                          vv.CurrentDate <= dailyInventoryList.Max(vv => vv.CurrentDate)).ToArrayAsync();
+                                                                              vv.CurrentDate >= dailyInventoryList.Min(vv => vv.CurrentDate) &&
+                                                                              vv.CurrentDate <= dailyInventoryList.Max(vv => vv.CurrentDate)).ToArrayAsync();
 
             foreach (var item in dailyInventoryList)
             {
                 var updateObj = dataList.Where(vv => vv.CurrentDate == item.CurrentDate).ToList().FirstOrDefault();
                 updateObj.SetInventoryNum(item.InventoryNum);
                 updateObj.SetIsEnable(item.StatusBool ? YesOrNoType.Yes : YesOrNoType.No);
-
-                db.Updateable<DailyInventoryDo>(updateObj).ExecuteCommand();
             }
+            db.Updateable<DailyInventoryDo>(dataList).ExecuteCommand();
             return true;
         });
 
@@ -694,8 +699,8 @@ public class HotelApp : ApplicationService, IHotelApp
         return await DbTransaction.ExecuteInTransactionAsync(db, async () =>
         {
             var dataList = await db.Queryable<DailyPriceDo>().Where(vv => vv.RoomId == SqlFunc.ToInt64(userRoomObj.Id) &&
-                                                         vv.CurrentDate >= priceList.Min(vv => vv.CurrentDate) &&
-                                                          vv.CurrentDate <= priceList.Max(vv => vv.CurrentDate)).ToArrayAsync();
+                                                                          vv.CurrentDate >= priceList.Min(vv => vv.CurrentDate) &&
+                                                                          vv.CurrentDate <= priceList.Max(vv => vv.CurrentDate)).ToArrayAsync();
 
 
 
@@ -704,9 +709,9 @@ public class HotelApp : ApplicationService, IHotelApp
                 var updateObj = dataList.Where(vv => vv.CurrentDate == item.CurrentDate).ToList().FirstOrDefault();
                 updateObj.SetPrice(item.Price);
                 updateObj.SetIsEnable(item.StatusBool ? YesOrNoType.Yes : YesOrNoType.No);
-
-                db.Updateable<DailyPriceDo>(updateObj).ExecuteCommand();
             }
+            db.Updateable<DailyPriceDo>(dataList).ExecuteCommand();
+
             return true;
         });
     }
@@ -738,6 +743,11 @@ public class HotelApp : ApplicationService, IHotelApp
         });
     }
 
+    /// <summary>
+    /// 批量编辑库存与价格=> 简易模式
+    /// </summary>
+    /// <param name="qry"></param>
+    /// <returns></returns>
     public async Task<bool> BatchSaveInventoryAndPricesSimple(BatchEditInventoryAndPricesModel qry)
     {
 
@@ -749,23 +759,22 @@ public class HotelApp : ApplicationService, IHotelApp
             var dailyInventoryList = await db.Queryable<DailyInventoryDo>().Where(vv => vv.RoomId == SqlFunc.ToInt64(userRoomId) && vv.CurrentDate >= startDate && vv.CurrentDate <= endDate).ToArrayAsync();
             foreach (var dailyInventoryObj in dailyInventoryList)
             {
-                if (qry.numFlag && qry.numExecType == "1")
+                if (qry.inventoryNumFlag && qry.inventoryNumExecType == "1")
                 {
-                    dailyInventoryObj.SetInventoryNum(qry.num);
+                    dailyInventoryObj.SetInventoryNum(qry.inventoryNum);
                 }
-                if (qry.numFlag && qry.numExecType == "2")
+                if (qry.inventoryNumFlag && qry.inventoryNumExecType == "2")
                 {
-                    dailyInventoryObj.SetInventoryNum(qry.num + dailyInventoryObj.InventoryNum);
+                    dailyInventoryObj.SetInventoryNum(qry.inventoryNum + dailyInventoryObj.InventoryNum);
                 }
 
-                if (qry.numStateFlag)
+                if (qry.inventoryStateFlag)
                 {
-                    dailyInventoryObj.SetIsEnable(qry.numState ? YesOrNoType.Yes : YesOrNoType.No);
+                    dailyInventoryObj.SetIsEnable(qry.inventoryState ? YesOrNoType.Yes : YesOrNoType.No);
                 }
             }
             db.Updateable<DailyInventoryDo>(dailyInventoryList).ExecuteCommand();
         }
-
 
         //处理价格
         foreach (var userPlanId in qry.userPlanIdList)
@@ -773,22 +782,22 @@ public class HotelApp : ApplicationService, IHotelApp
             var dailyPriceList = await db.Queryable<DailyPriceDo>().Where(vv => vv.PricePlanId == SqlFunc.ToInt64(userPlanId) && vv.CurrentDate >= startDate && vv.CurrentDate <= endDate).ToArrayAsync();
             foreach (var dailyPriceListObj in dailyPriceList)
             {
-                if (qry.priceFlag && qry.priceExecType == "1")
+                if (qry.planPriceFlag && qry.planPriceExecType == "1")
                 {
-                    dailyPriceListObj.SetPrice(qry.price);
+                    dailyPriceListObj.SetPrice(qry.planPrice);
                 }
-                if (qry.priceFlag && qry.priceExecType == "2")
+                if (qry.planPriceFlag && qry.planPriceExecType == "2")
                 {
-                    dailyPriceListObj.SetPrice(qry.price + dailyPriceListObj.Price);
+                    dailyPriceListObj.SetPrice(qry.planPrice + dailyPriceListObj.Price);
                 }
-                if (qry.priceFlag && qry.priceExecType == "3")
+                if (qry.planPriceFlag && qry.planPriceExecType == "3")
                 {
-                    dailyPriceListObj.SetPrice(qry.price * (1 + (dailyPriceListObj.Price / 100)));
+                    dailyPriceListObj.SetPrice(qry.planPrice * (1 + (dailyPriceListObj.Price / 100)));
                 }
 
-                if (qry.priceFlag)
+                if (qry.planPriceStateFlag)
                 {
-                    dailyPriceListObj.SetIsEnable(qry.priceState ? YesOrNoType.Yes : YesOrNoType.No);
+                    dailyPriceListObj.SetIsEnable(qry.planPriceState ? YesOrNoType.Yes : YesOrNoType.No);
                 }
             }
             db.Updateable<DailyPriceDo>(dailyPriceList).ExecuteCommand();
@@ -805,25 +814,24 @@ public class HotelApp : ApplicationService, IHotelApp
         var endDate = Convert.ToDateTime(qry.endDate);
         foreach (var ele in qry.userRoomList)
         {
-
             var dailyInventoryList = await db.Queryable<DailyInventoryDo>().Where(vv => vv.RoomId == SqlFunc.ToInt64(ele.Id) && vv.CurrentDate >= startDate && vv.CurrentDate <= endDate).ToArrayAsync();
             foreach (var dailyInventoryObj in dailyInventoryList)
             {
-                if (ele.numExecType == "1")
+                if (ele.inventoryNumExecType == "1")
                 {
-                    dailyInventoryObj.SetInventoryNum(ele.num);
+                    dailyInventoryObj.SetInventoryNum(ele.inventoryNum);
                 }
-                else if (ele.numExecType == "2")
+                else if (ele.inventoryNumExecType == "2")
                 {
-                    dailyInventoryObj.SetInventoryNum(ele.num + dailyInventoryObj.InventoryNum);
+                    dailyInventoryObj.SetInventoryNum(ele.inventoryNum + dailyInventoryObj.InventoryNum);
                 }
 
 
-                if (ele.numState == "1")
+                if (ele.inventoryStateType == "1")
                 {
                     dailyInventoryObj.SetIsEnable(YesOrNoType.Yes);
                 }
-                else if (ele.numState == "2")
+                else if (ele.inventoryStateType == "2")
                 {
                     dailyInventoryObj.SetIsEnable(YesOrNoType.No);
                 }
@@ -838,20 +846,20 @@ public class HotelApp : ApplicationService, IHotelApp
             var dailyPriceList = await db.Queryable<DailyPriceDo>().Where(vv => vv.PricePlanId == SqlFunc.ToInt64(ele.Id) && vv.CurrentDate >= startDate && vv.CurrentDate <= endDate).ToArrayAsync();
             foreach (var dailyPriceListObj in dailyPriceList)
             {
-                if (ele.priceExecType == "1")
+                if (ele.planPriceExecType == "1")
                 {
-                    dailyPriceListObj.SetPrice(ele.price);
+                    dailyPriceListObj.SetPrice(ele.planPrice);
                 }
-                else if (ele.priceExecType == "2")
+                else if (ele.planPriceExecType == "2")
                 {
-                    dailyPriceListObj.SetPrice(ele.price + dailyPriceListObj.Price);
+                    dailyPriceListObj.SetPrice(ele.planPrice + dailyPriceListObj.Price);
                 }
 
-                if (ele.priceState == "1")
+                if (ele.planPriceStateType == "1")
                 {
                     dailyPriceListObj.SetIsEnable(YesOrNoType.Yes);
                 }
-                else if (ele.priceState == "2")
+                else if (ele.planPriceStateType == "2")
                 {
                     dailyPriceListObj.SetIsEnable(YesOrNoType.No);
                 }

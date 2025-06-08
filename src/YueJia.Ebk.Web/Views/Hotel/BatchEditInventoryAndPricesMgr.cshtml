@@ -13,6 +13,7 @@
         <div style="height:50px;line-height:50px;">
             <h1>批量编辑库存与价格</h1>
         </div>
+
         <el-divider content-position="left"></el-divider>
 
         <div style=" margin-bottom:10px; ">
@@ -21,7 +22,7 @@
             </el-checkbox>
         </div>
 
-        <el-card class="box-card" v-for="ele in vmodel.model.userRoomList" style=" margin-bottom:20px ">
+        <el-card class="box-card" v-for="ele in vmodel.model.userRoomList" style=" margin-bottom:10px ">
             <template #header>
                 <div class="card-header">
                     <div>
@@ -54,34 +55,35 @@
 
         <el-tabs v-model="vmodel.activeName"
                  type="card"
-                 v-show="userPlanIdList.length >0 "
+                 v-show="vmodel.model.userRoomList.filter(vv=> vv.BState == true ).map(vv=>vv.id).length >0 "
                  class="demo-tabs">
             <el-tab-pane label="简易模式" name="simple">
                 <el-divider content-position="left">房型维度</el-divider>
                 <el-form :inline="true" label-width="auto" style="margin: 0 auto;width: 480px;">
                     <div>
                         <el-form-item label="库存">
-                            <el-select v-model="vmodel.simpleModel.numExecType"
-                                       v-show="vmodel.simpleModel.numFlag == true "
+                            <el-select v-model="vmodel.simpleModel.inventoryNumExecType"
+                                       v-show="vmodel.simpleModel.inventoryNumFlag == true "
                                        style="width: 100px">
                                 <el-option label="绝对值" value="1"></el-option>
                                 <el-option label="增加" value="2" ></el-option>
                             </el-select>
                           
-                            <el-input-number v-model="vmodel.simpleModel.num"
-                                             v-show="vmodel.simpleModel.numFlag == true "
-                                            :controls="false" style="width:80px;margin-left:15px;" :precision="0" :min="0" :max="20" ></el-input-number>
+                            <el-input-number v-model="vmodel.simpleModel.inventoryNum"
+                                             v-show="vmodel.simpleModel.inventoryNumFlag == true "
+                                             :value-on-clear="0"
+                                            :controls="false" style="width:80px;margin-left:15px;" :precision="0" :min="0" :max="100" ></el-input-number>
 
-                            <el-button v-show="vmodel.simpleModel.numFlag == false " v-on:click="vmodel.simpleModel.numFlag = true">编辑</el-button>
-                            <el-button v-show="vmodel.simpleModel.numFlag == true " v-on:click="vmodel.simpleModel.numFlag = false" type="danger">取消</el-button>
+                            <el-button v-show="vmodel.simpleModel.inventoryNumFlag == false " v-on:click="vmodel.simpleModel.inventoryNumFlag = true">编辑</el-button>
+                            <el-button v-show="vmodel.simpleModel.inventoryNumFlag == true " v-on:click="vmodel.simpleModel.inventoryNumFlag = false" type="danger">取消</el-button>
                         </el-form-item>
                     </div>
                     <div>
                         <el-form-item label="状态">
-                            <el-checkbox v-show="vmodel.simpleModel.numStateFlag == true "
-                                         v-model="vmodel.simpleModel.numState"> </el-checkbox>
-                            <el-button v-show="vmodel.simpleModel.numStateFlag == false " v-on:click="vmodel.simpleModel.numStateFlag = true">编辑</el-button>
-                            <el-button v-show="vmodel.simpleModel.numStateFlag == true " v-on:click="vmodel.simpleModel.numStateFlag = false" type="danger">取消</el-button>
+                            <el-checkbox v-show="vmodel.simpleModel.inventoryStateFlag == true "
+                                         v-model="vmodel.simpleModel.inventoryState"> </el-checkbox>
+                            <el-button v-show="vmodel.simpleModel.inventoryStateFlag == false " v-on:click="vmodel.simpleModel.inventoryStateFlag = true">编辑</el-button>
+                            <el-button v-show="vmodel.simpleModel.inventoryStateFlag == true " v-on:click="vmodel.simpleModel.inventoryStateFlag = false" type="danger">取消</el-button>
                         </el-form-item>
                     </div>
                </el-form>
@@ -91,28 +93,29 @@
                 <el-form :inline="true" label-width="auto" style="margin: 0 auto;width: 480px;">
                     <div>
                         <el-form-item label="价格">
-                            <el-select v-model="vmodel.simpleModel.priceExecType"
-                                       v-show="vmodel.simpleModel.priceFlag == true "
-                                       style="width: 100px">
+                            <el-select v-model="vmodel.simpleModel.planPriceExecType"
+                                       v-show="vmodel.simpleModel.planPriceFlag == true "
+                                       style="width: 100px;">
                                 <el-option label="绝对值" value="1"></el-option>
                                 <el-option label="增加" value="2"></el-option>
                                 <el-option label="百分比" value="3"></el-option>
                             </el-select>
+                          
+                            <el-input-number v-model="vmodel.simpleModel.planPrice"
+                                             v-show="vmodel.simpleModel.planPriceFlag == true "
+                                              :value-on-clear="0"
+                                             :controls="false" style="width:80px;margin-left:15px;" :precision="2" :min="0" :max="100000"></el-input-number>
 
-                            <el-input-number v-model="vmodel.simpleModel.price"
-                                             v-show="vmodel.simpleModel.priceFlag == true "
-                                             :controls="false" style="width:80px;margin-left:15px;" :precision="0" :min="0" :max="20"></el-input-number>
-
-                            <el-button v-show="vmodel.simpleModel.priceFlag == false " v-on:click="vmodel.simpleModel.priceFlag = true">编辑</el-button>
-                            <el-button v-show="vmodel.simpleModel.priceFlag == true " v-on:click="vmodel.simpleModel.priceFlag = false" type="danger">取消</el-button>
+                            <el-button v-show="vmodel.simpleModel.planPriceFlag == false " v-on:click="vmodel.simpleModel.planPriceFlag = true">编辑</el-button>
+                            <el-button v-show="vmodel.simpleModel.planPriceFlag == true " v-on:click="vmodel.simpleModel.planPriceFlag = false" type="danger">取消</el-button>
                         </el-form-item>
                     </div>
                     <div>
-                        <el-form-item label="状态">
-                            <el-checkbox v-show="vmodel.simpleModel.priceStateFlag == true "
-                                         v-model="vmodel.simpleModel.priceState"> </el-checkbox>
-                            <el-button v-show="vmodel.simpleModel.priceStateFlag == false " v-on:click="vmodel.simpleModel.priceStateFlag = true">编辑</el-button>
-                            <el-button v-show="vmodel.simpleModel.priceStateFlag == true " v-on:click="vmodel.simpleModel.priceStateFlag = false" type="danger">取消</el-button>
+                        <el-form-item label="状态" style="margin-bottom:5px !important ;">
+                            <el-checkbox v-show="vmodel.simpleModel.planPriceStateFlag == true "
+                                         v-model="vmodel.simpleModel.planPriceState"> </el-checkbox>
+                            <el-button v-show="vmodel.simpleModel.planPriceStateFlag == false " v-on:click="vmodel.simpleModel.planPriceStateFlag = true">编辑</el-button>
+                            <el-button v-show="vmodel.simpleModel.planPriceStateFlag == true " v-on:click="vmodel.simpleModel.planPriceStateFlag = false" type="danger">取消</el-button>
                         </el-form-item>
                     </div>
                 </el-form>
@@ -127,24 +130,26 @@
                 <div v-for="ele in vmodel.model.userRoomList" >
                     <el-card style="width:250px;display: inline-block"  v-show =" ele.BState == true  "   >
                         <template #header>
-                            <el-text > {{ele.roomTypeName}}==>{{ele.bedTypeName}}</el-text>
+                            <div style="white-space: nowrap;overflow: hidden;">
+                                <el-text> {{ele.roomTypeName}}==>{{ele.bedTypeName}}</el-text>
+                            </div>
                         </template>
 
                         <el-form :inline="true" label-width="auto" label-position="top">
                             <div>
                                 <el-form-item label="库存">
-                                    <el-select v-model="ele.numExecType" style="width: 100px">
+                                    <el-select v-model="ele.inventoryNumExecType" style="width: 100px">
                                         <el-option label="绝对值" value="1"></el-option>
                                         <el-option label="增加" value="2"></el-option>
-                                        <el-option label="无变化" value="0"></el-option>
+                                        <el-option label="无变化" value=""></el-option>
                                     </el-select>
 
-                                    <el-input-number v-model="ele.num" :controls="false" style="width:65px;margin-left:10px;" :precision="0" :min="0" :max="20"></el-input-number>
+                                    <el-input-number v-model="ele.inventoryNum" :controls="false" style="width:65px;margin-left:10px;" :precision="0" :min="0" :max="20"></el-input-number>
                                 </el-form-item>
                             </div>
                             <div>
                                 <el-form-item label="库存状态">
-                                    <el-select style="width: 100px" v-model="ele.numState">
+                                    <el-select style="width: 100px" v-model="ele.inventoryStateType">
                                         <el-option label="启用" value="1"></el-option>
                                         <el-option label="停用" value="2"></el-option>
                                         <el-option label="无变化" value="0"></el-option>
@@ -165,21 +170,21 @@
                         <el-form :inline="true" label-width="auto" label-position="top">
                             <div>
                                 <el-form-item label="价格">
-                                    <el-select style="width: 100px" v-model="item.priceExecType">
+                                    <el-select style="width: 100px" v-model="item.planPriceExecType">
                                         <el-option label="绝对值" value="1"></el-option>
                                         <el-option label="增加" value="2"></el-option>
-                                        <el-option label="无变化" value="0"></el-option>
+                                        <el-option label="无变化" value=""></el-option>
                                     </el-select>
 
-                                    <el-input-number :controls="false" v-model="item.price" style="width:65px;margin-left:10px;" :precision="0" :min="0" :max="20"></el-input-number>
+                                    <el-input-number :controls="false" v-model="item.planPrice" style="width:65px;margin-left:10px;" :precision="0" :min="0" :max="20"></el-input-number>
                                 </el-form-item>
                             </div>
                             <div>
                                 <el-form-item label="价格状态">
-                                    <el-select style="width: 100px" v-model="item.priceState">
+                                    <el-select style="width: 100px" v-model="item.planPriceStateType">
                                         <el-option label="启用" value="1"></el-option>
                                         <el-option label="停用" value="2"></el-option>
-                                        <el-option label="无变化" value="0"></el-option>
+                                        <el-option label="无变化" value=""></el-option>
                                     </el-select>
                                 </el-form-item>
                             </div>
@@ -210,56 +215,45 @@
                     activeName:'simple',
                     dateRange:[ '@DateTime.Now.ToString("yyyy-MM-dd")', '@DateTime.Now.AddMonths(1).AddDays(-1).ToString("yyyy-MM-dd")'],
                     simpleModel:{
-                         numFlag:false,
-                         numExecType:'1',
-                         num:0,
-                         numStateFlag:false,
-                         numState:false,
+                         inventoryNumFlag:false,
+                         inventoryNumExecType:'1',
+                         inventoryNum:0,
+                         inventoryStateFlag:false,
+                         inventoryState:false,
 
 
-                         priceFlag:false,
-                         priceExecType:'1',
-                         price:0,
-                         priceStateFlag:false,
-                         priceState:false,
-
+                         planPriceFlag:false,
+                         planPriceExecType:'1',
+                         planPrice:0,
+                         planPriceStateFlag:false,
+                         planPriceState:false,
                     }
                });
 
-               const userPlanIdList =Vue.computed(() =>{ 
-                    var result = [];
-                     vmodel.model.userRoomList.forEach(function(ele){
-                       ele.pricePlans.forEach(function(item){
-                           if(item.CState == true){
-                            result.push(item.id);
-                           }
-                       })
-                    });
-                  return result
-                }
-               )
-
-
-
+               /**
+                * 房间Ids
+                */
                const userRoomIdList =Vue.computed(() =>
                {
-                    var result = [];
-                     vmodel.model.userRoomList.forEach(function(ele){
-                      if(ele.BState == true){
-                            result.push(ele.id);
-                       }
-                    });
-                  return result
-                }
-               )
+                  return  vmodel.model.userRoomList.filter(vv=> vv.BState == true ).map(vv=>vv.id);
+               })
 
-               
+               /**
+                * 价格计划Ids
+                */
+               const userPlanIdList =Vue.computed(() =>{ 
+                    var result = [];
+                       vmodel.model.userRoomList.forEach(function(ele){
+                          result = result.concat(ele.pricePlans);
+                      });
+                    return result.filter(vv=> vv.CState == true ).map(vv=>vv.id);
+                })
+
 
                  const hotelModel =   @Html.Raw(System.Text.Json.JsonSerializer.Serialize(ViewBag.mv, new System.Text.Json.JsonSerializerOptions() { PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase }))
 
                  Vue.onMounted(() => {
                      console.log(vmodel.model.userRoomList);
-
                         
                  });
 
@@ -294,18 +288,19 @@
                   * 简易模式保存
                   */
                  const onSaveSimple=()=>{
+
                        let reqData =  JSON.parse(JSON.stringify(vmodel.simpleModel))
                        reqData.userRoomIdList =userRoomIdList.value;
                        reqData.userPlanIdList =  userPlanIdList.value;
                        reqData.startDate =vmodel.dateRange[0];
                        reqData.endDate=vmodel.dateRange[1];
-                 
-                         axios['post'](`/Hotel/BatchSaveInventoryAndPricesSimple`, reqData).then(res=>{
-                             top.window.vueElMessage({ message: res.data. message , type:  res.data.isSuccess?'success':'info' })
-                             if(res.data.isSuccess){
-                                parent.layer.close(frameIndex); // 关闭当前弹框
-                             }
-                         })
+
+                       axios['post'](`/Hotel/BatchSaveInventoryAndPricesSimple`, reqData).then(res=>{
+                           top.window.vueElMessage({ message: res.data. message , type:  res.data.isSuccess?'success':'info' })
+                           if(res.data.isSuccess){
+                              parent.layer.close(frameIndex); // 关闭当前弹框
+                           }
+                       })
                  }
 
                  /**
@@ -362,7 +357,7 @@
                     CStateChange,
                     onSaveSimple,
                     onSaveSenior,
-                    userPlanIdList,userRoomIdList
+                    userPlanIdList
                 }
         }
         });

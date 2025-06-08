@@ -18,46 +18,48 @@ namespace YueJia.Ebk.Application.Contracts.HotelApp.Dto
         public string Id { get; set; }
 
         /// <summary>
+        ///  ：无变化
         /// 1:绝对值
         /// 2：增加
-        /// 3：无变化
         /// </summary>
-        public string numExecType { get; set; }
+        public string inventoryNumExecType { get; set; }
+        
 
         /// <summary>
         /// 数量
         /// </summary>
-        public int num { get; set; }
+        public int inventoryNum { get; set; }
 
         /// <summary>
+        /// ：无变化
         /// 1：启用
         /// 2：停用
-        /// 3：无变化
         /// </summary>
 
-        public string numState { get; set; }
+        public string inventoryStateType { get; set; }
     }
 
     public class UserPlanList {
 
         public string Id { get; set; }
         /// <summary>
+        /// :无变化
         /// 1:绝对值
         /// 2：增加
         /// </summary>
-        public string priceExecType { get; set; }
+        public string planPriceExecType { get; set; }
 
         /// <summary>
         /// 价格
         /// </summary>
-        public decimal price { get; set; }
+        public decimal planPrice { get; set; }
 
         /// <summary>
+        /// ：无变化
         /// 1：启用
         /// 2：停用
-        /// 3：无变化
         /// </summary>
 
-        public string priceState { get; set; }
+        public string planPriceStateType { get; set; }
     }
 }
