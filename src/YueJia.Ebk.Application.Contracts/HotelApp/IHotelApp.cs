@@ -11,6 +11,22 @@ namespace YueJia.Ebk.Application.Contracts.HotelApp;
 /// </summary>
 public interface IHotelApp
 {
+
+
+    /// <summary>
+    /// 保存加载库存和价格
+    /// </summary>
+    /// <param name="cmd"></param>
+    /// <returns></returns>
+    Task<bool> SaveLoadingInventoryAndPricesAsync(SaveLoadingInventoryAndPricesCmd cmd);
+
+    /// <summary>
+    /// 按房间ID获取价格计划列表
+    /// </summary>
+    /// <param name="roomId"></param>
+    /// <returns></returns>
+    Task<List<RoomPricingPlanListDto>> PricePlanListDataByRoomIdAsync(long roomId);
+
     /// <summary>
     /// 保存库存和价格
     /// </summary>
@@ -119,7 +135,7 @@ public interface IHotelApp
     /// 获取库存集合
     /// </summary>
     /// <returns></returns>
-    Task<List<DailyInventoryModel>> GetInventoryList(long userRoomId,int dateYear,int dateMonth);
+    Task<List<DailyInventoryModel>> GetInventoryList(long userRoomId, int dateYear, int dateMonth);
 
 
 
@@ -154,6 +170,7 @@ public interface IHotelApp
     Task<bool> BatchSaveInventoryAndPricesSimple(BatchEditInventoryAndPricesModel qry);
 
     Task<bool> BatchSaveInventoryAndPricesSenior([FromBody] BatchEditInventoryAndPricesSeniorModel qry);
+
 
 
 }

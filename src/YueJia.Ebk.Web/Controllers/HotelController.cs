@@ -1,6 +1,4 @@
-﻿using DeviceDetectorNET.Class.Device;
-using IdentityModel.Client;
-using SqlSugar;
+﻿using SqlSugar;
 using YueJia.Ebk.Application.Contracts.Comm.BaseObj;
 using YueJia.Ebk.Application.Contracts.HotelApp;
 using YueJia.Ebk.Application.Contracts.HotelApp.Commands;
@@ -420,6 +418,33 @@ public class HotelController : AbpController
     /// </summary>
     /// <returns></returns>
     public async Task<IActionResult> LoadingInventoryAndPrices(string id) => View(await HotelApp.LoadingInventoryAndPricesViewAsync(id.ToLong()));
+
+
+
+    /// <summary>
+    /// 保存加载库存和价格
+    /// </summary>
+    /// <param name="cmd"></param>
+    /// <returns></returns>
+    [HttpPost, Route("[controller]/SaveLoadingInventoryAndPrices")]
+    public async Task<IResult> SaveLoadingInventoryAndPrices([FromBody] SaveLoadingInventoryAndPricesCmd cmd)
+    {
+        return ApiResult.HandleBoolResult(await HotelApp.SaveLoadingInventoryAndPricesAsync(cmd));
+    }
+
+    /// <summary>
+    /// 按房间ID获取价格计划列表
+    /// </summary>
+    /// <param name="roomId"></param>
+    /// <returns></returns>
+    [HttpGet, Route("[controller]/{roomId}/RoomPricePlanList")]
+    public async Task<IResult> PricePlanListDataByRoomId([FromRoute] string roomId)
+    {
+        var result = await HotelApp.PricePlanListDataByRoomIdAsync(roomId.ToLong());
+        return ApiResult.HandleResult(result);
+    }
+
+
 
 
     #region 库存日历
