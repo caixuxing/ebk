@@ -74,9 +74,10 @@
                 </template>
             </el-table-column>
 
-            <el-table-column label="操作" prop="opt" width="140px" align="center">
+            <el-table-column label="操作" prop="opt" width="220px" align="center">
                 <template #default="scope">
                     <div style="text-align:center">
+                        <el-button size="small" v-on:click="onSwitchUserHotelState(scope.row)">切换状态</el-button>
                         <el-button size="small" v-on:click="onViewHotel(scope.row)">查看</el-button>
                         <el-button size="small" type="danger" v-on:click="onDelete(scope.row)">删除 </el-button>
                     </div>
@@ -170,6 +171,21 @@
                          }
                      });
                }
+                
+               /**
+                * 切换状态
+                */
+               const onSwitchUserHotelState=(row)=>{
+              
+                ElMessageBox.confirm('您确定切换酒店状态吗?', { confirmButtonText: '确定', cancelButtonText: '取消', type: 'warning', }).then(() => {
+                         axios.post(`/Hotel/UpdateHotelState/${row.id}`).then(res  => {
+                              top.window.vueElMessage({ message: res.data. message , type:  res.data.isSuccess?'success':'info' })
+                                      if(res.data.isSuccess){
+                                         loadData();
+                                      }
+                        })
+                 })
+               }
 
                const onViewHotel=(row)=>{
                     window.location.href =`/Hotel/ViewHotel/${row.id}`
@@ -184,6 +200,7 @@
                         ,resetQueryForm
                         ,userAddHotel
                         ,onViewHotel
+                        ,onSwitchUserHotelState
                     }
             }});
             app.use(ElementPlus,{ locale: ElementPlusLocaleZhCn });

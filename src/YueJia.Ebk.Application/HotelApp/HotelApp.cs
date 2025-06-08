@@ -184,6 +184,9 @@ public class HotelApp : ApplicationService, IHotelApp
     }
 
 
+    
+
+
 
     public async Task<bool> DeletePricePlanAsync(long id)
     {
@@ -949,6 +952,24 @@ public class HotelApp : ApplicationService, IHotelApp
             await db.Fastest<DailyPriceDo>().PageSize(1000).BulkUpdateAsync(updateDailyPriceDos);
             return true;
         });
+    }
+
+    public async Task<bool> UpdateHotelState(string userHotelId)
+    {
+        //房间
+        var entity = HotelPublishRepo.GetById(userHotelId.ToLong());
+        if (entity == null)
+        {
+            throw new InvalidOperationException("数据不存在！");
+        }
+        if (entity.Status == HotelSaleTypeEnum.Down) {
+            entity.SetStatus( HotelSaleTypeEnum.Up);
+        } else if (entity.Status == HotelSaleTypeEnum.Up)
+        {
+            entity.SetStatus(HotelSaleTypeEnum.Down);
+        }
+
+        return await db.Updateable<HotelPublishDo>(entity).ExecuteCommandWithOptLockAsync(true) > 0;
     }
 
 

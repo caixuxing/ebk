@@ -19,7 +19,7 @@ public class CompanyChannelMapApp : ApplicationService, ICompanyChannelMapApp
 
     private ICurrentUserApp CurrentUserApp => LazyServiceProvider.LazyGetRequiredService<ICurrentUserApp>();
 
-
+     
     public async Task<bool> AssignChannelAsync(AssignChannelCmd cmd, long companyId)
     {
 

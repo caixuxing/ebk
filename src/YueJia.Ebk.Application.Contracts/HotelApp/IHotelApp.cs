@@ -171,6 +171,12 @@ public interface IHotelApp
 
     Task<bool> BatchSaveInventoryAndPricesSenior([FromBody] BatchEditInventoryAndPricesSeniorModel qry);
 
-
+    
+    /// <summary>
+    /// 切换酒店状态
+    /// </summary>
+    /// <param name="id"></param>
+    /// <returns></returns>
+    Task<bool> UpdateHotelState(string userHotelId);
 
 }

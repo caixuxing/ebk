@@ -19,9 +19,9 @@ public enum HotelSaleTypeEnum
     [Description("下架")]
     Down = 2,
 
-    /// <summary>
-    /// 暂停
-    /// </summary>
-    [Description("暂停")]
-    Stop = 3
+    ///// <summary>
+    ///// 暂停
+    ///// </summary>
+    //[Description("暂停")]
+    //Stop = 3
 }

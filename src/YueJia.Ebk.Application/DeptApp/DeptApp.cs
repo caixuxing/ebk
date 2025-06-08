@@ -1,4 +1,5 @@
-﻿using YueJia.Ebk.Application.Contracts.CompanyApp.Dto;
+﻿using YueJia.Ebk.Application.Contracts.CompanyApp.Commands;
+using YueJia.Ebk.Application.Contracts.CompanyApp.Dto;
 using YueJia.Ebk.Application.Contracts.DeptApp;
 using YueJia.Ebk.Application.Contracts.DeptApp.Commands;
 using YueJia.Ebk.Application.Contracts.DeptApp.Dto;
@@ -172,4 +173,42 @@ public class DeptApp : ApplicationService, IDeptApp
         }
         return treeNodes.Where(n => departments.FirstOrDefault(d => d.Id.ToString() == n.Value)?.ParentId == -1).ToList();
     }
+
+    public async Task<DepartmentChannelMapModel> GetAssignChannelDetailsAsync(long deptId)
+    {
+        var deptEntity = await DepartmentRepo.GetByIdAsync(deptId);
+
+        return new DepartmentChannelMapModel
+        {
+            DeptId = deptEntity.Id,
+            DeptName = deptEntity.Name,
+            SalePlatCodeList = db.Queryable<DepartmentChannelMapDo>()
+                                 .Where(vv => vv.DeptId == deptId)
+                                 .Select(vv => vv.SalePlatCode.ToString())
+                                 .ToList()
+        };
+    }
+
+
+    public async Task<bool> AssignChannelAsync(List<string> salePlatCodeList , long deptId )
+    {
+        
+        var newEntityList = salePlatCodeList.Select(e => DepartmentChannelMapDo.Create(
+            deptId,
+            e,
+            Convert.ToInt64(CurrentUserApp.TenantId))
+            ).ToList();
+
+        return await DbTransaction.ExecuteInTransactionAsync(db, async () =>
+        {
+            //删除
+            await db.Deleteable<DepartmentChannelMapDo>().Where(vv => vv.Id == deptId).ExecuteCommandAsync();
+            //新增
+            await db.Insertable<DepartmentChannelMapDo>(newEntityList).ExecuteReturnSnowflakeIdListAsync();
+
+            return true;
+        });
+    }
+
+
 }

@@ -199,6 +199,14 @@ public class HotelController : AbpController
     [HttpPost, Route("[controller]/UpdateRoomState/{id}")]
     public async Task<IResult> UpdateRoomState(string id) => ApiResult.HandleBoolResult(await HotelApp.UpdateRoomStateAsync(id.ToLong()));
 
+    /// <summary>
+    /// 切换酒店状态
+    /// </summary>
+    /// <param name="id"></param>
+    /// <returns></returns>
+    [HttpPost, Route("[controller]/UpdateHotelState/{id}")]
+    public async Task<IResult> UpdateHotelState(string id) => ApiResult.HandleBoolResult(await HotelApp.UpdateHotelState(id));
+
 
     #region 房间与价格计划
     /// <summary>

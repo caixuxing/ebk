@@ -1,24 +1,24 @@
-﻿@model  YueJia.Ebk.Web.ViewModels.Company.AssignChannelVo
+﻿@model YueJia.Ebk.Application.Contracts.DeptApp.Dto.DepartmentChannelMapModel
 
 <el-container style="height:100vh;overflow: hidden;">
     <el-main>
-        <el-form  label-width="auto"  >
-            <el-form-item label="公司名称"  style="margin-bottom:5px;" >
-                <el-text>@Model.CompanyName</el-text>
+        <el-form label-width="auto">
+            <el-form-item label="公司名称" style="margin-bottom:5px;">
+                <el-text>@Model.DeptName</el-text>
             </el-form-item>
 
             <el-form-item label="渠道">
                 <el-checkbox-group v-model="vmodel.salePlatCodeList">
                     @foreach (var ele in Program.SalePlat)
-                        {
+                    {
                         <el-checkbox label="@ele.Key" border style="margin:5px">@ele.Value</el-checkbox>
-                        }
+                    }
                 </el-checkbox-group>
             </el-form-item>
         </el-form>
     </el-main>
 
-    <el-footer style="text-align:center" >
+    <el-footer style="text-align:center">
         <el-button type="primary" v-on:click="onSave">保存 </el-button>
     </el-footer>
 
@@ -33,7 +33,7 @@
             setup() {
 
                const vmodel =  Vue.reactive({
-                   salePlatCodeList:  @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.SelectedChannelList, new System.Text.Json.JsonSerializerOptions() { PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase }))
+                   salePlatCodeList:  @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.SalePlatCodeList, new System.Text.Json.JsonSerializerOptions() { PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase }))
                });
 
                 /*
@@ -42,14 +42,13 @@
                 const onSave =  () => {
 
                       let reqData = { ...vmodel };
-                  
-                      axios['post'](`/Company/${'@Model.CompanyId'}/AssignChannel`, reqData).then(res=>{
+
+                      axios['post'](`/Dept/${'@Model.DeptId'}/HandleAssignChannel`, reqData).then(res=>{
                           top.window.vueElMessage({ message: res.data. message , type:  res.data.isSuccess?'success':'info' })
                           if(res.data.isSuccess){
                              parent.layer.close(frameIndex); // 关闭当前弹框
                           }
                       })
- 
                  }
 
                  return {

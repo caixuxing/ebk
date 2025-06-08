@@ -62,5 +62,21 @@ namespace YueJia.Ebk.Application.Contracts.DeptApp
         /// <returns></returns>
         Task<List<TreeSelectDataDto<string>>> GetDeptTreeSelectData();
 
+
+        /// <summary>
+        /// 部门与渠道信息
+        /// </summary>
+        /// <param name="deptId"></param>
+        /// <returns></returns>
+        Task<DepartmentChannelMapModel> GetAssignChannelDetailsAsync(long deptId);
+
+        /// <summary>
+        /// 保存
+        /// </summary>
+        /// <param name="salePlatCodeList"></param>
+        /// <param name="deptId"></param>
+        /// <returns></returns>
+         Task<bool> AssignChannelAsync(List<string> salePlatCodeList, long deptId);
+
     }
 }
