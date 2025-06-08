@@ -29,7 +29,6 @@
                         <el-option v-for="ele in otaRoomList" :label="roomDescribe(ele)" :value="''+ele.roomcode"   ></el-option>
                     </el-select>
                 </el-form-item>
-                @* ele.roomnameen *@
             </div>
             <div>
                 <el-form-item label="床型" >
@@ -53,14 +52,14 @@
                 <el-form-item label="成人上限" label-width="auto">
 
                     <el-select v-model="model.adultLimit" placeholder="成人上限" filterable style="width:250px"  >
-                        <el-option v-for="ele in (model.maximumNumberOfPeople -model.childLimit ) " :label="ele" :value="ele"></el-option>
+                        <el-option v-for="ele in model.maximumNumberOfPeople " :label="ele" :value="ele"></el-option>
                     </el-select>
                 </el-form-item>
 
                 <el-form-item label="儿童上限" label-width="auto">
                     <el-select v-model="model.childLimit" placeholder="儿童上限" filterable style="width:250px">
                         <el-option :label="0" :value="0"></el-option>
-                        <el-option v-for="ele in  (model.maximumNumberOfPeople -model.adultLimit )" :label="ele" :value="ele"></el-option>
+                        <el-option v-for="ele in  model.maximumNumberOfPeople" :label="ele" :value="ele"></el-option>
                     </el-select>
                 </el-form-item> 
             </div>
@@ -73,8 +72,9 @@
                 <el-form-item label="日期范围"   >
                     <el-date-picker is-range type="daterange" class="full-width-input"
                                     v-model="model.dateRange"
-                                    format="YYYY-MM-DD" value-format="YYYY-MM-DD" start-placeholder="开始日期" end-placeholder="结束日期"
-                                    clearable></el-date-picker>
+                                    :min-date='@DateTime.Now.ToString("yyyy-MM-dd")'
+                                    format="YYYY-MM-DD" value-format="YYYY-MM-DD"  
+                                    :clearable="false" ></el-date-picker>
         
                 </el-form-item>
             </div>
@@ -83,25 +83,25 @@
 
                     <el-descriptions  direction="vertical" :column="7" border>
                         <el-descriptions-item label="星期天" label-class-name="my-label">
-                            <el-input-number v-model="model.sunday" :controls="false" style="width:80px" :precision="0" :min="0" :max="20"></el-input-number>
+                            <el-input-number v-model="model.sunday" :controls="false" :value-on-clear="0" style="width:80px" :precision="0" :min="0" :max="100"></el-input-number>
                         </el-descriptions-item>
                         <el-descriptions-item label="星期一" label-class-name="my-label">
-                            <el-input-number v-model="model.monday" :controls="false" style="width:80px" :precision="0" :min="0" :max="20"></el-input-number>
+                            <el-input-number v-model="model.monday" :controls="false" :value-on-clear="0" style="width:80px" :precision="0" :min="0" :max="100"></el-input-number>
                         </el-descriptions-item>
                         <el-descriptions-item label="星期二" label-class-name="my-label">
-                            <el-input-number v-model="model.tuesday" :controls="false" style="width:80px" :precision="0" :min="0" :max="20"></el-input-number>
+                            <el-input-number v-model="model.tuesday" :controls="false" :value-on-clear="0" style="width:80px" :precision="0" :min="0" :max="100"></el-input-number>
                         </el-descriptions-item>
                         <el-descriptions-item label="星期三" label-class-name="my-label">
-                            <el-input-number v-model="model.wednesday" :controls="false" style="width:80px" :precision="0" :min="0" :max="20"></el-input-number>
+                            <el-input-number v-model="model.wednesday" :controls="false" :value-on-clear="0" style="width:80px" :precision="0" :min="0" :max="100"></el-input-number>
                         </el-descriptions-item>
                         <el-descriptions-item label="星期四" label-class-name="my-label">
-                            <el-input-number v-model="model.thursday" :controls="false" style="width:80px" :precision="0" :min="0" :max="20"></el-input-number>
+                            <el-input-number v-model="model.thursday" :controls="false" :value-on-clear="0" style="width:80px" :precision="0" :min="0" :max="100"></el-input-number>
                         </el-descriptions-item>
                         <el-descriptions-item label="星期五" label-class-name="my-label">
-                            <el-input-number v-model="model.friday" :controls="false" style="width:80px" :precision="0" :min="0" :max="20"></el-input-number>
+                            <el-input-number v-model="model.friday" :controls="false" :value-on-clear="0" style="width:80px" :precision="0" :min="0" :max="100"></el-input-number>
                         </el-descriptions-item>
                         <el-descriptions-item label="星期六" label-class-name="my-label">
-                            <el-input-number v-model="model.saturday" :controls="false" style="width:80px" :precision="0" :min="0" :max="20"></el-input-number>
+                            <el-input-number v-model="model.saturday" :controls="false" :value-on-clear="0" style="width:80px" :precision="0" :min="0" :max="100"></el-input-number>
                         </el-descriptions-item>
             
                     </el-descriptions>
@@ -152,6 +152,7 @@
                        model.hotelRoomTitle =  `${roomObj.roomname} ${roomObj.roomnameen}`;
                  }
 
+
                  /**
                   * 保存
                   */
@@ -180,7 +181,8 @@
                 }
         }
         });
-        app.use(ElementPlus);
+
+         app.use(ElementPlus,{ locale: ElementPlusLocaleZhCn });
         app.mount('#app');
     </script>
 }

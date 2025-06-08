@@ -34,8 +34,6 @@ public class HotelApp : ApplicationService, IHotelApp
     public async Task<bool> AddHotelRoomAsync(CreateHotelRoomCmd cmd)
     {
         await LazyServiceProvider.LazyGetRequiredService<FluentValidation.IValidator<CreateHotelRoomCmd>>().ValidateAndThrowAsync(cmd);
-
-
         var entity = HotelRoomDo.Create(cmd.HotelId.ToLong(),
                                         cmd.HotelCode,
                                         cmd.RoomType,
@@ -49,7 +47,7 @@ public class HotelApp : ApplicationService, IHotelApp
 
         if (db.Queryable<HotelRoomDo>().Any(vv => vv.HotelId == SqlFunc.ToInt64(cmd.HotelId) && vv.RoomType == cmd.RoomType))
         {
-            throw new InvalidOperationException("房间已存在");
+            throw new InvalidOperationException("数据存在，请勿重复创建");
         }
 
         List<DailyInventoryDo> dailyInventoryDoList = new List<DailyInventoryDo>();

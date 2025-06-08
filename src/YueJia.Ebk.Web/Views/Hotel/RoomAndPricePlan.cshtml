@@ -1,7 +1,4 @@
 ﻿@model YueJia.Ebk.Web.ViewModels.Hotel.RoomAndPricePlanVo
-@{
-    Layout = "~/Views/Shared/_Layout.cshtml";
-}
 @section head {
     <style type="text/css">
         .hide-body .el-card__body {
@@ -126,8 +123,6 @@
            Vue.onMounted(() => {
               loadData();
            });
-
-
 
         /**
          * 新增房间

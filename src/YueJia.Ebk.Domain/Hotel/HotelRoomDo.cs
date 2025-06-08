@@ -13,7 +13,7 @@ public partial record HotelRoomDo : EntityTenant
     /// <summary>
     /// 酒店房间标题
     /// </summary>
-    [SugarColumn(ColumnDescription = "酒店房间标题", IsNullable = true, Length = 60)]
+    [SugarColumn(ColumnDescription = "酒店房间标题", IsNullable = true, Length = 300)]
     public string? HotelRoomTitle { get; set; }
 
     /// <summary>
