@@ -182,7 +182,7 @@ public class HotelApp : ApplicationService, IHotelApp
     }
 
 
-    
+
 
 
 
@@ -719,22 +719,24 @@ public class HotelApp : ApplicationService, IHotelApp
     public async Task<bool> SaveInventoryAndPriceAsync(SaveInventoryAndPriceCmd cmd)
     {
 
+        await LazyServiceProvider.LazyGetRequiredService<FluentValidation.IValidator<SaveInventoryAndPriceCmd>>().ValidateAndThrowAsync(cmd);
+
         var inventoryIds = cmd.Inventorys.Select(t => long.Parse(t.InventoryId)).ToList();
         var oldInventory = await DailyInventoryRepo.GetListAsync(x => inventoryIds.Contains(x.Id));
         oldInventory.ForEach(item =>
         {
             var model = cmd.Inventorys.Single(t => t.InventoryId == item.Id.ToString());
             item.SetInventoryNum(model.InventoryNum);
-            item.SetIsEnable(model.Status);
+            item.SetIsEnable(model.Status = (model.InventoryNum <= 0 ? YesOrNoType.No : model.Status));
         });
         var priceIds = cmd.Prices.Select(t => long.Parse(t.PriceId)).ToList();
         var oldPrice = await DailyPriceRepo.GetListAsync(x => priceIds.Contains(x.Id));
         oldPrice.ForEach(item =>
-        {
-            var model = cmd.Prices.Single(t => t.PriceId == item.Id.ToString());
-            item.SetPrice(model.Price);
-            item.SetIsEnable(model.Status);
-        });
+            {
+                var model = cmd.Prices.Single(t => t.PriceId == item.Id.ToString());
+                item.SetPrice(model.Price);
+                item.SetIsEnable(model.Status = (model.Price <= 0 ? YesOrNoType.No : model.Status));
+            });
         return await DbTransaction.ExecuteInTransactionAsync(db, async () =>
         {
             await db.Updateable(oldInventory).ExecuteCommandAsync();
@@ -890,6 +892,10 @@ public class HotelApp : ApplicationService, IHotelApp
     /// <returns></returns>
     public async Task<bool> SaveLoadingInventoryAndPricesAsync(SaveLoadingInventoryAndPricesCmd cmd)
     {
+
+
+        await LazyServiceProvider.LazyGetRequiredService<FluentValidation.IValidator<SaveLoadingInventoryAndPricesCmd>>().ValidateAndThrowAsync(cmd);
+
         DateTime startDate = DateTime.Now.Date;
 
         var roomIds = cmd.Rooms.Select(t => long.Parse(t.RoomId)).ToList();
@@ -916,7 +922,7 @@ public class HotelApp : ApplicationService, IHotelApp
             {
                 //创建库存数据
                 DayOfWeek dayOfWeek = date.DayOfWeek;
-                int inventoryNum = cmd.Rooms.Single(t => t.RoomId == item.RoomId).Inventory.GetValueOrDefault(dayOfWeek);
+                int inventoryNum = cmd.Rooms.Single(t => t.RoomId == item.RoomId).Inventory.GetValueOrDefault(dayOfWeek) ?? 0;
                 var oldInventoryModel = oldInventory.SingleOrDefault(x => x.CurrentDate == date && x.RoomId == roomId);
                 if (oldInventoryModel is null) insertDailyInventoryDos.Add(DailyInventoryDo.Create(item.RoomId.ToLong(), date, inventoryNum, inventoryNum > 0 ? YesOrNoType.Yes : YesOrNoType.No).CreateByInfo(CurrentUserApp.TenantId.ToLong(), CurrentUserApp.Id, CurrentUserApp.UserName));
                 else
@@ -931,7 +937,7 @@ public class HotelApp : ApplicationService, IHotelApp
                 var pricePlan = cmd.Rooms.Single(t => t.RoomId == item.RoomId).Prices;
                 pricePlan.ForEach(p =>
                 {
-                    decimal price = p.DailyPrices.GetValueOrDefault(dayOfWeek);
+                    decimal price = p.DailyPrices.GetValueOrDefault(dayOfWeek) ?? 0;
                     var oldPriceModel = oldPrice.SingleOrDefault(x => x.CurrentDate == date && x.RoomId == roomId && x.PricePlanId == p.PricePlanId.ToLong());
                     if (oldPriceModel is null) insertDailyPriceDos.Add(DailyPriceDo.Create(item.RoomId.ToLong(), p.PricePlanId.ToLong(), date, price, price > 0 ? YesOrNoType.Yes : YesOrNoType.No).CreateByInfo(CurrentUserApp.TenantId.ToLong(), CurrentUserApp.Id, CurrentUserApp.UserName));
                     else
@@ -949,8 +955,8 @@ public class HotelApp : ApplicationService, IHotelApp
         {
             //var insertInventory = dailyInventoryDos.Where(x => x.Id == 0).ToList();
             //var updateInventory = dailyInventoryDos.Where(x => x.Id > 0).ToList();
-            var ttx = await db.Fastest<DailyInventoryDo>().PageSize(1000).BulkCopyAsync(insertDailyInventoryDos);
-            await db.Fastest<DailyInventoryDo>().PageSize(1000).BulkUpdateAsync(updateDailyInventoryDos);
+            var ttx = await db.Fastest<DailyInventoryDo>().PageSize(1000).BulkMergeAsync(insertDailyInventoryDos);
+            await db.Fastest<DailyInventoryDo>().PageSize(1000).BulkMergeAsync(updateDailyInventoryDos);
 
             //var insertPrice = dailyPriceDos.Where(x => x.Id == 0).ToList();
             //var updatePrice = dailyPriceDos.Where(x => x.Id > 0).ToList();
@@ -968,9 +974,11 @@ public class HotelApp : ApplicationService, IHotelApp
         {
             throw new InvalidOperationException("数据不存在！");
         }
-        if (entity.Status == HotelSaleTypeEnum.Down) {
-            entity.SetStatus( HotelSaleTypeEnum.Up);
-        } else if (entity.Status == HotelSaleTypeEnum.Up)
+        if (entity.Status == HotelSaleTypeEnum.Down)
+        {
+            entity.SetStatus(HotelSaleTypeEnum.Up);
+        }
+        else if (entity.Status == HotelSaleTypeEnum.Up)
         {
             entity.SetStatus(HotelSaleTypeEnum.Down);
         }

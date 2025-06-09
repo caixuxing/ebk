@@ -160,12 +160,11 @@
             const state = Vue.reactive({
                roomDropdown:@(Html.Raw(JsonConvert.SerializeObject(Model.RoomTypes, new JsonSerializerSettings { ContractResolver = new CamelCasePropertyNamesContractResolver() }))),
                formData: {
-                        hotelId:``,
+                        hotelId:`@Html.Raw(Model.HotelId)`,
                         hotelName: '@Html.Raw(Model.HotelName)',
                         endDate: '@Html.Raw(DateTime.Now.AddDays(1).ToString("yyyy-MM-dd"))',
                         roomId: `@Html.Raw(Model.RoomTypeDefaultValue)`,  //切换房间
                         roomPricePlan: @(Html.Raw(JsonConvert.SerializeObject(Model.CruuentRoomPricePlan, new JsonSerializerSettings { ContractResolver = new CamelCasePropertyNamesContractResolver() }))),
-
                         rooms:[]
 
                 },
