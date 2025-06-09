@@ -950,18 +950,29 @@ public class HotelApp : ApplicationService, IHotelApp
                 });
             }
         }
+        var hotelRooms = await HotelRoomRepo.AsQueryable().Where(t => roomIds.Contains(t.Id)).ToListAsync();
+        hotelRooms.ForEach(item =>
+        {
+            if (item.EndDate.Date < cmd.EndDate.Date) item.SetEndDate(cmd.EndDate);
+
+        });
+
 
         return await DbTransaction.ExecuteInTransactionAsync(db, async () =>
         {
             //var insertInventory = dailyInventoryDos.Where(x => x.Id == 0).ToList();
             //var updateInventory = dailyInventoryDos.Where(x => x.Id > 0).ToList();
-            var ttx = await db.Fastest<DailyInventoryDo>().PageSize(1000).BulkMergeAsync(insertDailyInventoryDos);
-            await db.Fastest<DailyInventoryDo>().PageSize(1000).BulkMergeAsync(updateDailyInventoryDos);
+            var ttx = await db.Fastest<DailyInventoryDo>().PageSize(1000).BulkCopyAsync(insertDailyInventoryDos);
+            await db.Fastest<DailyInventoryDo>().PageSize(1000).BulkUpdateAsync(updateDailyInventoryDos);
 
             //var insertPrice = dailyPriceDos.Where(x => x.Id == 0).ToList();
             //var updatePrice = dailyPriceDos.Where(x => x.Id > 0).ToList();
             await db.Fastest<DailyPriceDo>().PageSize(1000).BulkCopyAsync(insertDailyPriceDos);
             await db.Fastest<DailyPriceDo>().PageSize(1000).BulkUpdateAsync(updateDailyPriceDos);
+
+
+            await db.Updateable(hotelRooms).ExecuteCommandAsync();
+
             return true;
         });
     }
