@@ -26,7 +26,7 @@
             <el-form-item label="酒店：">
                 <el-text class="mx-1">{{state.formData.hotelName}}</el-text>
             </el-form-item>
-            <el-form-item label="房型名称：" required >
+            <el-form-item label="房型名称：" prop="selectedLoadRoomValues" required   >
                               
 
                  <el-select v-model="selectedLoadRoomValues"  multiple clearable   placeholder="请选择房型" popper-class="custom-header" >
@@ -40,7 +40,7 @@
 
             </el-form-item>
 
-            <el-form-item label="截至日期：">
+            <el-form-item label="截至日期：" prop="endDate" required>
                     <el-date-picker v-model="state.formData.endDate" type="date" placeholder="截至日期"   value-format="YYYY-MM-DD"
   format="YYYY-MM-DD"> </el-date-picker>
             </el-form-item>
@@ -75,14 +75,14 @@
                             </thead>
                             <tbody>
                                 <tr class="el-table__row">
-                                    <td class="el-table__cell" colspan="1" rowspan="1"><div class="cell" style="text-align:center"><el-input-number v-model="currentRoom.inventoryBatchSet" :controls="false" style="width:80px" :min="0" :max="100000"  v-on:input="handleInputChange"></el-input-number></div></td>
-                                    <td class="el-table__cell" colspan="1" rowspan="1"><div class="cell" style="text-align:center"><el-input-number v-model="currentRoom.inventory.Sunday" :controls="false" style="width:80px" :min="0" :max="100000"  ></el-input-number></div></td>
-                                    <td class="el-table__cell" colspan="1" rowspan="1"><div class="cell" style="text-align:center"> <el-input-number v-model="currentRoom.inventory.Monday" :controls="false" style="width:80px" :min="0" :max="100000"></el-input-number></div></td>
-                                    <td class="el-table__cell" colspan="1" rowspan="1"><div class="cell" style="text-align:center"> <el-input-number v-model="currentRoom.inventory.Tuesday" :controls="false" style="width:80px" :min="0" :max="100000"></el-input-number></div></td>
-                                    <td class="el-table__cell" colspan="1" rowspan="1"><div class="cell" style="text-align:center"> <el-input-number v-model="currentRoom.inventory.Wednesday" :controls="false" style="width:80px" :min="0" :max="100000"></el-input-number></div></td>
-                                    <td class="el-table__cell" colspan="1" rowspan="1"><div class="cell" style="text-align:center"> <el-input-number v-model="currentRoom.inventory.Thursday" :controls="false" style="width:80px" :min="0" :max="100000"></el-input-number></div></td>
-                                    <td class="el-table__cell" colspan="1" rowspan="1"><div class="cell" style="text-align:center"> <el-input-number v-model="currentRoom.inventory.Friday" :controls="false" style="width:80px" :min="0" :max="100000"></el-input-number></div></td>
-                                    <td class="el-table__cell" colspan="1" rowspan="1"><div class="cell" style="text-align:center"> <el-input-number v-model="currentRoom.inventory.Saturday" :controls="false" style="width:80px" :min="0" :max="100000"></el-input-number></div></td>
+                                    <td class="el-table__cell" colspan="1" rowspan="1"><div class="cell" style="text-align:center"><el-input-number v-model="currentRoom.inventoryBatchSet" :controls="false" style="width:80px" :min="0" :max="100"  v-on:input="handleInputChange"></el-input-number></div></td>
+                                    <td class="el-table__cell" colspan="1" rowspan="1"><div class="cell" style="text-align:center"><el-input-number v-model="currentRoom.inventory.Sunday" :controls="false" style="width:80px" :min="0" :max="100"  ></el-input-number></div></td>
+                                    <td class="el-table__cell" colspan="1" rowspan="1"><div class="cell" style="text-align:center"> <el-input-number v-model="currentRoom.inventory.Monday" :controls="false" style="width:80px" :min="0" :max="100"></el-input-number></div></td>
+                                    <td class="el-table__cell" colspan="1" rowspan="1"><div class="cell" style="text-align:center"> <el-input-number v-model="currentRoom.inventory.Tuesday" :controls="false" style="width:80px" :min="0" :max="100"></el-input-number></div></td>
+                                    <td class="el-table__cell" colspan="1" rowspan="1"><div class="cell" style="text-align:center"> <el-input-number v-model="currentRoom.inventory.Wednesday" :controls="false" style="width:80px" :min="0" :max="100"></el-input-number></div></td>
+                                    <td class="el-table__cell" colspan="1" rowspan="1"><div class="cell" style="text-align:center"> <el-input-number v-model="currentRoom.inventory.Thursday" :controls="false" style="width:80px" :min="0" :max="100"></el-input-number></div></td>
+                                    <td class="el-table__cell" colspan="1" rowspan="1"><div class="cell" style="text-align:center"> <el-input-number v-model="currentRoom.inventory.Friday" :controls="false" style="width:80px" :min="0" :max="100"></el-input-number></div></td>
+                                    <td class="el-table__cell" colspan="1" rowspan="1"><div class="cell" style="text-align:center"> <el-input-number v-model="currentRoom.inventory.Saturday" :controls="false" style="width:80px" :min="0" :max="100"></el-input-number></div></td>
                                 </tr>
                             </tbody>
                         </table>
@@ -230,6 +230,10 @@
              //监听加载房间类型变化
             Vue.watch(() => selectedLoadRoomValues.value,(newVal, oldVal) => {
                  state.formData.rooms = state.formData.rooms.filter(obj =>newVal.includes(obj.roomId));
+                 if(newVal.length<=0)
+                 {
+                     state.formData.roomId = "";
+                 }
             }, { deep: true })
 
 
@@ -266,7 +270,7 @@
 
             // 初始化默认数据
             const initDefalutData = () => {
-            
+            if(state.formData.roomId=="")return;
             state.formData.roomPricePlan = state.hotelRoomPricePlanAll.filter(item => item.roomId == state.formData.roomId);
                 // 映射为新集合
                const prices = state.formData.roomPricePlan.map(item => ({ 

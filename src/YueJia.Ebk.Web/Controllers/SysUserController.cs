@@ -1,14 +1,9 @@
-﻿using YueJia.Ebk.Application.CompanyApp;
-using YueJia.Ebk.Application.Contracts.CompanyApp.Commands;
-using YueJia.Ebk.Application.Contracts.CompanyApp.Dto;
-using YueJia.Ebk.Application.Contracts.DeptApp;
+﻿using YueJia.Ebk.Application.Contracts.DeptApp;
 using YueJia.Ebk.Application.Contracts.SysApp;
 using YueJia.Ebk.Application.Contracts.SysUserApp;
 using YueJia.Ebk.Application.Contracts.SysUserApp.Commands;
 using YueJia.Ebk.Application.Contracts.SysUserApp.Dto;
 using YueJia.Ebk.Application.Contracts.SysUserApp.Query;
-using YueJia.Ebk.Application.SysApp;
-using YueJia.Ebk.Application.SysUserApp;
 
 namespace YueJia.Ebk.Web.Controllers
 {
@@ -38,7 +33,7 @@ namespace YueJia.Ebk.Web.Controllers
         /// <returns></returns>
         public async Task<IActionResult> AddEditMgr(long id)
         {
-            ViewBag.DeptData = (await DeptApp.GetPageListDeptAsync(new Application.Contracts.DeptApp.Query.DeptPageListQry() { PageIndex = 1, PageSize = int.MaxValue }) ).List.ToList() ;
+            ViewBag.DeptData = (await DeptApp.GetPageListDeptAsync(new Application.Contracts.DeptApp.Query.DeptPageListQry() { PageIndex = 1, PageSize = int.MaxValue })).List.ToList();
 
             var model = new SysUserDetailsDto() { IsEnabled = YesOrNoType.Yes };
             if (id > 0)
@@ -67,7 +62,8 @@ namespace YueJia.Ebk.Web.Controllers
         /// 密码修改
         /// </summary>
         /// <returns></returns>
-        public async Task<IActionResult> UpdatePasswordMgr() {
+        public async Task<IActionResult> UpdatePasswordMgr()
+        {
             return View();
         }
 
@@ -118,7 +114,7 @@ namespace YueJia.Ebk.Web.Controllers
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
-        [HttpPut, Route("[controller]/resetPassword")]
+        [HttpPut, Route("[controller]/{id}/resetPassword")]
         public async Task<IResult> ResetPassword([FromRoute] string id)
         {
             var result = await SysUserApp.ResetPasswordAsync(id.ToLong());

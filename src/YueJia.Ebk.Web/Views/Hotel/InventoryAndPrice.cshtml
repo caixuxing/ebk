@@ -84,7 +84,7 @@
                                         <td class="el-table__cell" width="20px"><div class="cell">库存</div> </td>
                                         <td class="el-table__cell" colspan="1" rowspan="1" v-for="item in state.formData.room.dailyInventory">
                                             <div class="cell" style="text-align:center">
-                                              <el-input-number v-model="item.inventoryNum" :controls="false" style="width:80px"  :min="0" :max="10000" :value-on-clear="0"></el-input-number>    
+                                              <el-input-number v-model="item.inventoryNum" :controls="false" style="width:80px"  :min="0" :max="100" :value-on-clear="0"></el-input-number>    
                                             </div> 
                                             </td>
                                     </tr>

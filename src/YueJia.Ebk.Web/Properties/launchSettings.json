@@ -1,6 +1,6 @@
 {
   "profiles": {
-    "YueJia.Ebk.Web": {
+    "Development": {
       "commandName": "Project",
       "launchBrowser": true,
       "environmentVariables": {
@@ -9,7 +9,28 @@
       "dotnetRunMessages": true,
       "applicationUrl": "http://localhost:5199",
       "hotReloadEnabled": true
+    },
+    "Test": {
+      "commandName": "Project",
+      "launchBrowser": true,
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Test"
+      },
+      "dotnetRunMessages": true,
+      "applicationUrl": "http://localhost:5199",
+      "hotReloadEnabled": true
+    },
+    "Production": {
+      "commandName": "Project",
+      "launchBrowser": true,
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Production"
+      },
+      "dotnetRunMessages": true,
+      "applicationUrl": "http://localhost:5199",
+      "hotReloadEnabled": true
     }
+
   },
   "$schema": "http://json.schemastore.org/launchsettings.json",
   "iisSettings": {

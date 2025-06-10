@@ -26,7 +26,7 @@ public class CompanyDetailsDto
     /// <summary>
     /// 公司地址
     /// </summary>
-    public string CompanyAddr { get; set; } = default!;
+    public string? CompanyAddr { get; set; }
 
     /// <summary>
     /// 是否渠道管理
@@ -37,4 +37,12 @@ public class CompanyDetailsDto
     /// 状态
     /// </summary>
     public YesOrNoType Status { get; set; }
+    /// <summary>
+    /// 调价类型
+    /// </summary>
+    public AdjustmentPriceTypeEnum? AdjustmentPriceType { get; set; }
+    /// <summary>
+    /// 调价值
+    /// </summary>
+    public int? AdjustmentPriceValue { get; set; }
 }

@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authentication.Cookies;
 using System.Net;
 using System.Text.Json.Serialization;
+using Volo.Abp.Auditing;
 using YueJia.Ebk.Domain.Shared.Response;
 using YueJia.Ebk.Web.Filter;
 
@@ -83,9 +84,8 @@ internal class YueJiaEbkWebModule : AbpModule
                    options.LoginPath = "/";
                    options.AccessDeniedPath = "/";
                    options.Cookie.Name = "EbkUser";
-                   options.ExpireTimeSpan = TimeSpan.FromMinutes(10);
-                   //options.ExpireTimeSpan = TimeSpan.FromSeconds(20);
-                   options.SlidingExpiration = true;
+                   options.ExpireTimeSpan = TimeSpan.FromMinutes(30);// Cookie 有效期
+                   options.SlidingExpiration = true;// 滑动过期（每次请求后刷新有效期）
                    options.Events = new CookieAuthenticationEvents
                    {
                        OnRedirectToLogin = context =>
@@ -144,6 +144,31 @@ internal class YueJiaEbkWebModule : AbpModule
             //c.OperationFilter<AppendAuthorizeToSummaryOperationFilter>();
         });
         context.Services.AddHttpClient();
+
+
+
+
+        Configure<AbpAuditingOptions>(options =>
+        {
+            // 启用审计日志
+            options.IsEnabled = true;
+            // 隐藏敏感数据
+            options.HideErrors = false;
+            //启用记录get请求
+            options.IsEnabledForGetRequests = true;
+
+            // 自定义应用名称
+            options.ApplicationName = "MyApplication";
+        });
+
+        Configure<AbpAuditingOptions>(options =>
+        {
+            options.EntityHistorySelectors.AddAllEntities();
+        });
+
+
+
+
         return base.ConfigureServicesAsync(context);
     }
 
@@ -170,6 +195,7 @@ internal class YueJiaEbkWebModule : AbpModule
                                                   //options.DefaultModelExpandDepth(0);  // 可选：设置单个模型默认折叠
             options.DocExpansion(DocExpansion.None); // 可选：禁用文档中的默认展开
         });
+        app.UseAuditing();
 
         return base.OnApplicationInitializationAsync(context);
     }

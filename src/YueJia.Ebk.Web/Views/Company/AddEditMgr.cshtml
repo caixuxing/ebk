@@ -22,12 +22,25 @@
             <el-form-item label="公司地址" label-width="auto" prop="companyAddr">
                 <el-input v-model="model.companyAddr" autocomplete="off" clearable placeholder="公司地址" maxlength="80"></el-input>
             </el-form-item>
+               <el-form-item label="调价" label-width="auto">
+                <el-input v-model="model.adjustmentPriceValue" placeholder="调价值"  >
+                      <template #prepend>
+                        <el-select v-model="model.adjustmentPriceType" placeholder="调价类型" style="width: 120px" clearable>
+                          <el-option label="固定值上调" :value="1" ></el-option>
+                          <el-option label="百分比上调" :value="2"  ></el-option>
+                        </el-select>
+                      </template>
+                      <template v-if="model.adjustmentPriceType===2"   #append>%</template>
+                    </el-input>
+            </el-form-item>
             <el-form-item label="是否渠道管理" label-width="auto">
                 <el-switch v-model="model.V_IsChannelManage" inline-prompt active-text="是" inactive-text="否" />
             </el-form-item>
             <el-form-item label="是否启用" label-width="auto">
                 <el-switch v-model="model.V_Status" inline-prompt active-text="是" inactive-text="否" />
             </el-form-item>
+
+         
         </el-form>
     </el-main>
     <el-footer>
@@ -83,9 +96,9 @@
                 /*
                 * 编辑=> 保存
                 */
-                const onEditSave =  () => {
+                const onEditSave =  async () => {
 
-                     let isValid =  FormDataRef.value.validate();
+                   let isValid =  await FormDataRef.value.validate().catch(() => false);
                      if(!isValid) 
                      {
                           ElMessage({ message: "请完善表单信息!", type: "error" });
@@ -95,6 +108,8 @@
                      let reqData = { ...model };
                      reqData.isChannelManage = model.V_IsChannelManage?1:0
                      reqData.status = model.V_Status ?1:0
+                     reqData.adjustmentPriceType = Number(model.adjustmentPriceType);
+                     reqData.adjustmentPriceValue =Number(model.adjustmentPriceValue);
 
                          axios['put'](`/Company/${id}/update`, reqData).then(res=>{
                              top.window.vueElMessage({ message: res.data. message , type:  res.data.isSuccess?'success':'info' })
@@ -107,9 +122,8 @@
                 /*
                 * 新增=> 保存
                 */
-                const onNewSave =  () => {
-
-                     let isValid =  FormDataRef.value.validate();
+                const onNewSave =  async () => {
+                     let isValid =  await FormDataRef.value.validate().catch(() => false);
                      if(!isValid)
                      {
                           ElMessage({ message: "请完善表单信息!", type: "error" });
@@ -119,6 +133,8 @@
                      let reqData = { ...model };
                      reqData.isChannelManage = model.V_IsChannelManage?1:0
                      reqData.status = model.V_Status ?1:0
+                     reqData.adjustmentPriceType = Number(model.adjustmentPriceType);
+                     reqData.adjustmentPriceValue =Number(model.adjustmentPriceValue);
 
                          axios['post'](`/Company/create`, reqData).then(res=>{
                              top.window.vueElMessage({ message: res.data. message , type:  res.data.isSuccess?'success':'info' })

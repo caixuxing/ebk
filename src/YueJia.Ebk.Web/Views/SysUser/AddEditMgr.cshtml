@@ -3,10 +3,10 @@
     <el-main>
         <el-form label-width="auto" :model="model" :rules="FormDataRules" ref="FormDataRef">
             <el-form-item label="用户名" required prop="realName">
-                <el-input v-model="model.realName" autocomplete="off" clearable placeholder="请输入姓名(昵称)" maxlength="30"></el-input>
+                <el-input v-model="model.realName" autocomplete="off" clearable placeholder="请输入姓名(昵称)" maxlength="10"></el-input>
             </el-form-item>
             <el-form-item label="登录账户" required prop="accountName">
-                <el-input v-model="model.accountName" autocomplete="off" clearable placeholder="请输入登录账户" maxlength="8"></el-input>
+                <el-input v-model="model.accountName" autocomplete="off" clearable placeholder="请输入登录账户" maxlength="30" @(Html.Raw(ViewBag.id>0?"disabled":""))></el-input>
             </el-form-item>
             <el-form-item label="联系电话" required prop="contactPhone">
                 <el-input v-model="model.contactPhone" autocomplete="off" clearable placeholder="请输入联系电话" maxlength="15"></el-input>

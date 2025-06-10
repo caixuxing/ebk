@@ -794,7 +794,12 @@ public class HotelApp : ApplicationService, IHotelApp
                 }
                 if (qry.planPriceFlag && qry.planPriceExecType == "3")
                 {
-                    dailyPriceListObj.SetPrice(qry.planPrice * (1 + (dailyPriceListObj.Price / 100)));
+                    //dailyPriceListObj.SetPrice(qry.planPrice * (1 + (dailyPriceListObj.Price / 100)));
+
+
+                    dailyPriceListObj.SetPrice(dailyPriceListObj.Price + (dailyPriceListObj.Price * (qry.planPrice / 100)));
+
+
                 }
 
                 if (qry.planPriceStateFlag)

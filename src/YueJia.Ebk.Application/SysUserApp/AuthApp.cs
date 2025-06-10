@@ -2,6 +2,7 @@
 using System.Security.Claims;
 using YueJia.Ebk.Application.Contracts.SysUserApp;
 using YueJia.Ebk.Application.Contracts.SysUserApp.Query;
+using YueJia.Ebk.Domain.AggRoot;
 using YueJia.Ebk.Domain.Company;
 using YueJia.Ebk.Domain.Dept;
 using YueJia.Ebk.Domain.Shared.Const;
@@ -28,7 +29,7 @@ public class AuthApp : ApplicationService, IAuthApp
     {
 
         await LazyServiceProvider.LazyGetRequiredService<FluentValidation.IValidator<LoginQry>>().ValidateAndThrowAsync(qry);
-        var data = await SysUserRepo.AsQueryable().SingleAsync(x => x.AccountName == qry.UserName);
+        var data = await SysUserRepo.AsQueryable().ClearFilter<ITenantIdFilter>().SingleAsync(x => x.AccountName == qry.UserName);
         if (data is null || !data.Password.Equals(EncryptUtils.MD5Encrypt(qry.PassWord)))
             throw new InvalidOperationException("用户名或密码错误");
 

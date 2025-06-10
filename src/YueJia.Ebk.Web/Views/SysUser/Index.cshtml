@@ -190,7 +190,7 @@
              * 重置密码
              */
             const onResetPassword = (row)=>{
-                 ElMessageBox.confirm('您确定重置密码吗?', { confirmButtonText: '确定', cancelButtonText: '取消', type: 'warning', }).then(() => {
+                 ElMessageBox.confirm('您确定将用户【'+row.realName+'】密码重置为【123456】吗?', { confirmButtonText: '确定', cancelButtonText: '取消', type: 'warning', }).then(() => {
 
                          axios.put(`/sysuser/${row.id}/resetPassword`).then(res  => {
                                       top.window.vueElMessage({ message: res.data. message , type:  res.data.isSuccess?'success':'info' })

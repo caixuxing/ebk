@@ -2,6 +2,7 @@
 using YueJia.Ebk.Application.Contracts.SysUserApp.Commands;
 using YueJia.Ebk.Application.Contracts.SysUserApp.Dto;
 using YueJia.Ebk.Application.Contracts.SysUserApp.Query;
+using YueJia.Ebk.Domain.AggRoot;
 using YueJia.Ebk.Domain.Dept;
 using YueJia.Ebk.Domain.SysUser;
 
@@ -23,8 +24,8 @@ public class SysUserApp : ApplicationService, ISysUserApp
     public async Task<long> CreateAsync(CreateOrUpdateSysUserCmd cmd)
     {
         await LazyServiceProvider.LazyGetRequiredService<FluentValidation.IValidator<CreateOrUpdateSysUserCmd>>().ValidateAndThrowAsync(cmd);
-        if (await SysUserRepo.IsAnyAsync(x => x.ContactPhone == cmd.ContactPhone)) throw new InvalidOperationException("联系电话已存在！");
-        if (await SysUserRepo.IsAnyAsync(x => x.AccountName == cmd.AccountName)) throw new InvalidOperationException("账户已存在！");
+        if (await SysUserRepo.AsQueryable().ClearFilter<ITenantIdFilter>().AnyAsync(x => x.ContactPhone == cmd.ContactPhone)) throw new InvalidOperationException("联系电话已存在！");
+        if (await SysUserRepo.AsQueryable().ClearFilter<ITenantIdFilter>().AnyAsync(x => x.AccountName == cmd.AccountName)) throw new InvalidOperationException("账户已存在！");
         var entity = SysUserDo.Create(cmd.AccountName,
                                       cmd.RealName,
                                       AccountTypeEnum.NormalUser,
@@ -38,6 +39,8 @@ public class SysUserApp : ApplicationService, ISysUserApp
     public async Task<bool> DeleteAsync(long id)
     {
         var entity = await SysUserRepo.GetByIdAsync(id) ?? throw new InvalidOperationException($"系统用户ID:{id}资源不存在！");
+        if (entity.Id.ToString() == CurrentUserApp.Id) throw new InvalidOperationException($"不能删除当前登录用户！");
+
         var delEntity = entity with { };
         delEntity.IsDelete = true;
         if (entity.Equals(delEntity)) return true;
@@ -51,8 +54,8 @@ public class SysUserApp : ApplicationService, ISysUserApp
     public async Task<bool> UpdateAsync(CreateOrUpdateSysUserCmd cmd, long id)
     {
         await LazyServiceProvider.LazyGetRequiredService<FluentValidation.IValidator<CreateOrUpdateSysUserCmd>>().ValidateAndThrowAsync(cmd);
-        if (await SysUserRepo.IsAnyAsync(x => x.ContactPhone == cmd.ContactPhone && x.Id != id)) throw new InvalidOperationException("联系电话已存在！");
-        if (await SysUserRepo.IsAnyAsync(x => x.AccountName == cmd.AccountName && x.Id != id)) throw new InvalidOperationException("账户已存在！");
+        if (await SysUserRepo.AsQueryable().ClearFilter<ITenantIdFilter>().AnyAsync(x => x.ContactPhone == cmd.ContactPhone && x.Id != id)) throw new InvalidOperationException("联系电话已存在！");
+        if (await SysUserRepo.AsQueryable().ClearFilter<ITenantIdFilter>().AnyAsync(x => x.AccountName == cmd.AccountName && x.Id != id)) throw new InvalidOperationException("账户已存在！");
         var entity = await SysUserRepo.GetByIdAsync(id) ?? throw new InvalidOperationException($"用户ID:{id}资源不存在！");
         var upEntity = entity with { };
         upEntity.SetAccountName(cmd.AccountName)

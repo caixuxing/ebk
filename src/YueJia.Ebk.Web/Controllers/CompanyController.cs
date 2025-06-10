@@ -56,7 +56,9 @@ public class CompanyController : AbpController
             IsChannelManage = model.IsChannelManage,
             Name = model.Name,
             Responsible = model.Responsible,
-            Status = model.Status
+            Status = model.Status,
+            AdjustmentPriceType = model.AdjustmentPriceType,
+            AdjustmentPriceValue = model.AdjustmentPriceValue
         });
     }
 

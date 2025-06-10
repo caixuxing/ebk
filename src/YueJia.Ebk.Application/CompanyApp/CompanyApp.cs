@@ -3,8 +3,8 @@ using YueJia.Ebk.Application.Contracts.CompanyApp.Commands;
 using YueJia.Ebk.Application.Contracts.CompanyApp.Dto;
 using YueJia.Ebk.Application.Contracts.CompanyApp.Query;
 using YueJia.Ebk.Application.Contracts.SysUserApp;
+using YueJia.Ebk.Domain.AggRoot;
 using YueJia.Ebk.Domain.Company;
-using YueJia.Ebk.Domain.Shared.Enums;
 using YueJia.Ebk.Domain.SysUser;
 
 
@@ -29,12 +29,14 @@ public class CompanyApp : ApplicationService, ICompanyApp
         await LazyServiceProvider.LazyGetRequiredService<FluentValidation.IValidator<CreateOrUpdateCommpanyCmd>>().ValidateAndThrowAsync(cmd);
 
 
-        if (CurrentUserApp.AccountType != AccountTypeEnum.SuperAdmin) { 
+        if (CurrentUserApp.AccountType != AccountTypeEnum.SuperAdmin)
+        {
             throw new InvalidOperationException("当前用户无权创建公司！");
         }
 
         //校验唯一性
-        if (await CompanyRepo.IsAnyAsync(x => x.ContactPhone == cmd.ContactPhone)) { 
+        if (await CompanyRepo.IsAnyAsync(x => x.ContactPhone == cmd.ContactPhone))
+        {
             throw new InvalidOperationException("公司联系电话已存在！");
         }
 
@@ -50,7 +52,10 @@ public class CompanyApp : ApplicationService, ICompanyApp
                                     email: cmd.Email,
                                     companyAddr: cmd.CompanyAddr,
                                     isChannelManage: cmd.IsChannelManage,
-                                    status: cmd.Status
+                                    status: cmd.Status,
+                                    adjustmentPriceType: cmd.AdjustmentPriceType,
+                                    adjustmentPriceValue: cmd.AdjustmentPriceValue
+
                                     ) ?? throw new InvalidOperationException("公司创建失败！");
 
         // var DeptEntity = DepartmentDo.Create("默认部门", -1, entity.Id, YesOrNoType.Yes, entity.TenantId.GetValueOrDefault(0)) ?? throw new InvalidOperationException("部门创建失败！");
@@ -59,6 +64,11 @@ public class CompanyApp : ApplicationService, ICompanyApp
         var UserEntity = SysUserDo.Create(cmd.ContactPhone, cmd.Responsible, AccountTypeEnum.SysAdmin, YesOrNoType.Yes, null, cmd.ContactPhone);
         UserEntity.TenantId = entity.TenantId;
 
+        //校验唯一性
+        if (await SysUserRepo.AsQueryable().ClearFilter<ITenantIdFilter>().AnyAsync(x => x.AccountName == cmd.ContactPhone))
+        {
+            throw new InvalidOperationException($"默认创建的管理员账号【{cmd.ContactPhone}】已存在！");
+        }
 
         return await DbTransaction.ExecuteInTransactionAsync(db, async () =>
         {
@@ -80,19 +90,20 @@ public class CompanyApp : ApplicationService, ICompanyApp
     public async Task<bool> DeleteCompanyAsync([NotNull] long id)
     {
         var entity = await CompanyRepo.GetByIdAsync(id);
-        if (entity == null) {
+        if (entity == null)
+        {
             throw new InvalidOperationException($"数据未找到");
         }
 
         var delEntity = entity with { };
         delEntity.IsDelete = true;
         if (entity.Equals(delEntity))
-        { 
+        {
             return true;
         }
-       await CompanyRepo.AsUpdateable(delEntity)
-                                            .UpdateColumns(it => new { it.IsDelete, it.Version, it.LastModifiedbyId, it.LastModifiedbyName, it.LastModifiedTime })
-                                            .ExecuteCommandWithOptLockAsync();
+        await CompanyRepo.AsUpdateable(delEntity)
+                                             .UpdateColumns(it => new { it.IsDelete, it.Version, it.LastModifiedbyId, it.LastModifiedbyName, it.LastModifiedTime })
+                                             .ExecuteCommandWithOptLockAsync();
         return true;
     }
 
@@ -106,7 +117,8 @@ public class CompanyApp : ApplicationService, ICompanyApp
         {
             throw new InvalidOperationException("公司联系电话已存在！");
         }
-        if (!string.IsNullOrWhiteSpace(cmd.Email) && await CompanyRepo.IsAnyAsync(x => x.Email == cmd.Email && x.Id != id)) {
+        if (!string.IsNullOrWhiteSpace(cmd.Email) && await CompanyRepo.IsAnyAsync(x => x.Email == cmd.Email && x.Id != id))
+        {
             throw new InvalidOperationException("公司邮箱已存在！");
         }
 
@@ -125,27 +137,14 @@ public class CompanyApp : ApplicationService, ICompanyApp
              .SetEmail(cmd.Email)
              .SetCompanyAddr(cmd.CompanyAddr)
              .SetIsChannelManage(cmd.IsChannelManage)
-             .SetStatus(cmd.Status);
+             .SetStatus(cmd.Status)
+             .SetAdjustmentPriceType(cmd.AdjustmentPriceType)
+             .SetAdjustmentPriceValue(cmd.AdjustmentPriceValue);
         //比较更新前后信息
         if (entity.Equals(upEntity)) return true;
 
         //指定更新列并返回受影响行数
-        await CompanyRepo.AsUpdateable(upEntity)
-                         .UpdateColumns(it => new
-                         {
-                               it.Name,
-                               it.Responsible,
-                               it.ContactPhone,
-                               it.Email,
-                               it.CompanyAddr,
-                               it.IsChannelManage,
-                               it.Status,
-                               it.Version,
-                               it.LastModifiedbyId,
-                               it.LastModifiedbyName,
-                               it.LastModifiedTime
-                           })
-                           .ExecuteCommandWithOptLockAsync();
+        await CompanyRepo.AsUpdateable(upEntity).ExecuteCommandWithOptLockAsync();
         return true;
     }
 
@@ -184,12 +183,12 @@ public class CompanyApp : ApplicationService, ICompanyApp
             Email = entity.Email,
             CompanyAddr = entity.CompanyAddr,
             IsChannelManage = entity.IsChannelManage,
-            Status = entity.Status
+            Status = entity.Status,
+            AdjustmentPriceType = entity.AdjustmentPriceType,
+            AdjustmentPriceValue = entity.AdjustmentPriceValue,
+
         };
     }
-
-
-
 }
 
 /// <summary>
