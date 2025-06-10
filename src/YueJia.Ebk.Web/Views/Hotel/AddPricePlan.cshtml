@@ -78,25 +78,25 @@
                 <el-form-item label="成本 (CNY)">
                     <el-descriptions direction="vertical" :column="7" border>
                         <el-descriptions-item label="星期天" label-class-name="my-label">
-                            <el-input-number v-model="vmodel.model.sunday" :controls="false" :value-on-clear="0" style="width:80px" :precision="2" :min="0" :max="100000"></el-input-number>
+                            <el-input-number v-model="vmodel.model.sunday" :controls="false" :value-on-clear="0" style="width:80px"  :min="0" :max="100000"></el-input-number>
                         </el-descriptions-item>
                         <el-descriptions-item label="星期一" label-class-name="my-label">
-                            <el-input-number v-model="vmodel.model.monday" :controls="false" :value-on-clear="0" style="width:80px" :precision="2" :min="0" :max="100000"></el-input-number>
+                            <el-input-number v-model="vmodel.model.monday" :controls="false" :value-on-clear="0" style="width:80px"  :min="0" :max="100000"></el-input-number>
                         </el-descriptions-item>
                         <el-descriptions-item label="星期二" label-class-name="my-label">
-                            <el-input-number v-model="vmodel.model.tuesday" :controls="false" :value-on-clear="0" style="width:80px" :precision="2" :min="0" :max="100000"></el-input-number>
+                            <el-input-number v-model="vmodel.model.tuesday" :controls="false" :value-on-clear="0" style="width:80px":min="0" :max="100000"></el-input-number>
                         </el-descriptions-item>
                         <el-descriptions-item label="星期三" label-class-name="my-label">
-                            <el-input-number v-model="vmodel.model.wednesday" :controls="false" :value-on-clear="0" style="width:80px" :precision="2" :min="0" :max="100000"></el-input-number>
+                            <el-input-number v-model="vmodel.model.wednesday" :controls="false" :value-on-clear="0" style="width:80px" :min="0" :max="100000"></el-input-number>
                         </el-descriptions-item>
                         <el-descriptions-item label="星期四" label-class-name="my-label">
-                            <el-input-number v-model="vmodel.model.thursday" :controls="false" :value-on-clear="0" style="width:80px" :precision="2" :min="0" :max="100000"></el-input-number>
+                            <el-input-number v-model="vmodel.model.thursday" :controls="false" :value-on-clear="0" style="width:80px"  :min="0" :max="100000"></el-input-number>
                         </el-descriptions-item>
                         <el-descriptions-item label="星期五" label-class-name="my-label">
-                            <el-input-number v-model="vmodel.model.friday" :controls="false" :value-on-clear="0" style="width:80px" :precision="2" :min="0" :max="100000"></el-input-number>
+                            <el-input-number v-model="vmodel.model.friday" :controls="false" :value-on-clear="0" style="width:80px"  :min="0" :max="100000"></el-input-number>
                         </el-descriptions-item>
                         <el-descriptions-item label="星期六" label-class-name="my-label">
-                            <el-input-number v-model="vmodel.model.saturday" :controls="false" :value-on-clear="0" style="width:80px" :precision="2" :min="0" :max="100000"></el-input-number>
+                            <el-input-number v-model="vmodel.model.saturday" :controls="false" :value-on-clear="0" style="width:80px"  :min="0" :max="100000"></el-input-number>
                         </el-descriptions-item>
                     </el-descriptions>
                 </el-form-item>
@@ -134,9 +134,8 @@
                 */
                 const onSave = async () => {
                     let reqData = { ...vmodel.model };
-                       vmodel.model.isReservedRoom =  vmodel.A_isReservedRoom ==true?1:0;
-                       vmodel.model.isEnable = vmodel.A_isEnable==true?1:0;
-
+                    reqData.isEnable=vmodel.A_isEnable==true?1:0;
+                    reqData.isReservedRoom=vmodel.A_isReservedRoom==true?1:0;
                            axios['post'](`/Hotel/CreatePricePlan`, reqData).then(res=>{
                                      top.window.vueElMessage({ message: res.data. message , type:  res.data.isSuccess?'success':'info' })
                                      if(res.data.isSuccess){

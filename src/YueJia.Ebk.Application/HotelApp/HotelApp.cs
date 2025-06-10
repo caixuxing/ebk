@@ -777,13 +777,17 @@ public class HotelApp : ApplicationService, IHotelApp
             }
             db.Updateable<DailyInventoryDo>(dailyInventoryList).ExecuteCommand();
         }
-
+        if (qry.planPriceUpRange.Count <= 0) return true;
         //处理价格
         foreach (var userPlanId in qry.userPlanIdList)
         {
             var dailyPriceList = await db.Queryable<DailyPriceDo>().Where(vv => vv.PricePlanId == SqlFunc.ToInt64(userPlanId) && vv.CurrentDate >= startDate && vv.CurrentDate <= endDate).ToArrayAsync();
             foreach (var dailyPriceListObj in dailyPriceList)
             {
+                if (qry.planPriceUpRange.Count > 0 && !qry.planPriceUpRange.Any(x => x == dailyPriceListObj.CurrentDate.DayOfWeek.GetHashCode()))
+                {
+                    continue;
+                }
                 if (qry.planPriceFlag && qry.planPriceExecType == "1")
                 {
                     dailyPriceListObj.SetPrice(qry.planPrice);
@@ -795,11 +799,7 @@ public class HotelApp : ApplicationService, IHotelApp
                 if (qry.planPriceFlag && qry.planPriceExecType == "3")
                 {
                     //dailyPriceListObj.SetPrice(qry.planPrice * (1 + (dailyPriceListObj.Price / 100)));
-
-
                     dailyPriceListObj.SetPrice(dailyPriceListObj.Price + (dailyPriceListObj.Price * (qry.planPrice / 100)));
-
-
                 }
 
                 if (qry.planPriceStateFlag)

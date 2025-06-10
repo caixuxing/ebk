@@ -59,7 +59,7 @@
                  class="demo-tabs">
             <el-tab-pane label="简易模式" name="simple">
                 <el-divider content-position="left">房型维度</el-divider>
-                <el-form :inline="true" label-width="auto" style="margin: 0 auto;width: 480px;">
+                <el-form :inline="true" label-width="auto" style="margin: 0 auto;width: 680px;">
                     <div>
                         <el-form-item label="库存">
                             <el-select v-model="vmodel.simpleModel.inventoryNumExecType"
@@ -90,7 +90,28 @@
 
                 <el-divider content-position="left">价格计划维度</el-divider>
 
-                <el-form :inline="true" label-width="auto" style="margin: 0 auto;width: 480px;">
+                <el-form :inline="true" label-width="auto" style="margin: 0 auto;width: 680px;">
+                        <div>
+                        <el-form-item label="范围">
+                       <el-row :gutter="20" style="width: 100%;">
+                             <el-col :span="24">
+                                  <el-checkbox v-model="vmodel.checkAll" :indeterminate="isIndeterminate" v-on:change="handleCheckAllChange">全选</el-checkbox>
+                                 <span style="color:red"> (*注意：价格计划维度的价格、状态，只会对选中的范围生成)</span>
+                             </el-col>
+                       </el-row>
+                      <el-row :gutter="20"  style="width: 100%;">
+                          <el-col :span="24">
+                         <el-checkbox-group v-model="vmodel.simpleModel.planPriceUpRange" v-on:change="handleCheckedCitiesChange">
+
+            <el-checkbox v-for="item in vmodel.weekly" :key="item.id" :label="item.name" :value="item.id"> {{ item.name }}</el-checkbox>
+                          
+                          </el-checkbox-group>
+                          </el-col>
+                          </el-row>
+                          </el-form-item>
+                    </div>
+
+
                     <div>
                         <el-form-item label="价格">
                             <el-select v-model="vmodel.simpleModel.planPriceExecType"
@@ -104,7 +125,7 @@
                             <el-input-number v-model="vmodel.simpleModel.planPrice"
                                              v-show="vmodel.simpleModel.planPriceFlag == true "
                                               :value-on-clear="0"
-                                             :controls="false" style="width:80px;margin-left:15px;" :precision="2" :min="0" :max="100000"></el-input-number>
+                                             :controls="false" style="width:80px;margin-left:15px;"  :min="0" :max="100000"></el-input-number>
 
                             <el-button v-show="vmodel.simpleModel.planPriceFlag == false " v-on:click="vmodel.simpleModel.planPriceFlag = true">编辑</el-button>
                             <el-button v-show="vmodel.simpleModel.planPriceFlag == true " v-on:click="vmodel.simpleModel.planPriceFlag = false" type="danger">取消</el-button>
@@ -184,7 +205,7 @@
                                     <el-input-number :controls="false"
                                                      :value-on-clear="0"
                                                      v-model="item.planPrice"
-                                                     style="width:65px;margin-left:10px;" :precision="2" :min="0" :max="100000"></el-input-number>
+                                                     style="width:65px;margin-left:10px;"  :min="0" :max="100000"></el-input-number>
                                 </el-form-item>
                             </div>
                             <div>
@@ -230,13 +251,45 @@
                          inventoryState:false,
 
 
+                         planPriceUpRange:[0,1,2,3,4,5,6],//默认全选
                          planPriceFlag:false,
                          planPriceExecType:'1',
                          planPrice:0,
                          planPriceStateFlag:false,
                          planPriceState:false,
-                    }
+                    },
+                    checkAll:true,
+                    weekly:[{id:0,name:'周日'},{id:1,name:'周一'},{id:2,name:'周二'},{id:3,name:'周三'},{id:4,name:'周四'},{id:5,name:'周五'},{id:6,name:'周六'}]
                });
+
+               const isIndeterminate= Vue.ref(false);
+
+               const handleCheckAllChange=(val)=>{
+                   if(val)
+                   {
+                       vmodel.simpleModel.planPriceUpRange = vmodel.weekly.map(item=>item.id);
+                   }else
+                   {
+                     vmodel.simpleModel.planPriceUpRange=[];
+                   }
+               };
+           //监听加载房间类型变化
+            Vue.watch(() => vmodel.simpleModel.planPriceUpRange,(newVal, oldVal) => {
+                if(newVal.length==7)
+                 vmodel.checkAll=true;
+                else
+                vmodel.checkAll=false;
+
+                 if(newVal.length>0 && newVal.length<7)
+                 {
+                     isIndeterminate.value=true;
+                 }else
+                 {
+                     isIndeterminate.value=false;
+                 }
+            }, { deep: true })
+
+
 
                /**
                 * 房间Ids
@@ -365,7 +418,7 @@
                     CStateChange,
                     onSaveSimple,
                     onSaveSenior,
-                    userPlanIdList
+                    userPlanIdList,handleCheckAllChange,isIndeterminate
                 }
         }
         });

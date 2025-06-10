@@ -26,7 +26,7 @@
             <el-form-item label="酒店：">
                 <el-text class="mx-1">{{state.formData.hotelName}}</el-text>
             </el-form-item>
-            <el-form-item label="房型名称：" prop="selectedLoadRoomValues" required   >
+            <el-form-item label="房型名称：" >
                               
 
                  <el-select v-model="selectedLoadRoomValues"  multiple clearable   placeholder="请选择房型" popper-class="custom-header" >
@@ -40,7 +40,7 @@
 
             </el-form-item>
 
-            <el-form-item label="截至日期：" prop="endDate" required>
+            <el-form-item label="截至日期：" >
                     <el-date-picker v-model="state.formData.endDate" type="date" placeholder="截至日期"   value-format="YYYY-MM-DD"
   format="YYYY-MM-DD"> </el-date-picker>
             </el-form-item>
@@ -119,14 +119,14 @@
                             <tbody>
                                 <tr class="el-table__row">
                                     <td class="el-table__cell" width="20px"><div class="cell">成本(CNY)</div> </td>
-                                    <td class="el-table__cell" colspan="1" rowspan="1"><div class="cell" style="text-align:center"><el-input-number v-model="item.priceBatchSet" :controls="false" style="width:80px" :precision="2" :min="0" :max="100000" v-on:input="(value) => handlePriceInputChange(value, item.pricePlanId)"></el-input-number></div></td>
-                                    <td class="el-table__cell" colspan="1" rowspan="1"><div class="cell" style="text-align:center"><el-input-number v-model="item.dailyPrices.Sunday" :controls="false" style="width:80px" :precision="2" :min="0" :max="100000"></el-input-number></div></td>
-                                    <td class="el-table__cell" colspan="1" rowspan="1"><div class="cell" style="text-align:center"><el-input-number v-model="item.dailyPrices.Monday" :controls="false" style="width:80px" :precision="2" :min="0" :max="100000"></el-input-number></div></td>
-                                    <td class="el-table__cell" colspan="1" rowspan="1"><div class="cell" style="text-align:center"><el-input-number v-model="item.dailyPrices.Tuesday" :controls="false" style="width:80px" :precision="2" :min="0" :max="100000"></el-input-number></div></td>
-                                    <td class="el-table__cell" colspan="1" rowspan="1"><div class="cell" style="text-align:center"><el-input-number v-model="item.dailyPrices.Wednesday" :controls="false" style="width:80px" :precision="2" :min="0" :max="100000"></el-input-number></div></td>
-                                    <td class="el-table__cell" colspan="1" rowspan="1"><div class="cell" style="text-align:center"><el-input-number v-model="item.dailyPrices.Thursday" :controls="false" style="width:80px" :precision="2" :min="0" :max="100000"></el-input-number></div></td>
-                                    <td class="el-table__cell" colspan="1" rowspan="1"><div class="cell" style="text-align:center"><el-input-number v-model="item.dailyPrices.Friday" :controls="false" style="width:80px" :precision="2" :min="0" :max="100000"></el-input-number></div></td>
-                                    <td class="el-table__cell" colspan="1" rowspan="1"><div class="cell" style="text-align:center"><el-input-number v-model="item.dailyPrices.Saturday" :controls="false" style="width:80px" :precision="2" :min="0" :max="100000"></el-input-number></div></td>
+                                    <td class="el-table__cell" colspan="1" rowspan="1"><div class="cell" style="text-align:center"><el-input-number v-model="item.priceBatchSet" :controls="false" style="width:80px"  :min="0" :max="100000" v-on:input="(value) => handlePriceInputChange(value, item.pricePlanId)"></el-input-number></div></td>
+                                    <td class="el-table__cell" colspan="1" rowspan="1"><div class="cell" style="text-align:center"><el-input-number v-model="item.dailyPrices.Sunday" :controls="false" style="width:80px"  :min="0" :max="100000"></el-input-number></div></td>
+                                    <td class="el-table__cell" colspan="1" rowspan="1"><div class="cell" style="text-align:center"><el-input-number v-model="item.dailyPrices.Monday" :controls="false" style="width:80px"  :min="0" :max="100000"></el-input-number></div></td>
+                                    <td class="el-table__cell" colspan="1" rowspan="1"><div class="cell" style="text-align:center"><el-input-number v-model="item.dailyPrices.Tuesday" :controls="false" style="width:80px"  :min="0" :max="100000"></el-input-number></div></td>
+                                    <td class="el-table__cell" colspan="1" rowspan="1"><div class="cell" style="text-align:center"><el-input-number v-model="item.dailyPrices.Wednesday" :controls="false" style="width:80px" :min="0" :max="100000"></el-input-number></div></td>
+                                    <td class="el-table__cell" colspan="1" rowspan="1"><div class="cell" style="text-align:center"><el-input-number v-model="item.dailyPrices.Thursday" :controls="false" style="width:80px"  :min="0" :max="100000"></el-input-number></div></td>
+                                    <td class="el-table__cell" colspan="1" rowspan="1"><div class="cell" style="text-align:center"><el-input-number v-model="item.dailyPrices.Friday" :controls="false" style="width:80px"  :min="0" :max="100000"></el-input-number></div></td>
+                                    <td class="el-table__cell" colspan="1" rowspan="1"><div class="cell" style="text-align:center"><el-input-number v-model="item.dailyPrices.Saturday" :controls="false" style="width:80px"  :min="0" :max="100000"></el-input-number></div></td>
                                 </tr>
                             </tbody>
                         </table>

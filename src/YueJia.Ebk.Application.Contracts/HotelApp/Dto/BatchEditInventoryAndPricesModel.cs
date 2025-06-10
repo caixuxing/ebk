@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace YueJia.Ebk.Application.Contracts.HotelApp.Dto
+﻿namespace YueJia.Ebk.Application.Contracts.HotelApp.Dto
 {
     public class BatchEditInventoryAndPricesModel
     {
@@ -41,8 +35,10 @@ namespace YueJia.Ebk.Application.Contracts.HotelApp.Dto
 
 
 
-
-
+        /// <summary>
+        /// 修改范围 周
+        /// </summary>
+        public List<int> planPriceUpRange { get; set; } = new();
 
         /// <summary>
         /// 修改标识[价格]
@@ -61,6 +57,6 @@ namespace YueJia.Ebk.Application.Contracts.HotelApp.Dto
         public bool planPriceStateFlag { get; set; }
         public bool planPriceState { get; set; }
 
-        
+
     }
 }

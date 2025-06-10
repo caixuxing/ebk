@@ -288,7 +288,7 @@ public class HotelController : AbpController
         CreateOrUpdatePricePlanCmd vm = new CreateOrUpdatePricePlanCmd()
         {
             HotelRoomId = room.Id.ToString(),
-            BreakfastType = BreakfastTypeEnum.Breakfast,
+            BreakfastType = BreakfastTypeEnum.NoBreakfast,
             DaysInAdvance = 1,
             ContinuousStayDays = 1,
             IsEnable = YesOrNoType.Yes,
@@ -554,7 +554,7 @@ public class HotelController : AbpController
 
         return ApiResult.HandleResult(await HotelApp.BatchSaveInventoryAndPricesSenior(qry));
     }
-    
+
     #endregion
 
 }
