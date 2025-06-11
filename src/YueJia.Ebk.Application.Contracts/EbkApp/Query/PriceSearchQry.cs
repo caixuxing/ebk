@@ -8,6 +8,7 @@ public record PriceSearchQry
     /// <summary>
     /// 酒店Code
     /// </summary>
+    [Required]
     public string HotelCode { get; set; } = default!;
     /// <summary>
     /// 入店日期
@@ -46,6 +47,11 @@ public class PriceSearchQryValidator : AbstractValidator<PriceSearchQry>
     /// </summary>
     public PriceSearchQryValidator()
     {
+
+        RuleFor(x => x.HotelCode)
+            .Cascade(CascadeMode.Stop)
+            .NotEmpty().WithMessage("酒店代码不能为空！");
+
         RuleFor(x => x.CheckInDate)
             .Cascade(CascadeMode.Stop)
             .NotNull().WithMessage("入店日期不能为空！")
