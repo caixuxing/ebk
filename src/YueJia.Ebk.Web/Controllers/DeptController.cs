@@ -126,18 +126,3 @@ namespace YueJia.Ebk.Web.Controllers
     }
 }
 
-
-///// <summary>
-///// 新增或编辑部门
-///// </summary>
-///// <returns></returns>
-//public async Task<IActionResult> AddOrEditDept(string? id, string? parentDeptId, string? deptName, string? companyId)
-//{
-//    DeptDetailsDto model = new DeptDetailsDto();
-//    if (!string.IsNullOrWhiteSpace(parentDeptId) && long.TryParse(parentDeptId, out long outParentDeptId)) model.ParentDeptId = outParentDeptId;
-//    if (!string.IsNullOrWhiteSpace(deptName)) model.DeptName = deptName;
-//    if (!string.IsNullOrWhiteSpace(companyId) && long.TryParse(companyId, out long outCompanyId)) model.CompanyId = outCompanyId;
-//    if (!string.IsNullOrWhiteSpace(id) && long.TryParse(id, out long deptId)) model = await DeptApp.GetDeptById(deptId);
-//    ViewBag.DeptData = JsonConvert.SerializeObject(await DeptApp.GetTopLevelDeptData());
-//    return View(model);
-//}

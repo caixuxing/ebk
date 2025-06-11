@@ -44,7 +44,7 @@ public class HotelController : AbpController
     /// 酒店发布管理View
     /// </summary>
     /// <returns></returns>
-    public async Task<IActionResult> HotelPublishList()
+    public async Task<IActionResult> UserHotelMgr()
     {
         ViewBag.CountryData = JsonConvert.SerializeObject(await YueJiaSysServiceApp.GetDropDownCountryListAsync(), new JsonSerializerSettings { ContractResolver = new CamelCasePropertyNamesContractResolver() });
         ViewBag.HotelSaleTypeData = JsonConvert.SerializeObject(SysEnumApp.GetEnumDataList(nameof(HotelSaleTypeEnum)), new JsonSerializerSettings { ContractResolver = new CamelCasePropertyNamesContractResolver() });
@@ -554,6 +554,34 @@ public class HotelController : AbpController
 
         return ApiResult.HandleResult(await HotelApp.BatchSaveInventoryAndPricesSenior(qry));
     }
+
+    #endregion
+
+    #region 酒店操作
+
+    /// <summary>
+    /// 批量上架
+    /// </summary>
+    /// <param name="userHotelIds"></param>
+    /// <returns></returns>
+    [HttpPost, Route("[controller]/BatchUp")]
+    public async Task<IResult> BatchUp([FromBody] List<string> userHotelIds)
+    {
+        return ApiResult.HandleBoolResult(await HotelApp.BatchUpdateHotelState(userHotelIds, HotelSaleTypeEnum.Up));
+    }
+
+    /// <summary>
+    /// 批量下架
+    /// </summary>
+    /// <param name="userHotelIds"></param>
+    /// <returns></returns>
+    [HttpPost, Route("[controller]/BatchDown")]
+    public async Task<IResult> BatchDown([FromBody] List<string> userHotelIds)
+    {
+        return ApiResult.HandleBoolResult(await HotelApp.BatchUpdateHotelState(userHotelIds, HotelSaleTypeEnum.Down));
+    }
+
+
 
     #endregion
 

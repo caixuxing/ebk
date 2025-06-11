@@ -23,12 +23,17 @@
         </el-form>
         <el-form label-width="100px" :inline="true" style="margin-top:30px;">
             <el-form-item prop="desc" style="margin-bottom:5px;">
+                <el-button v-on:click="onBatchUp">批量上架</el-button>
+                <el-button v-on:click="onBatchDown">批量下架</el-button>
                 <el-button type="primary" v-on:click="userAddHotel">添加酒店</el-button>
             </el-form-item>
         </el-form>
         <el-table :data="state.dataList"
                   border
+                  v-on:selection-change ="handleSelectionChange"
                   height="100%" >
+
+            <el-table-column type="selection" width="50" align="center"></el-table-column>
             <el-table-column label="#" width="60" align="center">
                 <template #default="scope">
                     <div style="text-align:left">
@@ -108,7 +113,7 @@
         setup() {
 
            let qry = {  hotelCode: '',hotelName: '',status: null,pageIndex: 1,pageSize: 50,totalCount: 0 }
-
+           let selectUserHotelIds = [];
            const state = Vue.reactive({
                 qry:  JSON.parse(JSON.stringify( qry)),
                 saleTypeData:@(Html.Raw(ViewBag.HotelSaleTypeData)),
@@ -135,6 +140,9 @@
                      loadData();
             };
 
+            const handleSelectionChange = (rows) => {
+                 selectUserHotelIds = rows.map(vv=>vv.id+'');
+            }
 
             const onDelete =  (row) => {
                     ElMessageBox.confirm('您确定删除吗?', { confirmButtonText: '确定', cancelButtonText: '取消', type: 'warning', }).then(() => {
@@ -145,8 +153,38 @@
                                           }
                             })
                     })
-              }
+            }
 
+            const onBatchUp =  (row) => {
+                    if(selectUserHotelIds.length == 0){
+                        top.window.vueElMessage({ message: '请选择操作项' , type:  'info' })
+                        return;
+                    }
+                    ElMessageBox.confirm('您确定批量上架吗?',{ confirmButtonText: '确定', cancelButtonText: '取消', type: 'warning', }).then(() => {
+                        axios.post(`/hotel/BatchUp`,selectUserHotelIds).then(res => {
+                                          top.window.vueElMessage({ message: res.data. message , type:  res.data.isSuccess?'success':'info' })
+                                          if(res.data.isSuccess){
+                                             loadData();
+                                          }
+                            })
+                    })
+            }
+
+            const onBatchDown =  () => {
+                    if(selectUserHotelIds.length == 0){
+                        top.window.vueElMessage({ message: '请选择操作项' , type:  'info' })
+                        return;
+                    }
+                    ElMessageBox.confirm('您确定批量下架吗?', { confirmButtonText: '确定', cancelButtonText: '取消', type: 'warning', }).then(() => {
+                        axios.post(`/hotel/BatchDown`,selectUserHotelIds).then(res => {
+                                          top.window.vueElMessage({ message: res.data. message , type:  res.data.isSuccess?'success':'info' })
+                                          if(res.data.isSuccess){
+                                             loadData();
+                                          }
+                            })
+                    })
+            }
+            
 
              const resetQueryForm=()=>{
                  state.qry  = JSON.parse(JSON.stringify( qry))
@@ -196,7 +234,10 @@
                         ,loadData
                         ,handleSizeChange
                         ,handleCurrentChange
+                        ,handleSelectionChange
                         ,onDelete
+                        ,onBatchUp
+                        ,onBatchDown
                         ,resetQueryForm
                         ,userAddHotel
                         ,onViewHotel

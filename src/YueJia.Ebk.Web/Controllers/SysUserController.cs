@@ -142,17 +142,3 @@ namespace YueJia.Ebk.Web.Controllers
     }
 }
 
-
-
-
-///// <summary>
-///// 获取用户详情
-///// </summary>
-///// <param name="id"></param>
-///// <returns></returns>
-//[HttpGet, Route("[controller]/{id}/details")]
-//public async Task<IResult> GetById([FromRoute] string id)
-//{
-//    var result = await SysUserApp.GetByIdAsync(id.ToLong());
-//    return ApiResult.HandleResult(result);
-//}

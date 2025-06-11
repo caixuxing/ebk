@@ -11,21 +11,20 @@ namespace YueJia.Ebk.Application.SysUserApp;
 [DisableValidation]
 public class SysUserApp : ApplicationService, ISysUserApp
 {
-
     private ISimpleClient<SysUserDo> SysUserRepo => LazyServiceProvider.LazyGetRequiredService<ISimpleClient<SysUserDo>>();
-
-    private ISqlSugarClient db => LazyServiceProvider.LazyGetRequiredService<ISqlSugarClient>();
-
-
     private ICurrentUserApp CurrentUserApp => LazyServiceProvider.LazyGetRequiredService<ICurrentUserApp>();
-
 
 
     public async Task<long> CreateAsync(CreateOrUpdateSysUserCmd cmd)
     {
         await LazyServiceProvider.LazyGetRequiredService<FluentValidation.IValidator<CreateOrUpdateSysUserCmd>>().ValidateAndThrowAsync(cmd);
-        if (await SysUserRepo.AsQueryable().ClearFilter<ITenantIdFilter>().AnyAsync(x => x.ContactPhone == cmd.ContactPhone)) throw new InvalidOperationException("联系电话已存在！");
-        if (await SysUserRepo.AsQueryable().ClearFilter<ITenantIdFilter>().AnyAsync(x => x.AccountName == cmd.AccountName)) throw new InvalidOperationException("账户已存在！");
+        if (await SysUserRepo.AsQueryable().ClearFilter<ITenantIdFilter>().AnyAsync(x => x.ContactPhone == cmd.ContactPhone)) {
+            throw new InvalidOperationException("联系电话已存在！");
+        }
+
+        if (await SysUserRepo.AsQueryable().ClearFilter<ITenantIdFilter>().AnyAsync(x => x.AccountName == cmd.AccountName)) {
+            throw new InvalidOperationException("账户已存在！");
+        }
         var entity = SysUserDo.Create(cmd.AccountName,
                                       cmd.RealName,
                                       AccountTypeEnum.NormalUser,
@@ -38,25 +37,40 @@ public class SysUserApp : ApplicationService, ISysUserApp
 
     public async Task<bool> DeleteAsync(long id)
     {
-        var entity = await SysUserRepo.GetByIdAsync(id) ?? throw new InvalidOperationException($"系统用户ID:{id}资源不存在！");
-        if (entity.Id.ToString() == CurrentUserApp.Id) throw new InvalidOperationException($"不能删除当前登录用户！");
+        var entity = await SysUserRepo.GetByIdAsync(id);
+        if (entity==null) {
+            throw new InvalidOperationException($"系统用户ID:{id}资源不存在！");
+        }
+        if (entity.Id.ToString() == CurrentUserApp.Id) {
+            throw new InvalidOperationException($"不能删除当前登录用户！");
+        }    
 
         var delEntity = entity with { };
         delEntity.IsDelete = true;
-        if (entity.Equals(delEntity)) return true;
-        var affectedRows = await SysUserRepo.AsUpdateable(delEntity)
-         .UpdateColumns(it => new { it.IsDelete, it.Version, it.LastModifiedbyId, it.LastModifiedbyName, it.LastModifiedTime })
-         .ExecuteCommandWithOptLockAsync();
-        if (affectedRows is not 1) throw new InvalidOperationException($"用户删除失败!");
+        if (entity.Equals(delEntity)) {
+            return true;
+        }
+        await SysUserRepo.AsUpdateable(delEntity)
+                         .UpdateColumns(it => new { it.IsDelete, it.Version, it.LastModifiedbyId, it.LastModifiedbyName, it.LastModifiedTime })
+                         .ExecuteCommandWithOptLockAsync();
         return true;
     }
 
     public async Task<bool> UpdateAsync(CreateOrUpdateSysUserCmd cmd, long id)
     {
         await LazyServiceProvider.LazyGetRequiredService<FluentValidation.IValidator<CreateOrUpdateSysUserCmd>>().ValidateAndThrowAsync(cmd);
-        if (await SysUserRepo.AsQueryable().ClearFilter<ITenantIdFilter>().AnyAsync(x => x.ContactPhone == cmd.ContactPhone && x.Id != id)) throw new InvalidOperationException("联系电话已存在！");
-        if (await SysUserRepo.AsQueryable().ClearFilter<ITenantIdFilter>().AnyAsync(x => x.AccountName == cmd.AccountName && x.Id != id)) throw new InvalidOperationException("账户已存在！");
-        var entity = await SysUserRepo.GetByIdAsync(id) ?? throw new InvalidOperationException($"用户ID:{id}资源不存在！");
+        var entity = await SysUserRepo.GetByIdAsync(id);
+        if(entity == null)
+        {
+            throw new InvalidOperationException($"数据不存在！");
+        }
+        if (await SysUserRepo.AsQueryable().ClearFilter<ITenantIdFilter>().AnyAsync(x => x.ContactPhone == cmd.ContactPhone && x.Id != id)) { 
+            throw new InvalidOperationException("联系电话已存在！");
+        }
+        if (await SysUserRepo.AsQueryable().ClearFilter<ITenantIdFilter>().AnyAsync(x => x.AccountName == cmd.AccountName && x.Id != id)) {
+            throw new InvalidOperationException("账户已存在！");
+        }
+  
         var upEntity = entity with { };
         upEntity.SetAccountName(cmd.AccountName)
              .SetRealName(cmd.RealName)
@@ -66,22 +80,9 @@ public class SysUserApp : ApplicationService, ISysUserApp
             .SetDeptAdmin(cmd.DeptAdmin);
 
         if (entity.Equals(upEntity)) return true;
-
-        var affectedRows = await SysUserRepo.AsUpdateable(upEntity).ExecuteCommandWithOptLockAsync();
-        if (affectedRows is not 1) throw new InvalidOperationException($"用户信息更新失败!");
+        await SysUserRepo.AsUpdateable(upEntity).ExecuteCommandWithOptLockAsync();
         return true;
     }
-
-    //public async Task<bool> UpdatePassWordAsync(long id, string oldPassword, string newPassword)
-    //{
-    //    //读取公司原始信息
-    //    var entity = await SysUserRepo.GetByIdAsync(id) ?? throw new InvalidOperationException($"用户ID:{id}资源不存在！");
-    //    if (EncryptUtils.MD5Encrypt(oldPassword) != entity.Password) throw new InvalidOperationException($"旧密码错误!");
-    //    entity.SetPassword(EncryptUtils.MD5Encrypt(newPassword));
-    //    var affectedRows = await SysUserRepo.AsUpdateable(entity).ExecuteCommandWithOptLockAsync();
-    //    if (affectedRows is not 1) throw new InvalidOperationException($"用户信息更新失败!");
-    //    return true;
-    //}
 
     public async Task<PageData<IEnumerable<SysUserPageListDto>>> GetPageListAsync(SysUserPageFilterQry qry)
     {

@@ -179,4 +179,13 @@ public interface IHotelApp
     /// <returns></returns>
     Task<bool> UpdateHotelState(string userHotelId);
 
+
+    /// <summary>
+    /// 批量修改酒店状态
+    /// </summary>
+    /// <param name="userHotelIds"></param>
+    /// <param name="newSaleType"></param>
+    /// <returns></returns>
+    Task<bool> BatchUpdateHotelState(List<string> userHotelIds, HotelSaleTypeEnum newSaleType);
+
 }

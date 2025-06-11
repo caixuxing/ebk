@@ -20,15 +20,8 @@ namespace YueJia.Ebk.Web
                       new MenuModel(){
                          pageIndex ="page3",
                          title = "酒店管理",
+                         url = "/Hotel/UserHotelMgr" ,
                          isShow = new List<AccountTypeEnum>(){  AccountTypeEnum.SysAdmin,AccountTypeEnum.NormalUser }.Contains(userAccountType),
-                         children = new List<MenuModel>(){
-                             new MenuModel(){
-                                 pageIndex = "page3-1" ,
-                                 title ="我的酒店",
-                                 url = "/Hotel/HotelPublishList" ,
-                                 isShow = new List<AccountTypeEnum>(){  AccountTypeEnum.SysAdmin,AccountTypeEnum.NormalUser }.Contains(userAccountType)
-                             }
-                         }
                       },
                       new MenuModel(){
                          pageIndex ="page2",
