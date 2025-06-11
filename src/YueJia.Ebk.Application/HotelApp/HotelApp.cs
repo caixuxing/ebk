@@ -45,7 +45,7 @@ public class HotelApp : ApplicationService, IHotelApp
                                         cmd.EndDate,
                                         cmd.HotelRoomTitle);
 
-        if (db.Queryable<HotelRoomDo>().Any(vv => vv.HotelId == SqlFunc.ToInt64(cmd.HotelId) && vv.RoomType == cmd.RoomType))
+        if (db.Queryable<HotelRoomDo>().Any(vv => vv.HotelId == SqlFunc.ToInt64(cmd.HotelId) && vv.RoomType == cmd.RoomType && vv.CreatedbyId == CurrentUserApp.Id))
         {
             throw new InvalidOperationException("数据存在，请勿重复创建");
         }
