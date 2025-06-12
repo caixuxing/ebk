@@ -84,7 +84,7 @@ internal class YueJiaEbkWebModule : AbpModule
                    options.LoginPath = "/";
                    options.AccessDeniedPath = "/";
                    options.Cookie.Name = "EbkUser";
-                   options.ExpireTimeSpan = TimeSpan.FromMinutes(1);// Cookie 有效期
+                   options.ExpireTimeSpan = TimeSpan.FromMinutes(30);// Cookie 有效期
                    options.SlidingExpiration = true;// 滑动过期（每次请求后刷新有效期）
                    options.Events = new CookieAuthenticationEvents
                    {
