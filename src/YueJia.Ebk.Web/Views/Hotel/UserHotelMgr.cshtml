@@ -5,7 +5,7 @@
                 <el-form-item label="酒店编码" style="margin-bottom:5px;">
                     <el-input v-model="state.qry.hotelCode" clearable style="width:200px"></el-input>
                 </el-form-item>
-                   <el-form-item label="酒店名称" style="margin-bottom:5px;">
+                <el-form-item label="酒店名称" style="margin-bottom:5px;">
                     <el-input v-model="state.qry.hotelName" clearable style="width:200px"></el-input>
                 </el-form-item>
                 <el-form-item label="状态"  style="margin-bottom:5px;">
@@ -18,6 +18,20 @@
                 <el-form-item prop="desc" style="margin-bottom:5px;">
                     <el-button type="primary" v-on:click="pageIndex=1;loadData()" id="query">查询</el-button>
                     <el-button v-on:click="resetQueryForm">重置</el-button>
+                </el-form-item>
+            </div>
+            <div>
+                <el-form-item label="国家" style="margin-bottom:5px;">
+                    <el-select v-model="state.qry.countryId" placeholder="不限" style="width:200px;" clearable filterable>
+                        <el-option label="--不限--" :value="0"></el-option>
+                        @foreach (YueJia.Ebk.Application.Contracts.Comm.BaseObj.SelectDataDto<int> ele in ViewBag.CountryList)
+                        {
+                            <el-option label="@ele.Label" :value="@ele.Value"></el-option>
+                        }
+                    </el-select>
+                </el-form-item>
+                <el-form-item label="城市名称" style="margin-bottom:5px;">
+                    <el-input v-model="state.qry.cityName" clearable style="width:200px"></el-input>
                 </el-form-item>
             </div>
         </el-form>
@@ -112,7 +126,7 @@
         const app = Vue.createApp({
         setup() {
 
-           let qry = {  hotelCode: '',hotelName: '',status: null,pageIndex: 1,pageSize: 50,totalCount: 0 }
+           let qry = {  hotelCode: '',hotelName: '',countryId:null,cityName:'', status: null,pageIndex: 1,pageSize: 50,totalCount: 0 }
            let selectUserHotelIds = [];
            const state = Vue.reactive({
                 qry:  JSON.parse(JSON.stringify( qry)),
@@ -123,7 +137,7 @@
             Vue.onMounted(() => { loadData()  });
 
             const loadData = () => {
-                       axios.post(`/hotel/HotelPublishListData`, {...state.qry}).then(response => {
+                       axios.post(`/hotel/UserHotelPage`, {...state.qry}).then(response => {
                          let {data,status}=response;
                          state.dataList = data.data.list;
                           state.qry.totalCount = data.data.total;

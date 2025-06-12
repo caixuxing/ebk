@@ -1,9 +1,12 @@
-﻿using YueJia.Ebk.Application.Contracts.HotelApp;
+﻿using Microsoft.Extensions.DependencyInjection;
+using YueJia.Ebk.Application.Contracts.HotelApp;
 using YueJia.Ebk.Application.Contracts.HotelApp.Commands;
 using YueJia.Ebk.Application.Contracts.HotelApp.Dto;
 using YueJia.Ebk.Application.Contracts.HotelApp.Query;
+using YueJia.Ebk.Application.Contracts.OuterServiceApp.Entity;
 using YueJia.Ebk.Application.Contracts.SysUserApp;
 using YueJia.Ebk.Domain.Hotel;
+using YueJia.Ebk.Domain.Shared.Const;
 using YueJia.Ebk.Domain.SysUser;
 
 
@@ -21,6 +24,8 @@ public class HotelPublishApp : ApplicationService, IHotelPublishApp
     private ICurrentUserApp CurrentUserApp => LazyServiceProvider.LazyGetRequiredService<ICurrentUserApp>();
 
     private ISimpleClient<SysUserDo> SysUserRepo => LazyServiceProvider.LazyGetRequiredService<ISimpleClient<SysUserDo>>();
+
+    private ISqlSugarClient SqlSugarClient => LazyServiceProvider.GetRequiredKeyedService<ISqlSugarClient>(DbConst.YueJiaSysDb);
 
 
     public async Task<HotelPublishDetailDto> GetHotelPublishDetailAsync(long id)
@@ -41,11 +46,18 @@ public class HotelPublishApp : ApplicationService, IHotelPublishApp
 
     public async Task<PageData<IEnumerable<HotelPublishPageListDto>>> GetMyHotelPublishPageListAsync(HotelPublishPageFilterQry qry)
     {
+        string CountryIosCode = "";
+        if (qry.countryId!=null) {
+            CountryIosCode = SqlSugarClient.Queryable<BAreaEntity>().Single(vv => vv.Id == qry.countryId).CountryIosCode??"";
+        }
+
         RefAsync<int> total = 0;
 
         var query = HotelPublishRepo.AsQueryable()
               .WhereIF(!string.IsNullOrWhiteSpace(qry.HotelName), x => SqlFunc.Like(x.HotelName, $"{qry.HotelName}%") || SqlFunc.Like(x.HotelNameEn, $"{qry.HotelName}%"))
               .WhereIF(!string.IsNullOrWhiteSpace(qry.HotelCode), x => x.HotelCode == qry.HotelCode)
+              .WhereIF(!string.IsNullOrEmpty(CountryIosCode) , x=> x.CountryIosCode == CountryIosCode)
+              .WhereIF(!string.IsNullOrEmpty(qry.cityName) , x=> x.CityName.Contains(qry.cityName) )
               .WhereIF(qry.Status.HasValue, x => x.Status == qry.Status);
         var queryMap = WhereDeptFilter(query).Select(x => new HotelPublishPageListDto()
         {
