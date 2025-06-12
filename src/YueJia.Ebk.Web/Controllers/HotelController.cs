@@ -40,26 +40,26 @@ public class HotelController : AbpController
     private ISqlSugarClient SqlSugarClient => LazyServiceProvider.GetRequiredKeyedService<ISqlSugarClient>(DbConst.YueJiaSysDb);
 
 
+    #region 用户酒店
     /// <summary>
-    /// 酒店发布管理View
+    /// 用户酒店
     /// </summary>
     /// <returns></returns>
-    public async Task<IActionResult> HotelPublishList()
+    public async Task<IActionResult> UserHotelMgr()
     {
-        ViewBag.CountryData = JsonConvert.SerializeObject(await YueJiaSysServiceApp.GetDropDownCountryListAsync(), new JsonSerializerSettings { ContractResolver = new CamelCasePropertyNamesContractResolver() });
+        ViewBag.CountryList = await YueJiaSysServiceApp.GetDropDownCountryListAsync();
         ViewBag.HotelSaleTypeData = JsonConvert.SerializeObject(SysEnumApp.GetEnumDataList(nameof(HotelSaleTypeEnum)), new JsonSerializerSettings { ContractResolver = new CamelCasePropertyNamesContractResolver() });
         return View();
     }
 
-
     /// <summary>
-    /// 酒店发布管理
+    /// 用户酒店列表
     /// </summary>
     /// <param name="requestQry"></param>
     /// <returns></returns>
-    [HttpPost, Route("[controller]/HotelPublishListData")]
-    public async Task<IResult> GetPageList([FromBody] HotelPublishPageFilterQry requestQry) => ApiResult.HandleResult(await HotelPublishApp.GetMyHotelPublishPageListAsync(requestQry));
-
+    [HttpPost, Route("[controller]/UserHotelPage")]
+    public async Task<IResult> UserHotelPage([FromBody] HotelPublishPageFilterQry requestQry) => ApiResult.HandleResult(await HotelPublishApp.GetMyHotelPublishPageListAsync(requestQry));
+    #endregion
 
     /// <summary>
     /// 用户添加酒店
@@ -554,6 +554,34 @@ public class HotelController : AbpController
 
         return ApiResult.HandleResult(await HotelApp.BatchSaveInventoryAndPricesSenior(qry));
     }
+
+    #endregion
+
+    #region 酒店操作
+
+    /// <summary>
+    /// 批量上架
+    /// </summary>
+    /// <param name="userHotelIds"></param>
+    /// <returns></returns>
+    [HttpPost, Route("[controller]/BatchUp")]
+    public async Task<IResult> BatchUp([FromBody] List<string> userHotelIds)
+    {
+        return ApiResult.HandleBoolResult(await HotelApp.BatchUpdateHotelState(userHotelIds, HotelSaleTypeEnum.Up));
+    }
+
+    /// <summary>
+    /// 批量下架
+    /// </summary>
+    /// <param name="userHotelIds"></param>
+    /// <returns></returns>
+    [HttpPost, Route("[controller]/BatchDown")]
+    public async Task<IResult> BatchDown([FromBody] List<string> userHotelIds)
+    {
+        return ApiResult.HandleBoolResult(await HotelApp.BatchUpdateHotelState(userHotelIds, HotelSaleTypeEnum.Down));
+    }
+
+
 
     #endregion
 

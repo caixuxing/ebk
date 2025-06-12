@@ -17,7 +17,7 @@ public class YueJiaSysServiceApp : ApplicationService, IYueJiaSysServiceApp
     public async Task<List<SelectDataDto<int>>> GetDropDownCountryListAsync()
     {
 
-        var data = await SqlSugarClient.Queryable<BAreaEntity>().Where(q => q.level == 1)
+        var data = await SqlSugarClient.Queryable<BAreaEntity>().With(SqlWith.NoLock).Where(q => q.level == 1)
            .Select(t => new SelectDataDto<int>()
            {
                Label = $"[{t.CountryIosCode ?? string.Empty}]{t.Name}({t.EnName})",
@@ -26,6 +26,8 @@ public class YueJiaSysServiceApp : ApplicationService, IYueJiaSysServiceApp
 
         return data;
     }
+
+
 
     public async Task<PageData<IEnumerable<HotelPageListDto>>> GetHotelPageListAsync(HotelPageListFilterQry qry)
     {
@@ -111,7 +113,5 @@ public class YueJiaSysServiceApp : ApplicationService, IYueJiaSysServiceApp
                                                               }).ToListAsync();
                         
     }
-
-
 
 }

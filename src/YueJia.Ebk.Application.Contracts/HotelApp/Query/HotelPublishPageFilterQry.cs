@@ -14,4 +14,14 @@ public record HotelPublishPageFilterQry : BasePageQry
     /// 状态
     /// </summary>
     public HotelSaleTypeEnum? Status { get; set; }
+
+    /// <summary>
+    /// 国家 Ios
+    /// </summary>
+    public int? countryId { get; set; }
+
+    /// <summary>
+    /// 城市名称
+    /// </summary>
+    public string cityName { get; set; }
 }

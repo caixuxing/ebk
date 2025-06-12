@@ -5,7 +5,7 @@
                 <el-form-item label="酒店编码" style="margin-bottom:5px;">
                     <el-input v-model="state.qry.hotelCode" clearable style="width:200px"></el-input>
                 </el-form-item>
-                   <el-form-item label="酒店名称" style="margin-bottom:5px;">
+                <el-form-item label="酒店名称" style="margin-bottom:5px;">
                     <el-input v-model="state.qry.hotelName" clearable style="width:200px"></el-input>
                 </el-form-item>
                 <el-form-item label="状态"  style="margin-bottom:5px;">
@@ -20,15 +20,34 @@
                     <el-button v-on:click="resetQueryForm">重置</el-button>
                 </el-form-item>
             </div>
+            <div>
+                <el-form-item label="国家" style="margin-bottom:5px;">
+                    <el-select v-model="state.qry.countryId" placeholder="不限" style="width:200px;" clearable filterable>
+                        <el-option label="--不限--" :value="0"></el-option>
+                        @foreach (YueJia.Ebk.Application.Contracts.Comm.BaseObj.SelectDataDto<int> ele in ViewBag.CountryList)
+                        {
+                            <el-option label="@ele.Label" :value="@ele.Value"></el-option>
+                        }
+                    </el-select>
+                </el-form-item>
+                <el-form-item label="城市名称" style="margin-bottom:5px;">
+                    <el-input v-model="state.qry.cityName" clearable style="width:200px"></el-input>
+                </el-form-item>
+            </div>
         </el-form>
         <el-form label-width="100px" :inline="true" style="margin-top:30px;">
             <el-form-item prop="desc" style="margin-bottom:5px;">
+                <el-button v-on:click="onBatchUp">批量上架</el-button>
+                <el-button v-on:click="onBatchDown">批量下架</el-button>
                 <el-button type="primary" v-on:click="userAddHotel">添加酒店</el-button>
             </el-form-item>
         </el-form>
         <el-table :data="state.dataList"
                   border
+                  v-on:selection-change ="handleSelectionChange"
                   height="100%" >
+
+            <el-table-column type="selection" width="50" align="center"></el-table-column>
             <el-table-column label="#" width="60" align="center">
                 <template #default="scope">
                     <div style="text-align:left">
@@ -107,8 +126,8 @@
         const app = Vue.createApp({
         setup() {
 
-           let qry = {  hotelCode: '',hotelName: '',status: null,pageIndex: 1,pageSize: 50,totalCount: 0 }
-
+           let qry = {  hotelCode: '',hotelName: '',countryId:null,cityName:'', status: null,pageIndex: 1,pageSize: 50,totalCount: 0 }
+           let selectUserHotelIds = [];
            const state = Vue.reactive({
                 qry:  JSON.parse(JSON.stringify( qry)),
                 saleTypeData:@(Html.Raw(ViewBag.HotelSaleTypeData)),
@@ -118,7 +137,7 @@
             Vue.onMounted(() => { loadData()  });
 
             const loadData = () => {
-                       axios.post(`/hotel/HotelPublishListData`, {...state.qry}).then(response => {
+                       axios.post(`/hotel/UserHotelPage`, {...state.qry}).then(response => {
                          let {data,status}=response;
                          state.dataList = data.data.list;
                           state.qry.totalCount = data.data.total;
@@ -135,6 +154,9 @@
                      loadData();
             };
 
+            const handleSelectionChange = (rows) => {
+                 selectUserHotelIds = rows.map(vv=>vv.id+'');
+            }
 
             const onDelete =  (row) => {
                     ElMessageBox.confirm('您确定删除吗?', { confirmButtonText: '确定', cancelButtonText: '取消', type: 'warning', }).then(() => {
@@ -145,8 +167,38 @@
                                           }
                             })
                     })
-              }
+            }
 
+            const onBatchUp =  (row) => {
+                    if(selectUserHotelIds.length == 0){
+                        top.window.vueElMessage({ message: '请选择操作项' , type:  'info' })
+                        return;
+                    }
+                    ElMessageBox.confirm('您确定批量上架吗?',{ confirmButtonText: '确定', cancelButtonText: '取消', type: 'warning', }).then(() => {
+                        axios.post(`/hotel/BatchUp`,selectUserHotelIds).then(res => {
+                                          top.window.vueElMessage({ message: res.data. message , type:  res.data.isSuccess?'success':'info' })
+                                          if(res.data.isSuccess){
+                                             loadData();
+                                          }
+                            })
+                    })
+            }
+
+            const onBatchDown =  () => {
+                    if(selectUserHotelIds.length == 0){
+                        top.window.vueElMessage({ message: '请选择操作项' , type:  'info' })
+                        return;
+                    }
+                    ElMessageBox.confirm('您确定批量下架吗?', { confirmButtonText: '确定', cancelButtonText: '取消', type: 'warning', }).then(() => {
+                        axios.post(`/hotel/BatchDown`,selectUserHotelIds).then(res => {
+                                          top.window.vueElMessage({ message: res.data. message , type:  res.data.isSuccess?'success':'info' })
+                                          if(res.data.isSuccess){
+                                             loadData();
+                                          }
+                            })
+                    })
+            }
+            
 
              const resetQueryForm=()=>{
                  state.qry  = JSON.parse(JSON.stringify( qry))
@@ -196,7 +248,10 @@
                         ,loadData
                         ,handleSizeChange
                         ,handleCurrentChange
+                        ,handleSelectionChange
                         ,onDelete
+                        ,onBatchUp
+                        ,onBatchDown
                         ,resetQueryForm
                         ,userAddHotel
                         ,onViewHotel

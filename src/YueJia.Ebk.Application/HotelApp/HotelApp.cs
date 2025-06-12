@@ -1003,4 +1003,23 @@ public class HotelApp : ApplicationService, IHotelApp
     }
 
 
+    public async Task<bool> BatchUpdateHotelState(List<string> userHotelIds, HotelSaleTypeEnum newSaleType)
+    {
+     
+        return await DbTransaction.ExecuteInTransactionAsync(db, async () =>
+        {
+            foreach (var userHotelId in userHotelIds) {
+
+                var model = db.Queryable<HotelPublishDo>().Single(vv => vv.Id == SqlFunc.ToInt64(userHotelId) && vv.TenantId == SqlFunc.ToInt64(CurrentUserApp.TenantId));
+                if (model.Status == newSaleType) {
+                    continue;
+                }
+                model.SetStatus(newSaleType);
+                db.Updateable<HotelPublishDo>(model).ExecuteCommand();
+            }
+            return true;
+        });
+    }
+
+
 }
