@@ -59,18 +59,76 @@ public class HotelController : AbpController
     /// <returns></returns>
     [HttpPost, Route("[controller]/UserHotelPage")]
     public async Task<IResult> UserHotelPage([FromBody] HotelPublishPageFilterQry requestQry) => ApiResult.HandleResult(await HotelPublishApp.GetMyHotelPublishPageListAsync(requestQry));
-    #endregion
+
+    /// <summary>
+    /// 批量上架
+    /// </summary>
+    /// <param name="userHotelIds"></param>
+    /// <returns></returns>
+    [HttpPost, Route("[controller]/UserHotelBatchUp")]
+    public async Task<IResult> UserHotelBatchUp([FromBody] List<string> userHotelIds)
+    {
+        return ApiResult.HandleBoolResult(await HotelApp.BatchUpdateHotelState(userHotelIds, HotelSaleTypeEnum.Up));
+    }
+
+    /// <summary>
+    /// 批量下架
+    /// </summary>
+    /// <param name="userHotelIds"></param>
+    /// <returns></returns>
+    [HttpPost, Route("[controller]/UserHotelBatchDown")]
+    public async Task<IResult> UserHotelBatchDown([FromBody] List<string> userHotelIds)
+    {
+        return ApiResult.HandleBoolResult(await HotelApp.BatchUpdateHotelState(userHotelIds, HotelSaleTypeEnum.Down));
+    }
+
+    /// <summary>
+    /// 切换酒店状态
+    /// </summary>
+    /// <param name="id"></param>
+    /// <returns></returns>
+    [HttpPost, Route("[controller]/UserHotelChangeState/{id}")]
+    public async Task<IResult> UserHotelChangeState(string id) => ApiResult.HandleBoolResult(await HotelApp.UpdateHotelState(id));
+
+    /// <summary>
+    /// 酒店删除
+    /// </summary>
+    /// <param name="id"></param>
+    /// <returns></returns>
+    [HttpPost, Route("[controller]/UserHotelDelete/{id}")]
+    public async Task<IResult> UserHotelDelete(string id) => ApiResult.HandleBoolResult(await HotelApp.UserHotelDelete(id));
+
 
     /// <summary>
     /// 用户添加酒店
     /// </summary>
     /// <returns></returns>
-    public async Task<IActionResult> UserAddHotelMgr()
+    public async Task<IActionResult> AddUserHotelMgr()
     {
 
         ViewBag.CountryList = await YueJiaSysServiceApp.GetDropDownCountryListAsync();
         return View();
     }
+
+    /// <summary>
+    /// 酒店列表
+    /// </summary>
+    /// <param name="requestQry"></param>
+    /// <returns></returns>
+    [HttpPost, Route("[controller]/GetBaseHotelPageList")]
+    public async Task<IResult> GetBaseHotelPageList([FromBody] HotelPageListFilterQry requestQry) => ApiResult.HandleResult(await YueJiaSysServiceApp.GetHotelPageListAsync(requestQry));
+
+
+    /// <summary>
+    /// 添加用户酒店
+    /// </summary>
+    /// <param name="cmd"></param>
+    /// <returns></returns>
+    [HttpPost, Route("[controller]/AddUserHotel")]
+    public async Task<IResult> AddUserHotel([FromBody] CreateOrUpHotelPublishCmd cmd) => ApiResult.HandleBoolResult(await HotelPublishApp.PublishHotelAsync(cmd));
+    #endregion
+
+
 
 
     /// <summary>
@@ -83,13 +141,7 @@ public class HotelController : AbpController
     }
 
 
-    /// <summary>
-    /// 确认添加酒店发布
-    /// </summary>
-    /// <param name="cmd"></param>
-    /// <returns></returns>
-    [HttpPost, Route("[controller]/PublishHotel")]
-    public async Task<IResult> PublishHotel([FromBody] CreateOrUpHotelPublishCmd cmd) => ApiResult.HandleBoolResult(await HotelPublishApp.PublishHotelAsync(cmd));
+
 
     /// <summary>
     /// 更新酒店发布
@@ -109,13 +161,6 @@ public class HotelController : AbpController
     public async Task<IResult> GetHotelPublishDetail([FromRoute] string id) => ApiResult.HandleResult(await HotelPublishApp.GetHotelPublishDetailAsync(id.ToLong()));
 
 
-    /// <summary>
-    /// 酒店列表
-    /// </summary>
-    /// <param name="requestQry"></param>
-    /// <returns></returns>
-    [HttpPost, Route("[controller]/HotelPageList")]
-    public async Task<IResult> GetHotelList([FromBody] HotelPageListFilterQry requestQry) => ApiResult.HandleResult(await YueJiaSysServiceApp.GetHotelPageListAsync(requestQry));
 
 
 
@@ -199,13 +244,7 @@ public class HotelController : AbpController
     [HttpPost, Route("[controller]/UpdateRoomState/{id}")]
     public async Task<IResult> UpdateRoomState(string id) => ApiResult.HandleBoolResult(await HotelApp.UpdateRoomStateAsync(id.ToLong()));
 
-    /// <summary>
-    /// 切换酒店状态
-    /// </summary>
-    /// <param name="id"></param>
-    /// <returns></returns>
-    [HttpPost, Route("[controller]/UpdateHotelState/{id}")]
-    public async Task<IResult> UpdateHotelState(string id) => ApiResult.HandleBoolResult(await HotelApp.UpdateHotelState(id));
+ 
 
 
     #region 房间与价格计划
@@ -557,32 +596,6 @@ public class HotelController : AbpController
 
     #endregion
 
-    #region 酒店操作
 
-    /// <summary>
-    /// 批量上架
-    /// </summary>
-    /// <param name="userHotelIds"></param>
-    /// <returns></returns>
-    [HttpPost, Route("[controller]/BatchUp")]
-    public async Task<IResult> BatchUp([FromBody] List<string> userHotelIds)
-    {
-        return ApiResult.HandleBoolResult(await HotelApp.BatchUpdateHotelState(userHotelIds, HotelSaleTypeEnum.Up));
-    }
-
-    /// <summary>
-    /// 批量下架
-    /// </summary>
-    /// <param name="userHotelIds"></param>
-    /// <returns></returns>
-    [HttpPost, Route("[controller]/BatchDown")]
-    public async Task<IResult> BatchDown([FromBody] List<string> userHotelIds)
-    {
-        return ApiResult.HandleBoolResult(await HotelApp.BatchUpdateHotelState(userHotelIds, HotelSaleTypeEnum.Down));
-    }
-
-
-
-    #endregion
 
 }

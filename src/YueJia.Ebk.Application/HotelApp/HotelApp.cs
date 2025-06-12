@@ -1021,5 +1021,17 @@ public class HotelApp : ApplicationService, IHotelApp
         });
     }
 
+    public async Task<bool> UserHotelDelete(string userHotelId)
+    {
+        //房间
+        var entity = db.Queryable<HotelPublishDo>().Where(vv => vv.Id == SqlFunc.ToInt64(userHotelId) && vv.TenantId == SqlFunc.ToInt64( CurrentUserApp.TenantId)).ToList().FirstOrDefault();   
+        if (entity == null)
+        {
+            throw new InvalidOperationException("数据不存在！");
+        }
+        entity.IsDelete = true;
+         await db.Updateable<HotelPublishDo>(entity).ExecuteCommandAsync();
+        return true;
 
+    }
 }

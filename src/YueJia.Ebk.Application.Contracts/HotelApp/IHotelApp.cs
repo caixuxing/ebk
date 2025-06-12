@@ -188,4 +188,7 @@ public interface IHotelApp
     /// <returns></returns>
     Task<bool> BatchUpdateHotelState(List<string> userHotelIds, HotelSaleTypeEnum newSaleType);
 
+
+    Task<bool> UserHotelDelete(string userHotelId);
+
 }
