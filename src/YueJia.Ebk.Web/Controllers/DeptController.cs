@@ -9,6 +9,10 @@ using YueJia.Ebk.Application.Contracts.SysUserApp;
 
 namespace YueJia.Ebk.Web.Controllers
 {
+    /// <summary>
+    /// 部门管理
+    /// </summary>
+    [Authorize]
     public class DeptController : AbpController
     {
 
