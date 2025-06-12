@@ -99,7 +99,7 @@ internal class YueJiaEbkWebModule : AbpModule
                            }
                            else
                            {
-                               context.Response.WriteAsync($"<script>top.location.href='{context.RedirectUri}';</script>");
+                               context.Response.WriteAsync($"<script>top.location.href='http://ebk.yegatrip.com/';</script>");
                            }
                            return Task.CompletedTask;
                        }

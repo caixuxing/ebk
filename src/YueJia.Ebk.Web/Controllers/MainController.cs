@@ -1,13 +1,14 @@
 ﻿using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
-using SqlSugar;
 using YueJia.Ebk.Application.Contracts.SysUserApp;
 using YueJia.Ebk.Domain.Shared.Response;
 
 
 namespace YueJia.Ebk.Web.Controllers
 {
-
+    /// <summary>
+    /// Main
+    /// </summary>
     [Authorize]
     public class MainController : AbpController
     {

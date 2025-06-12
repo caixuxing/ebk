@@ -1,6 +1,4 @@
-﻿using DeviceDetectorNET.Class.Device;
-using YueJia.Ebk.Application.CompanyApp;
-using YueJia.Ebk.Application.Contracts.CompanyApp;
+﻿using YueJia.Ebk.Application.Contracts.CompanyApp;
 using YueJia.Ebk.Application.Contracts.CompanyApp.Commands;
 using YueJia.Ebk.Application.Contracts.DeptApp;
 using YueJia.Ebk.Application.Contracts.DeptApp.Commands;
@@ -8,11 +6,13 @@ using YueJia.Ebk.Application.Contracts.DeptApp.Dto;
 using YueJia.Ebk.Application.Contracts.DeptApp.Query;
 using YueJia.Ebk.Application.Contracts.SysApp;
 using YueJia.Ebk.Application.Contracts.SysUserApp;
-using YueJia.Ebk.Application.SysUserApp;
-using YueJia.Ebk.Web.ViewModels.Company;
 
 namespace YueJia.Ebk.Web.Controllers
 {
+    /// <summary>
+    /// 部门管理
+    /// </summary>
+    [Authorize]
     public class DeptController : AbpController
     {
 
@@ -24,11 +24,14 @@ namespace YueJia.Ebk.Web.Controllers
         private ICompanyApp CompanyApp => LazyServiceProvider.LazyGetRequiredService<ICompanyApp>();
 
 
-
-        public  IActionResult Index()
+        /// <summary>
+        /// 部门管理View
+        /// </summary>
+        /// <returns></returns>
+        public async Task<IActionResult> Index()
         {
             ViewBag.YesOrNoTypeList = SysEnumApp.GetEnumDataList(nameof(YesOrNoType));
-            ViewBag.CompanyChannelManage =  CompanyApp.GetCompanyById( Convert.ToInt64( currentUserApp.Company.CompanyId)).Result.IsChannelManage == YesOrNoType.Yes;
+            ViewBag.CompanyChannelManage = (await CompanyApp.GetCompanyById(currentUserApp.Company.CompanyId?.ToLong() ?? 0)).IsChannelManage == YesOrNoType.Yes;
             return View();
         }
 
@@ -117,7 +120,7 @@ namespace YueJia.Ebk.Web.Controllers
         [HttpPost, Route("[controller]/{id}/HandleAssignChannel")]
         public async Task<IResult> HandleAssignChannel([FromBody] AssignChannelCmd requestCmd, [FromRoute] string id)
         {
-            var result = await  DeptApp .AssignChannelAsync(requestCmd.SalePlatCodeList, id.ToLong());
+            var result = await DeptApp.AssignChannelAsync(requestCmd.SalePlatCodeList, id.ToLong());
             return ApiResult.HandleBoolResult(result);
         }
 
