@@ -1,3 +1,5 @@
+using YueJia.Ebk.Infrastructure.JobWork;
+
 namespace YueJia.Ebk.Web;
 
 public class Program
@@ -10,8 +12,13 @@ public class Program
             var builder = WebApplication.CreateBuilder(args);
             builder.Host.AddAppSettingsSecretsJson().UseAutofac();
             builder.Services.AddControllersWithViews();
-
             builder.Services.ReplaceConfiguration(builder.Configuration);
+            builder.Services.AddHostedService<EbkDbSyncService>();
+            builder.Services.Configure<HostOptions>(options =>
+            {
+                options.BackgroundServiceExceptionBehavior = BackgroundServiceExceptionBehavior.Ignore;
+            });
+
             await builder.AddApplicationAsync<YueJiaEbkWebModule>();
             var app = builder.Build();
             await app.InitializeApplicationAsync();

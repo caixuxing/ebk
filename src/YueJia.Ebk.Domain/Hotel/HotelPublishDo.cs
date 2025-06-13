@@ -6,6 +6,8 @@
 [SugarTable("HotelPublish", "酒店发布表")]
 public partial record HotelPublishDo : EntityTenant
 {
+
+
     public HotelPublishDo() { }
     /// <summary>
     /// 酒店编码
@@ -65,7 +67,7 @@ public partial record HotelPublishDo : EntityTenant
     /// <summary>
     /// 城市名称
     /// </summary>
-    [SugarColumn(ColumnDescription = "城市名称", Length = 50,DefaultValue ="",IsNullable =true)]
+    [SugarColumn(ColumnDescription = "城市名称", Length = 50, DefaultValue = "", IsNullable = true)]
     public string CityName { get; set; } = default!;
 
 }
