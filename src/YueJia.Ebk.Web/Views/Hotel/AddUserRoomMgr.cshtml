@@ -7,7 +7,6 @@
 @inject ISysEnumApp enumApp
 @inject IYueJiaSysServiceApp yueJiaSysServiceApp
 
-
 @section head {
     <style scoped>
         .my-label {
@@ -25,8 +24,8 @@
         <el-form :inline="true"   label-width="auto"  >
             <div>
                 <el-form-item label="房型" required >
-                    <el-select v-model="model.roomType" placeholder="请选择房型" filterable  style="width:600px"  v-on:change="onRoomChange" >
-                        <el-option v-for="ele in otaRoomList" :label="roomDescribe(ele)" :value="''+ele.roomcode"   ></el-option>
+                    <el-select v-model="model.roomType" placeholder="请选择房型" filterable style="width:600px" v-on:change="userEvent.onRoomChange">
+                        <el-option v-for="ele in otaRoomList" :label="userEvent.getRoomDescribe(ele)" :value="''+ele.roomcode"></el-option>
                     </el-select>
                 </el-form-item>
             </div>
@@ -112,7 +111,7 @@
     </el-main>
     <el-footer>
         <div style="text-align: center;">
-            <el-button type="primary" v-on:click="onSave">保存 </el-button>
+            <el-button type="primary" v-on:click="userEvent.onSave">保存 </el-button>
         </div>
     </el-footer>
 </el-container>
@@ -122,11 +121,10 @@
 
         const app = Vue.createApp({
         setup() {
-                const maxAdultNumber=Vue.ref(5);
-                const maxChildrenNumber=Vue.ref(0);
                 const model =  Vue.reactive(
         @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model, new System.Text.Json.JsonSerializerOptions() { PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase }))
                 );
+
                 const otaRoomList = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(await yueJiaSysServiceApp.GetOTARoomAsync(Model.HotelCode), new System.Text.Json.JsonSerializerOptions() { PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase }));
                
                 Vue.onMounted(() => {
@@ -134,50 +132,34 @@
                      console.log(model);
                  });
 
-
-                 /*
-                 * 房型描述
-                 */
-                 const roomDescribe =(ele)=>{
-                    return ele.roomname +' '+ ele.roomnameen;
-                 }
-
-                 /**
-                  * 房型改变事件
-                  */
-                 const onRoomChange=()=>{
-
-                     var roomObj =  otaRoomList.find(vv=>vv.roomcode == model.roomType);
+               const userEvent = {
+                    getRoomDescribe:(ele)=>{
+                      return ele.roomname +' '+ ele.roomnameen;
+                    },
+                    onRoomChange:()=>{
+                       var roomObj=  otaRoomList.find(vv=>vv.roomcode == model.roomType);
                        model.bedType =roomObj.bedtype;
                        model.hotelRoomTitle =  `${roomObj.roomname} ${roomObj.roomnameen}`;
-                 }
+                    },
+                    onSave:()=>{
+                         let reqData = { ...model };
+                         reqData.startDate = model.dateRange[0]
+                         reqData.endDate = model.dateRange[1]
 
-
-                 /**
-                  * 保存
-                  */
-                const onSave=  () => {
-
-                     let reqData = { ...model };
-                     reqData.startDate = model.dateRange[0]
-                     reqData.endDate = model.dateRange[1]
-
-                     axios.post(`/Hotel/AddHotelRoom`, reqData).then(res=>{
-                         top.window.vueElMessage({ message: res.data. message , type:  res.data.isSuccess?'success':'info' })
-                         if(res.data.isSuccess){
-                            parent.layer.close(frameIndex); // 关闭当前弹框
-                         }
-                     })
+                         axios.post(`/Hotel/AddUserRoom`, reqData).then(res=>{
+                             top.window.vueElMessage({ message: res.data. message , type:  res.data.isSuccess?'success':'info' })
+                             if(res.data.isSuccess){
+                                parent.layer.close(frameIndex); // 关闭当前弹框
+                             }
+                         })
+                    }
+               
                }
-              
+
                 return {
                     model
-                    ,maxAdultNumber
-                    ,maxChildrenNumber
+                    ,userEvent
                     ,otaRoomList
-                    ,roomDescribe
-                    ,onRoomChange
-                    ,onSave
                 }
         }
         });

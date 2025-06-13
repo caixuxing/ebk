@@ -1,0 +1,220 @@
+﻿@model YueJia.Ebk.Web.ViewModels.Hotel.RoomAndPricePlanVo
+@section head {
+    <style type="text/css">
+        .hide-body .el-card__body {
+          display: none !important;
+          padding: 0 !important;
+        }
+ </style>
+}
+<el-container style="height:100vh;overflow: hidden;">
+    <el-main>
+
+       @await Html.PartialAsync("~/Views/Hotel/UserHotelNavigationMgr.cshtml", (@ViewBag.mv as YueJia.Ebk.Web.ViewModels.Hotel.ViewHotelVo))
+       
+       <div style="height:50px;line-height:50px; position:relative ">
+            <h1>房间与价格计划</h1>
+            <el-button type="primary" v-on:click="userEvent.onAddUserRoom" size="small" style="position: absolute;top: 13px;left:170px;">新增房间</el-button>
+       </div>
+
+        <el-divider content-position="left"></el-divider>
+
+        <el-scrollbar>
+          <el-card v-for="(item, index) in vmodel.roomList"  :class="{ 'hide-body': !item.showContent }"  style=" margin-bottom:5px "   >
+            <template #header>
+                @* 头部信息 *@
+                    <div style=" display: flex;">
+
+                        <el-tag v-show="item.isEnabled==1 " type="primary">{{  item.isEnabledName }}</el-tag>
+                        <el-tag v-show="item.isEnabled==0 "  type="danger">{{   item.isEnabledName }}</el-tag>
+
+                        <el-text style="margin-left:10px;">{{item.startDateString}} 至 {{item.endDateString}}</el-text>
+
+                        <div style="margin-left:10px;width:600px;  white-space: nowrap; text-overflow: ellipsis ; overflow:hidden ">
+                            <el-text>
+                                {{item.hotelRoomTitle}}==>{{item.bedTypeName}}
+                            </el-text>
+                        </div>
+
+                        <el-button size="small" v-on:click="userEvent.onDeleteUserRoom(item)" type="danger" style="margin-left:10px;">删除</el-button>
+                        <el-button size="small" v-on:click="userEvent.onChangeUserRoomState(item)">切换状态</el-button>
+                        <el-button size="small" v-on:click="userEvent.onAddPlan(item)">新增价格计划</el-button>
+
+
+                        <el-text style="margin-left:10px; cursor:pointer;" v-if="item.showContent == false" v-on:click="item.showContent = true">显示更多详情</el-text>
+                        <el-text style="margin-left:10px; cursor:pointer;" v-if="item.showContent ==true " v-on:click="item.showContent = false">隐藏更多详情</el-text>
+
+                        <el-text style="margin-left:10px; cursor:pointer;" v-if="item.showFooter == false" v-on:click="item.showFooter = true">显示价格计划</el-text>
+                        <el-text style="margin-left:10px; cursor:pointer;" v-if="item.showFooter ==true " v-on:click="item.showFooter = false">隐藏价格计划</el-text>
+                </div>
+            </template>
+
+            <div v-if="item.showContent">
+                    @* 详情信息 *@
+                    <el-form label-width="auto" :inline="true">
+                        <div>
+                            <el-form-item label="床型">
+                                <el-text>{{item.bedTypeName}}</el-text>
+                            </el-form-item>
+                        </div>
+                        <div>
+                            <el-form-item label="人数上限">
+                                <el-text>{{item.maximumNumberOfPeople}}</el-text>
+                            </el-form-item>
+                            <el-form-item label="成人上限">
+                                <el-text>{{item.adultLimit}}</el-text>
+                            </el-form-item>
+                            <el-form-item label="儿童上限">
+                                <el-text>{{item.childLimit}}</el-text>
+                            </el-form-item>
+                        </div>
+                    </el-form>
+            </div>
+                <template #footer v-if="item.showFooter" >
+
+                    <el-table :data="item.planList"
+                               border
+                               height="100%" >
+
+
+                        <el-table-column label="描述" width="auto" align="center">
+                            <template #default="scope">
+                                <div style="text-align:left" >
+                                    <el-text>{{scope.row.pricePlanTitle}}</el-text>
+                                </div>
+                            </template>
+                        </el-table-column>
+                        
+                        <el-table-column label="是否保留房" width="150px" align="center">
+                            <template #default="scope">
+                                <div style="text-align:center">
+                                    <el-text>{{  scope.row.isReservedRoomName }}</el-text>
+                                </div>
+                            </template>
+                        </el-table-column>
+
+                        <el-table-column label="状态"  width="150px" align="center">
+                            <template #default="scope">
+                                <div style="text-align:center">
+                                    <el-tag v-show="scope.row.isEnable==1 " type="primary">{{ scope.row.isEnableName }}</el-tag>
+                                    <el-tag v-show="scope.row.isEnable==0 " type="danger">{{   scope.row.isEnableName }}</el-tag>
+                                </div>
+                            </template>
+                        </el-table-column>
+
+                        <el-table-column label="操作" width="180px" align="center">
+                            <template #default="scope">
+                                <el-button size="small" v-on:click="userEvent.onChangeUserPlanState(scope.row)">切换状态</el-button>
+                                <el-button size="small" type="danger" v-on:click="userEvent.onDeletePlan(scope.row)">删除 </el-button>
+                            </template>
+                        </el-table-column>
+
+                    </el-table>
+
+            </template>
+          </el-card>
+       </el-scrollbar>
+    </el-main>
+</el-container>
+@section scripts {
+    <script type="text/javascript">
+        const app = Vue.createApp({
+        setup() {
+
+           const vmodel = Vue.reactive({
+                roomList : [],
+           });
+
+           Vue.onMounted(() => {
+              userEvent.loadData();
+           });
+
+            const userEvent={
+                loadData:()=>{
+                       axios.get(`/Hotel/GetUserRoomAndPlan/@ViewBag.mv.Id`).then(response => {
+                         let {data,status}=response;
+                         vmodel.roomList = data.data;
+                         console.log( vmodel.roomList);
+                     })
+                },
+                onAddUserRoom:()=>{
+                    layer.open({
+                        type: 2,
+                        title: '新增房间',
+                        area: ['90%', '80%'],
+                        fix: false,
+                        maxmin: true,
+                        content:  "/Hotel/AddUserRoomMgr?id=@ViewBag.mv.Id",
+                        end: function () {
+                           userEvent.loadData();
+                        }
+                    });
+                },
+                onDeleteUserRoom:(row)=>{
+                     ElMessageBox.confirm('您确定删除吗?', { confirmButtonText: '确定', cancelButtonText: '取消', type: 'warning', }).then(() => {
+                             axios.delete(`/Hotel/DeleteUserRoom/${row.id}/`).then(res  => {
+                                  top.window.vueElMessage({ message: res.data. message , type:  res.data.isSuccess?'success':'info' })
+                                          if(res.data.isSuccess){
+                                            userEvent. loadData();
+                                          }
+                            })
+                     })
+                },
+                onChangeUserRoomState:(row)=>{
+                    ElMessageBox.confirm('您确定切换房间状态吗?', { confirmButtonText: '确定', cancelButtonText: '取消', type: 'warning', }).then(() => {
+                             axios.post(`/Hotel/ChangeUserRoomState/${row.id}`).then(res  => {
+                                  top.window.vueElMessage({ message: res.data. message , type:  res.data.isSuccess?'success':'info' })
+                                          if(res.data.isSuccess){
+                                             userEvent.loadData();
+                                          }
+                            })
+                     })
+                },
+                onAddPlan:(row)=>{
+                    layer.open({
+                        type: 2,
+                        title: '新增价格计划',
+                        area: ['100%', '100%'],
+                        fix: false,
+                        maxmin: true,
+                        content:  `/Hotel/AddUserPlanMgr/${row.id}`,
+                        end: function () {
+                          userEvent. loadData();
+                        }
+                    });
+                },
+                onDeletePlan:(row)=>{
+                     ElMessageBox.confirm('您确定删除吗?', { confirmButtonText: '确定', cancelButtonText: '取消', type: 'warning', }).then(() => {
+                             axios.delete(`/Hotel/DeleteUserPlan/${row.id}`).then(res  => {
+                                  top.window.vueElMessage({ message: res.data. message , type:  res.data.isSuccess?'success':'info' })
+                                          if(res.data.isSuccess){
+                                            userEvent. loadData();
+                                          }
+                            })
+                     })
+                },
+                onChangeUserPlanState:(row)=>{
+                    ElMessageBox.confirm('您确定切换价格计划状态吗?', { confirmButtonText: '确定', cancelButtonText: '取消', type: 'warning', }).then(() => {
+                             axios.post(`/Hotel/ChangeUserPlanState/${row.id}`).then(res  => {
+                                  top.window.vueElMessage({ message: res.data. message , type:  res.data.isSuccess?'success':'info' })
+                                          if(res.data.isSuccess){
+                                            userEvent. loadData();
+                                          }
+                            })
+                     })
+                }
+            }
+
+          return {
+              vmodel
+              ,userEvent
+          }
+
+        }
+        });
+        app.use(ElementPlus);
+        app.mount('#app');
+    </script>
+}
+
+

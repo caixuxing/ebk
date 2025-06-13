@@ -136,7 +136,7 @@
                     let reqData = { ...vmodel.model };
                     reqData.isEnable=vmodel.A_isEnable==true?1:0;
                     reqData.isReservedRoom=vmodel.A_isReservedRoom==true?1:0;
-                           axios['post'](`/Hotel/CreatePricePlan`, reqData).then(res=>{
+                           axios['post'](`/Hotel/AddUserPlan`, reqData).then(res=>{
                                      top.window.vueElMessage({ message: res.data. message , type:  res.data.isSuccess?'success':'info' })
                                      if(res.data.isSuccess){
                                         parent.layer.close(frameIndex); // 关闭当前弹框

@@ -16,7 +16,7 @@
                     <el-input v-model="state.qry.hotelName" clearable style="width:200px;" ></el-input>
                 </el-form-item>
                 <el-form-item prop="desc" style="margin-bottom:5px;">
-                    <el-button type="primary" v-on:click="state.qry.pageIndex=1;loadData()">查询</el-button>
+                    <el-button type="primary" v-on:click="state.qry.pageIndex=1;userEvent.loadData()">查询</el-button>
                 </el-form-item>
             </div>
         </el-form>
@@ -58,7 +58,7 @@
             <el-table-column label="操作" prop="opt" width="120px" align="center">
                 <template #default="scope">
                     <div style="text-align:center">
-                        <el-button size="small" type="primary" v-on:click="onAddHotel(scope.row)">确认添加 </el-button>
+                        <el-button size="small" type="primary" v-on:click="userEvent.onAddUserHotel(scope.row)">确认添加 </el-button>
                     </div>
                 </template>
             </el-table-column>
@@ -74,8 +74,6 @@
                            v-on:current-change="handleCurrentChange" style="float:right;"></el-pagination>
 
         </div>
-
-
     </el-main>
 </el-container>
 
@@ -93,43 +91,43 @@
                     dataList: []
                 });
 
-               const loadData = () => {
-                    axios.post(`/Hotel/HotelPageList`, {...state.qry}).then(response => {
-                        let {data,status}=response;
-                        state.dataList = data.data.list;
-                        state.qry.totalCount = data.data.total;
-                    })
-                };
-
 
                const handleSizeChange = (val) => {
                     state.qry.pageIndex = 1;
                     state.qry.pageSize = val;
-                    loadData();
+                    userEvent.loadData();
                };
 
                const handleCurrentChange = (val) => {
                     state.qry.pageIndex = val;
-                    loadData();
+                    userEvent.loadData();
                };
 
-              const onAddHotel = (row) => {
-                      ElMessageBox.confirm('您确定添加吗?', { confirmButtonText: '确定', cancelButtonText: '取消', type: 'warning', }).then(() => {
-                             axios.post(`/Hotel/PublishHotel`, {...row}).then(res => {
-                                 top.window.vueElMessage({ message: res.data. message , type:  res.data.isSuccess?'success':'info' })
-                                 if(res.data.isSuccess){
-                                    parent.layer.close(frameIndex); // 关闭当前弹框
-                                 }
-                            })
-                      })
-                };
+               const userEvent = {
+                    loadData:()=>{
+                        axios.post(`/Hotel/GetBaseHotelPageList`, {...state.qry}).then(response => {
+                            let {data,status}=response;
+                            state.dataList = data.data.list;
+                            state.qry.totalCount = data.data.total;
+                        })
+                    },
+                    onAddUserHotel:(row)=>{
+                          ElMessageBox.confirm('您确定添加吗?', { confirmButtonText: '确定', cancelButtonText: '取消', type: 'warning', }).then(() => {
+                                 axios.post(`/Hotel/AddUserHotel`, {...row}).then(res => {
+                                     top.window.vueElMessage({ message: res.data. message , type:  res.data.isSuccess?'success':'info' })
+                                     if(res.data.isSuccess){
+                                        parent.layer.close(frameIndex); // 关闭当前弹框
+                                     }
+                                })
+                          })
+                    }
+               }
 
                 return {
                      state
-                     ,loadData
+                     ,userEvent
                      ,handleSizeChange
                      ,handleCurrentChange
-                     ,onAddHotel
                  };
             }
         });

@@ -75,5 +75,11 @@ public record HotelPublishPageListDto
     /// <summary>
     /// 城市名称
     /// </summary>
-    public string CityName { get; set; } 
+    public string CityName { get; set; }
+
+    /// <summary>
+    /// 用户名称
+    /// </summary>
+    public string RealName { get; set; }
+
 }

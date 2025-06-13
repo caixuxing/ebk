@@ -59,22 +59,25 @@ public class HotelPublishApp : ApplicationService, IHotelPublishApp
               .WhereIF(!string.IsNullOrEmpty(CountryIosCode) , x=> x.CountryIosCode == CountryIosCode)
               .WhereIF(!string.IsNullOrEmpty(qry.cityName) , x=> x.CityName.Contains(qry.cityName) )
               .WhereIF(qry.Status.HasValue, x => x.Status == qry.Status);
-        var queryMap = WhereDeptFilter(query).Select(x => new HotelPublishPageListDto()
+        var queryMap = WhereDeptFilter(query)
+                            .LeftJoin<SysUserDo>((x1,x2)=> x1.CreatedbyId == SqlFunc.ToString(x2.Id) && x1.TenantId == x2.TenantId  )
+                            .Select((x1,x2) => new HotelPublishPageListDto()
         {
-            Id = x.Id,
-            HotelCode = x.HotelCode,
-            HotelName = x.HotelName,
-            HotelNameEn = x.HotelNameEn,
-            Address = x.Address,
-            AddressEn = x.AddressEn,
-            Status = x.Status,
-            CreateTime = x.CreateTime,
-            LowestPrice = x.LowestPrice,
-            TelPhone = x.TelPhone,
-            CountryIosCode = x.CountryIosCode,
-            CountryName = x.CountryName,
-            CityName = x.CityName,
-        }).OrderByDescending(x => x.Id);
+            Id = x1.Id,
+            HotelCode = x1.HotelCode,
+            HotelName = x1.HotelName,
+            HotelNameEn = x1.HotelNameEn,
+            Address = x1.Address,
+            AddressEn = x1.AddressEn,
+            Status = x1.Status,
+            CreateTime = x1.CreateTime,
+            LowestPrice = x1.LowestPrice,
+            TelPhone = x1.TelPhone,
+            CountryIosCode = x1.CountryIosCode,
+            CountryName = x1.CountryName,
+            CityName = x1.CityName,
+            RealName = x2.RealName,
+        }).OrderByDescending(x1 => x1.Id);
         var data = await queryMap.ToPageListAsync(qry.PageIndex, qry.PageSize, total);
         return new PageData<IEnumerable<HotelPublishPageListDto>>(total, qry.PageSize, qry.PageIndex, data);
     }
@@ -123,8 +126,12 @@ public class HotelPublishApp : ApplicationService, IHotelPublishApp
 
     public async Task<bool> UpdatePublishHotelAsync(CreateOrUpHotelPublishCmd cmd, long id)
     {
-        var entity = await HotelPublishRepo.GetByIdAsync(id) ?? throw new InvalidOperationException($"酒店ID:{id}资源不存在！");
+        var entity = await HotelPublishRepo.GetByIdAsync(id);
+        if (entity==null) {
+            throw new InvalidOperationException($"资源不存在！");
+        }
         entity.SetStatus(cmd.Status).SetLowestPrice(cmd.LowestPrice);
-        return await HotelPublishRepo.AsUpdateable(entity).ExecuteCommandWithOptLockAsync(true) > 0;
-    }
+        await HotelPublishRepo.AsUpdateable(entity).ExecuteCommandAsync();
+        return true;
+    } 
 }
