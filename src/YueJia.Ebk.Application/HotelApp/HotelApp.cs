@@ -690,11 +690,18 @@ public class HotelApp : ApplicationService, IHotelApp
         {
             var dataList = await db.Queryable<DailyInventoryDo>().Where(vv => vv.RoomId == SqlFunc.ToInt64(ebkRoom.Id) &&
                                                                               vv.CurrentDate >= dailyInventoryList.Min(vv => vv.CurrentDate) &&
-                                                                              vv.CurrentDate <= dailyInventoryList.Max(vv => vv.CurrentDate)).ToArrayAsync();
+                                                                              vv.CurrentDate <= dailyInventoryList.Max(vv => vv.CurrentDate)).ToListAsync();
 
             foreach (var item in dailyInventoryList)
             {
                 var updateObj = dataList.Where(vv => vv.CurrentDate == item.CurrentDate).ToList().FirstOrDefault();
+
+                if (item.InventoryNum == updateObj.InventoryNum && updateObj.IsEnable == (item.StatusBool ? YesOrNoType.Yes : YesOrNoType.No))
+                {
+                    dataList.Remove(updateObj);
+                    continue;
+                }
+
                 updateObj.SetInventoryNum(item.InventoryNum);
                 updateObj.SetIsEnable(item.StatusBool ? YesOrNoType.Yes : YesOrNoType.No);
             }

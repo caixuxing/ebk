@@ -27,14 +27,15 @@
     </style>
 }
 
-<el-container>
+<el-container style="height:100vh;overflow: hidden;">
     <el-main>
 
         @Html.Partial("~/Views/Hotel/UserHotelNavigationMgr.cshtml", (@ViewBag.mv as YueJia.Ebk.Web.ViewModels.Hotel.ViewHotelVo))
 
-        <div style="height:50px;line-height:50px;">
+        <div style="height:50px;line-height:50px;  ">
             <h1>库存日历</h1>
         </div>
+
         <el-divider content-position="left"></el-divider>
 
         <div style=" margin-bottom:10px; " >
@@ -54,19 +55,12 @@
                 </el-form-item>
             </div>
         </el-form>
-
-        <el-calendar v-model="vmodel.calendarData"
+        <el-scrollbar>
+             <el-calendar v-model="vmodel.calendarData"
                      style="pointer-events: none">
             <template #header="{ date }">
                 <el-row style="width:100%;">
-                    <el-col :span="12">
-                        <el-text v-show="vmodel.model.ebkRoom.hotelRoomTitle"> {{ vmodel.model.ebkRoom.hotelRoomTitle }}==></el-text>
-                        @foreach (var ele in enumApp.GetEnumDataList(nameof(BedTypeEnum)))
-                        {
-                            <el-text v-show="  vmodel.model.ebkRoom. bedType == @ele.Value ">@ele.Describe</el-text>
-                        }
-                    </el-col>
-                    <el-col :span="12" style="text-align:right">
+                    <el-col :span="24" style="text-align:right">
                         <el-button-group>
                             <el-button type="primary" style=" pointer-events: auto; " v-on:click="onRevoke">撤销</el-button>
                             <el-button type="primary" style=" pointer-events: auto; " v-on:click="onSaveInventory">保存</el-button>
@@ -105,7 +99,7 @@
 
             </template>
         </el-calendar>
-
+        </el-scrollbar>
     </el-main>
 </el-container>
 @section scripts {
@@ -124,6 +118,7 @@
                });
                  const hotelModel =   @Html.Raw(System.Text.Json.JsonSerializer.Serialize(ViewBag.hotelModel, new System.Text.Json.JsonSerializerOptions() { PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase }))
                  const ebkOtaRoomList =  @Html.Raw(System.Text.Json.JsonSerializer.Serialize(ViewBag.ebkOtaRoomList, new System.Text.Json.JsonSerializerOptions() { PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase }));
+              
                  Vue.onMounted(() => {
                     if(ebkOtaRoomList.length>0){
                        vmodel.model.ebkRoomId = ebkOtaRoomList[0].id;
@@ -185,7 +180,7 @@
                         dailyInventoryList: JSON.parse(JSON.stringify(dailyInventoryList))
                     }
                     console.log(reqData);
-                    axios['post'](`/Hotel/SaveInventory`, reqData).then(res=>{
+                    axios['post'](`/Hotel/SaveInventoryCalendar`, reqData).then(res=>{
                         top.window.vueElMessage({ message: res.data. message , type:  res.data.isSuccess?'success':'info' })
                         if(res.data.isSuccess){
                             loadData();

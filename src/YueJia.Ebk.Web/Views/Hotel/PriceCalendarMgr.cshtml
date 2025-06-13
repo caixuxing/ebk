@@ -76,6 +76,7 @@
                         <el-text>价格：</el-text>
                         <el-input-number style="pointer-events: auto;" 
                                          :controls="false"
+                                        :precision="0"
                                          :value-on-clear="0"
                                          v-model="getDailyPriceList(data.day)[0].price" 
                                          :min="0" :max="100000"></el-input-number>

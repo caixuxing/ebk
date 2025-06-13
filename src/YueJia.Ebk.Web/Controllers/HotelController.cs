@@ -461,8 +461,8 @@ public class HotelController : AbpController
         return ApiResult.HandleResult(await HotelApp.GetInventoryList(Convert.ToInt64(userRoomId), dateYear, dateMonth));
     }
 
-    [HttpPost, Route("[controller]/SaveInventory")]
-    public async Task<IResult> SaveInventory([FromBody] SaveInventoryCmd qry)
+    [HttpPost, Route("[controller]/SaveInventoryCalendar")]
+    public async Task<IResult> SaveInventoryCalendar([FromBody] SaveInventoryCmd qry)
     {
         return ApiResult.HandleResult(await HotelApp.SaveInventory(qry.EbkRoom, qry.DailyInventoryList));
     }
