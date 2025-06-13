@@ -5,7 +5,7 @@
         }
     </style>
 }
-<el-container>
+<el-container style="height:100vh;overflow: hidden;">
     <el-main>
 
         @Html.Partial("~/Views/Hotel/UserHotelNavigationMgr.cshtml", (@ViewBag.mv as YueJia.Ebk.Web.ViewModels.Hotel.ViewHotelVo))
@@ -18,24 +18,26 @@
 
         <div style=" margin-bottom:10px; ">
             <el-checkbox v-model="vmodel.AState" v-on:change="AStateChange">
-                 <el-text type="primary" size="large"> {{hotelModel.hotelName}}</el-text>
+                 <el-text type="primary" size="large"> 
+                    @ViewBag.mv.HotelName
+                 </el-text>
             </el-checkbox>
         </div>
-
-        <el-card class="box-card" v-for="ele in vmodel.model.userRoomList" style=" margin-bottom:10px ">
+        <el-scrollbar>
+        <el-card class="box-card" v-for="ele in vmodel.model.userRoomList" style=" margin-bottom:5px ">
             <template #header>
                 <div class="card-header">
                     <div>
                         <el-checkbox v-model="ele.BState" v-on:change="BStateChange" >
                             <el-text>{{ele.startDateString}} 至 {{ele.endDateString}}</el-text>
-                            <el-text style="margin-left:20px;"> {{ele.roomTypeName}}==>{{ele.bedTypeName}}</el-text>
+                            <el-text style="margin-left:20px;"> {{ele.hotelRoomTitle}}==>{{ele.bedTypeName}}</el-text>
                         </el-checkbox>
                        
                     </div>
                 </div>
             </template>
 
-            <div v-for="item in ele.pricePlans" >
+            <div v-for="item in ele.planList">
                 <el-checkbox v-model="item.CState" style="margin-left:30px;" v-on:change="CStateChange(item)">
                     <el-text  >{{item.pricePlanTitle}}</el-text>
                 </el-checkbox>
@@ -51,6 +53,19 @@
                                     format="YYYY-MM-DD" value-format="YYYY-MM-DD" start-placeholder="开始日期" end-placeholder="结束日期"></el-date-picker>
                 </el-form-item>
             </div>
+            <div>
+                    <el-form-item label="星期范围">
+                        <el-checkbox-group v-model="vmodel.weekIndexList">
+                            <el-checkbox  :value="0"> 星期天</el-checkbox>
+                            <el-checkbox :value="1"> 星期一</el-checkbox>
+                            <el-checkbox :value="2"> 星期二</el-checkbox>
+                            <el-checkbox :value="3"> 星期三</el-checkbox>
+                            <el-checkbox :value="4"> 星期四</el-checkbox>
+                            <el-checkbox :value="5"> 星期五</el-checkbox>
+                            <el-checkbox :value="6"> 星期六</el-checkbox>
+                        </el-checkbox-group>
+                    </el-form-item>
+            </div>
         </el-form>
 
         <el-tabs v-model="vmodel.activeName"
@@ -59,9 +74,9 @@
                  class="demo-tabs">
             <el-tab-pane label="简易模式" name="simple">
                 <el-divider content-position="left">房型维度</el-divider>
-                <el-form :inline="true" label-width="auto" style="margin: 0 auto;width: 680px;">
+                    <el-form :inline="true" label-width="120px" style="margin: 0 auto;width: 680px;">
                     <div>
-                        <el-form-item label="库存">
+                        <el-form-item label="库存数量">
                             <el-select v-model="vmodel.simpleModel.inventoryNumExecType"
                                        v-show="vmodel.simpleModel.inventoryNumFlag == true "
                                        style="width: 100px">
@@ -71,7 +86,7 @@
                           
                             <el-input-number v-model="vmodel.simpleModel.inventoryNum"
                                              v-show="vmodel.simpleModel.inventoryNumFlag == true "
-                                             :value-on-clear="0"
+                                            :value-on-clear="0"
                                             :controls="false" style="width:80px;margin-left:15px;" :precision="0" :min="0" :max="100" ></el-input-number>
 
                             <el-button v-show="vmodel.simpleModel.inventoryNumFlag == false " v-on:click="vmodel.simpleModel.inventoryNumFlag = true">编辑</el-button>
@@ -79,9 +94,8 @@
                         </el-form-item>
                     </div>
                     <div>
-                        <el-form-item label="状态">
-                            <el-checkbox v-show="vmodel.simpleModel.inventoryStateFlag == true "
-                                         v-model="vmodel.simpleModel.inventoryState"> </el-checkbox>
+                         <el-form-item label="库存状态">
+                            <el-switch v-model="vmodel.simpleModel.inventoryState" active-text="开" inactive-text="关" v-show="vmodel.simpleModel.inventoryStateFlag == true " ></el-switch>
                             <el-button v-show="vmodel.simpleModel.inventoryStateFlag == false " v-on:click="vmodel.simpleModel.inventoryStateFlag = true">编辑</el-button>
                             <el-button v-show="vmodel.simpleModel.inventoryStateFlag == true " v-on:click="vmodel.simpleModel.inventoryStateFlag = false" type="danger">取消</el-button>
                         </el-form-item>
@@ -90,30 +104,9 @@
 
                 <el-divider content-position="left">价格计划维度</el-divider>
 
-                <el-form :inline="true" label-width="auto" style="margin: 0 auto;width: 680px;">
-                        <div>
-                        <el-form-item label="范围">
-                       <el-row :gutter="20" style="width: 100%;">
-                             <el-col :span="24">
-                                  <el-checkbox v-model="vmodel.checkAll" :indeterminate="isIndeterminate" v-on:change="handleCheckAllChange">全选</el-checkbox>
-                                 <span style="color:red"> (*注意：价格计划维度的价格、状态，只会对选中的范围生成)</span>
-                             </el-col>
-                       </el-row>
-                      <el-row :gutter="20"  style="width: 100%;">
-                          <el-col :span="24">
-                         <el-checkbox-group v-model="vmodel.simpleModel.planPriceUpRange" v-on:change="handleCheckedCitiesChange">
-
-            <el-checkbox v-for="item in vmodel.weekly" :key="item.id" :label="item.name" :value="item.id"> {{ item.name }}</el-checkbox>
-                          
-                          </el-checkbox-group>
-                          </el-col>
-                          </el-row>
-                          </el-form-item>
-                    </div>
-
-
+                    <el-form :inline="true" label-width="120px" style="margin: 0 auto;width: 680px;">
                     <div>
-                        <el-form-item label="价格">
+                         <el-form-item label="价格">
                             <el-select v-model="vmodel.simpleModel.planPriceExecType"
                                        v-show="vmodel.simpleModel.planPriceFlag == true "
                                        style="width: 100px;">
@@ -125,7 +118,7 @@
                             <el-input-number v-model="vmodel.simpleModel.planPrice"
                                              v-show="vmodel.simpleModel.planPriceFlag == true "
                                               :value-on-clear="0"
-                                             :controls="false" style="width:80px;margin-left:15px;"  :min="0" :max="100000"></el-input-number>
+                                                 :controls="false" style="width:80px;margin-left:15px;" :precision="0" :min="0" :max="100000"></el-input-number>
 
                             <el-button v-show="vmodel.simpleModel.planPriceFlag == false " v-on:click="vmodel.simpleModel.planPriceFlag = true">编辑</el-button>
                             <el-button v-show="vmodel.simpleModel.planPriceFlag == true " v-on:click="vmodel.simpleModel.planPriceFlag = false" type="danger">取消</el-button>
@@ -133,8 +126,7 @@
                     </div>
                     <div>
                         <el-form-item label="状态" style="margin-bottom:5px !important ;">
-                            <el-checkbox v-show="vmodel.simpleModel.planPriceStateFlag == true "
-                                         v-model="vmodel.simpleModel.planPriceState"> </el-checkbox>
+                            <el-switch v-show="vmodel.simpleModel.planPriceStateFlag == true "  v-model="vmodel.simpleModel.planPriceState" active-text="开" inactive-text="关" ></el-switch>
                             <el-button v-show="vmodel.simpleModel.planPriceStateFlag == false " v-on:click="vmodel.simpleModel.planPriceStateFlag = true">编辑</el-button>
                             <el-button v-show="vmodel.simpleModel.planPriceStateFlag == true " v-on:click="vmodel.simpleModel.planPriceStateFlag = false" type="danger">取消</el-button>
                         </el-form-item>
@@ -152,7 +144,7 @@
                     <el-card style="width:250px;display: inline-block"  v-show =" ele.BState == true  "   >
                         <template #header>
                             <div style="white-space: nowrap;overflow: hidden;">
-                                <el-text> {{ele.roomTypeName}}==>{{ele.bedTypeName}}</el-text>
+                                    <el-text> {{ele.hotelRoomTitle}}==>{{ele.bedTypeName}}</el-text>
                             </div>
                         </template>
 
@@ -186,7 +178,7 @@
 
                     </el-card>
                   
-                    <el-card v-for="item in ele.pricePlans" style="width:350px;display: inline-block;margin-left:10px" v-show=" item.CState == true  ">
+                    <el-card v-for="item in ele.planList" style="width:350px;display: inline-block;margin-left:10px" v-show=" item.CState == true  ">
                         <template #header>
                             <el-text><{{ (item.breakfastType=='1' ?'含早':'无早') }}>  ></el-text>
                             <el-text><提前{{ item.daysInAdvance }}天>  ></el-text>
@@ -204,7 +196,8 @@
 
                                     <el-input-number :controls="false"
                                                      :value-on-clear="0"
-                                                     v-model="item.planPrice"
+                                                         :precision="0"
+                                                         v-model="item.planPrice"
                                                      style="width:65px;margin-left:10px;"  :min="0" :max="100000"></el-input-number>
                                 </el-form-item>
                             </div>
@@ -227,7 +220,7 @@
 
             </el-tab-pane>
         </el-tabs>
-
+        </el-scrollbar>
     </el-main>
 </el-container>
 @section scripts {
@@ -236,14 +229,16 @@
         const app = Vue.createApp({
         setup() {
              const vmodel = Vue.reactive({
-                    tempData:[],
                     model : {
                         userRoomList:@Html.Raw(System.Text.Json.JsonSerializer.Serialize(ViewBag.userRoomList, new System.Text.Json.JsonSerializerOptions() { PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase }))
                     },
                     AState:false,
                     activeName:'simple',
                     dateRange:[ '@DateTime.Now.ToString("yyyy-MM-dd")', '@DateTime.Now.AddMonths(1).AddDays(-1).ToString("yyyy-MM-dd")'],
+                    weekIndexList:[0,1,2,3,4,5,6],
                     simpleModel:{
+
+                         userHotelId:'@ViewBag.mv.Id',
                          inventoryNumFlag:false,
                          inventoryNumExecType:'1',
                          inventoryNum:0,
@@ -251,44 +246,16 @@
                          inventoryState:false,
 
 
-                         planPriceUpRange:[0,1,2,3,4,5,6],//默认全选
+               
                          planPriceFlag:false,
                          planPriceExecType:'1',
                          planPrice:0,
                          planPriceStateFlag:false,
                          planPriceState:false,
                     },
-                    checkAll:true,
-                    weekly:[{id:0,name:'周日'},{id:1,name:'周一'},{id:2,name:'周二'},{id:3,name:'周三'},{id:4,name:'周四'},{id:5,name:'周五'},{id:6,name:'周六'}]
                });
 
-               const isIndeterminate= Vue.ref(false);
-
-               const handleCheckAllChange=(val)=>{
-                   if(val)
-                   {
-                       vmodel.simpleModel.planPriceUpRange = vmodel.weekly.map(item=>item.id);
-                   }else
-                   {
-                     vmodel.simpleModel.planPriceUpRange=[];
-                   }
-               };
-           //监听加载房间类型变化
-            Vue.watch(() => vmodel.simpleModel.planPriceUpRange,(newVal, oldVal) => {
-                if(newVal.length==7)
-                 vmodel.checkAll=true;
-                else
-                vmodel.checkAll=false;
-
-                 if(newVal.length>0 && newVal.length<7)
-                 {
-                     isIndeterminate.value=true;
-                 }else
-                 {
-                     isIndeterminate.value=false;
-                 }
-            }, { deep: true })
-
+           
 
 
                /**
@@ -305,23 +272,23 @@
                const userPlanIdList =Vue.computed(() =>{ 
                     var result = [];
                        vmodel.model.userRoomList.forEach(function(ele){
-                          result = result.concat(ele.pricePlans);
+                          result = result.concat(ele.planList);
                       });
                     return result.filter(vv=> vv.CState == true ).map(vv=>vv.id);
                 })
 
 
-                 const hotelModel =   @Html.Raw(System.Text.Json.JsonSerializer.Serialize(ViewBag.mv, new System.Text.Json.JsonSerializerOptions() { PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase }))
 
                  Vue.onMounted(() => {
                      console.log(vmodel.model.userRoomList);
-                        
+                     console.log(vmodel.weekIndexList);
+                     console.log('@ViewBag.mv.Id');
                  });
 
                  const AStateChange =()=>{
                     vmodel.model.userRoomList.forEach(function(ele){
                        ele.BState = vmodel.AState
-                       ele.pricePlans.forEach(function(item){
+                       ele.planList.forEach(function(item){
                              item.CState = vmodel.AState
                        })
                     });
@@ -329,18 +296,17 @@
 
                  const BStateChange =()=>{
                     vmodel.model.userRoomList.forEach(function(ele){
-                       ele.pricePlans.forEach(function(item){
+                       ele.planList.forEach(function(item){
                              item.CState = ele.BState
                        })
                     });
                  }
 
                  const CStateChange =(item)=>{
-                    
                     vmodel.model.userRoomList.forEach(function(ele){
-                        var planModel  = ele.pricePlans.find(vv=> vv.id == item.id);
+                        var planModel  = ele.planList.find(vv=> vv.id == item.id);
                         if(planModel){
-                          ele .BState = ele.pricePlans.filter(vv=> vv.CState == true).length>0;
+                          ele .BState = ele.planList.filter(vv=> vv.CState == true).length>0;
                         }
                     });
                  }
@@ -355,6 +321,7 @@
                        reqData.userPlanIdList =  userPlanIdList.value;
                        reqData.startDate =vmodel.dateRange[0];
                        reqData.endDate=vmodel.dateRange[1];
+                       reqData.weekIndexList = vmodel.weekIndexList;
 
                        axios['post'](`/Hotel/BatchSaveInventoryAndPricesSimple`, reqData).then(res=>{
                            top.window.vueElMessage({ message: res.data. message , type:  res.data.isSuccess?'success':'info' })
@@ -380,7 +347,7 @@
 
                       var userPlanList = [];
                        vmodel.model.userRoomList.forEach(function(ele){
-                         ele.pricePlans.forEach(function(item){
+                         ele.planList.forEach(function(item){
                              if(item.CState == true){
                               userPlanList.push(  JSON.parse(JSON.stringify(item)) );
                              }
@@ -392,10 +359,12 @@
                          
 
                        let reqData = {
+                            userHotelId:'@ViewBag.mv.Id',
                             userRoomList:userRoomList,
                             userPlanList:userPlanList,
                             startDate :vmodel.dateRange[0],
-                            endDate:vmodel.dateRange[1]
+                            endDate:vmodel.dateRange[1],
+                            weekIndexList : vmodel.weekIndexList,
                        }
                        console.log(reqData);
 
@@ -412,13 +381,12 @@
                    
                 return {
                     vmodel,
-                    hotelModel,
                     AStateChange,
                     BStateChange,
                     CStateChange,
                     onSaveSimple,
                     onSaveSenior,
-                    userPlanIdList,handleCheckAllChange,isIndeterminate
+                    userPlanIdList
                 }
         }
         });

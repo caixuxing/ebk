@@ -12,6 +12,7 @@
     <style scoped>
         .el-calendar-table .el-calendar-day {
             height: 90px !important;
+            padding: 3px !important;
         }
 
         body {
@@ -83,7 +84,8 @@
                     </div>
                     <div>
                         <el-text>状态：</el-text>
-                        <el-checkbox v-model="getDailyPriceList(data.day)[0].statusBool" style=" pointer-events: auto;"></el-checkbox>
+
+                        <el-switch v-model="getDailyPriceList(data.day)[0].statusBool" active-text="开" inactive-text="关" style="pointer-events: auto;"></el-switch>
                     </div>
 
                 </div>

@@ -2,6 +2,9 @@
 {
     public class BatchEditInventoryAndPricesModel
     {
+        public string userHotelId { get; set; }
+
+        public List<int> weekIndexList { get; set; }
 
         public string startDate { get; set; }
         public string endDate { get; set; }
@@ -56,7 +59,6 @@
         public decimal planPrice { get; set; }
         public bool planPriceStateFlag { get; set; }
         public bool planPriceState { get; set; }
-
 
     }
 }
