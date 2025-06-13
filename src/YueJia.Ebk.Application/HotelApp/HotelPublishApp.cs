@@ -126,8 +126,12 @@ public class HotelPublishApp : ApplicationService, IHotelPublishApp
 
     public async Task<bool> UpdatePublishHotelAsync(CreateOrUpHotelPublishCmd cmd, long id)
     {
-        var entity = await HotelPublishRepo.GetByIdAsync(id) ?? throw new InvalidOperationException($"酒店ID:{id}资源不存在！");
+        var entity = await HotelPublishRepo.GetByIdAsync(id);
+        if (entity==null) {
+            throw new InvalidOperationException($"资源不存在！");
+        }
         entity.SetStatus(cmd.Status).SetLowestPrice(cmd.LowestPrice);
-        return await HotelPublishRepo.AsUpdateable(entity).ExecuteCommandWithOptLockAsync(true) > 0;
-    }
+        await HotelPublishRepo.AsUpdateable(entity).ExecuteCommandAsync();
+        return true;
+    } 
 }

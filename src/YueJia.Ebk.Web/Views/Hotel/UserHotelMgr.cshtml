@@ -87,8 +87,9 @@
 
              <el-table-column label="销售状态" width="90px" align="center">
                 <template #default="scope">
-                    <div style="text-align:center">
-                        <span>{{  scope.row.statusName }}</span>
+                    <div style="text-align:">
+                        <el-tag v-show="scope.row.status==1 "  type="primary">{{  scope.row.statusName }}</el-tag>
+                        <el-tag v-show="scope.row.status==2 "  type="danger">{{  scope.row.statusName }}</el-tag>
                     </div>
                 </template>
             </el-table-column>
@@ -173,7 +174,7 @@
                     * 跳转酒店
                     */
                    onToUserHotel:(row)=>{
-                        window.location.href =`/Hotel/ViewHotel/${row.id}`
+                        window.location.href =`/Hotel/UserHotelDetails/${row.id}`
                    },
                    /**
                     * 重置查询条件

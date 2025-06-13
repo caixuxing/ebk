@@ -61,7 +61,7 @@
                  */
                  const save =  () => {
                         let reqData = { ...vmodel };
-                        axios['put'](`/Hotel/${vmodel.id}/UpdatePublishHotel`, reqData).then(res=>{
+                        axios['put'](`/Hotel/${vmodel.id}/UpdateUserHotel`, reqData).then(res=>{
                             top.window.vueElMessage({ message: res.data. message , type:  res.data.isSuccess?'success':'info' })
                        })
                  };

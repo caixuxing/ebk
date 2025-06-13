@@ -8,15 +8,8 @@
 @inject ISysEnumApp enumApp
 @inject IYueJiaSysServiceApp yueJiaSysServiceApp
 
-
-
 @section head {
     <style scoped>
-        .el-radio-group {
-            display: flex; /* 使用 flex 布局 */
-            flex-direction: row; /* 确保是横向排列 */
-        }
-
         .el-calendar-table .el-calendar-day {
             height: 90px !important;
         }
@@ -27,14 +20,15 @@
     </style>
 }
 
-<el-container>
+<el-container style="height:100vh;overflow: hidden;">
     <el-main>
 
         @Html.Partial("~/Views/Hotel/UserHotelNavigationMgr.cshtml", (@ViewBag.mv as YueJia.Ebk.Web.ViewModels.Hotel.ViewHotelVo))
 
-        <div style="height:50px;line-height:50px;">
+        <div style="height:50px;line-height:50px; position:relative ">
             <h1>价格日历</h1>
         </div>
+
         <el-divider content-position="left"></el-divider>
 
         <div style=" margin-bottom:10px; ">
@@ -55,6 +49,7 @@
             </div>
         </el-form>
 
+        <el-scrollbar>
         <el-calendar v-model="vmodel.calendarData"
                      style="pointer-events: none">
             <template #header="{ date }">
@@ -97,7 +92,7 @@
 
             </template>
         </el-calendar>
-
+       </el-scrollbar>
     </el-main>
 </el-container>
 @section scripts {
@@ -107,7 +102,6 @@
         setup() {
              const vmodel = Vue.reactive({
                     model : {
-                        ebkPlan:{},
                         priceList:[],
                     },
                     execData:'@DateTime.Now.ToString("yyyy-MM")' ,
@@ -122,7 +116,6 @@
 
                      if(ebkOtaPricePlanList.length>0){
                          vmodel.userPlanId = ebkOtaPricePlanList[0].id;
-                         vmodel.model.ebkPlan = ebkOtaPricePlanList.find(vv=>vv.id == vmodel.userPlanId);
                          loadData();
                      }
                  });
@@ -168,7 +161,7 @@
                         userPlanId: vmodel.userPlanId ,
                         priceList: JSON.parse(JSON.stringify(priceList))
                     }
-                    axios['post'](`/Hotel/SavePrice`, reqData).then(res=>{
+                    axios['post'](`/Hotel/SavePriceCalendar`, reqData).then(res=>{
                         top.window.vueElMessage({ message: res.data. message , type:  res.data.isSuccess?'success':'info' })
                         if(res.data.isSuccess){
                                loadData();

@@ -22,14 +22,14 @@ public record HotelRoomListDto
     public string HotelRoomTitle { get; set; }
 
     /// <summary>
-    /// 房型
+    /// 房型Code
     /// </summary>
     public string RoomType { get; set; } = default!;
 
-    /// <summary>
-    /// 房型名称
-    /// </summary>
-    public string RoomTypeName { get; set; } = default!;
+    ///// <summary>
+    ///// 房型名称
+    ///// </summary>
+    //public string RoomTypeName { get; set; } = default!;
 
 
 
@@ -91,7 +91,7 @@ public record HotelRoomListDto
     /// <summary>
     /// 房间价格计划
     /// </summary>
-    public List<PricePlanListDto> PricePlans { get; set; } = new();
+    public List<PricePlanListDto> PlanList { get; set; } = new();
 
     /// <summary>
     /// 状态名称
