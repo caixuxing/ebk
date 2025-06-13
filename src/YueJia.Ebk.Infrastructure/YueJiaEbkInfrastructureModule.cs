@@ -1,10 +1,12 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using MongoDB.Driver;
 using SqlSugar;
 using SqlSugar.DistributedSystem.Snowflake;
 using SqlSugar.IOC;
 using System.Reflection;
 using YueJia.Ebk.Domain.AggRoot;
+using YueJia.Ebk.Domain.Shared.Config;
 using YueJia.Ebk.Domain.Shared.Const;
 using YueJia.Ebk.Domain.Shared.Enums;
 
@@ -337,6 +339,15 @@ public class YueJiaEbkInfrastructureModule : AbpModule
             return sqlSugar;
         });
         context.Services.AddScoped(typeof(ISimpleClient<>), typeof(SimpleClient<>)); // 仓储注册
+
+
+
+        var mongodbConfig = context.Services.GetConfiguration().GetSection("MongoDb").Get<MongoDbConfig>();
+        var client = new MongoClient(mongodbConfig!.ConnectionString);
+        var database = client.GetDatabase(mongodbConfig.DatabaseName);
+        context.Services.AddSingleton(database);
+
+        context.Services.AddSingleton<IMongoClient>(serviceProvider => client);
 
 
         return base.ConfigureServicesAsync(context);

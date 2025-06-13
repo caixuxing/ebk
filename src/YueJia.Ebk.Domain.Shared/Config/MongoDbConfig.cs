@@ -1,0 +1,8 @@
+﻿namespace YueJia.Ebk.Domain.Shared.Config;
+
+public class MongoDbConfig
+{
+    public string ConnectionString { get; set; } = null!;
+
+    public string DatabaseName { get; set; } = null!;
+}
