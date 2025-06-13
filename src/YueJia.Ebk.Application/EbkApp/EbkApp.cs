@@ -16,6 +16,10 @@ public class EbkApp : ApplicationService, IEbkApp
 
     private ISqlSugarClient db => LazyServiceProvider.LazyGetRequiredService<ISqlSugarClient>();
 
+    public Task<HotelPriceDto> PriceCheckQry(PriceCheckQry qry)
+    {
+        throw new NotImplementedException();
+    }
 
     public async Task<IEnumerable<HotelPriceDto>> PriceSearch(PriceSearchQry qry)
     {
@@ -152,6 +156,7 @@ public class EbkApp : ApplicationService, IEbkApp
                         RoomCode = room.RoomType,
                         RoomName = room.HotelRoomTitle ?? string.Empty,
                         SearchCode = EncryptUtils.MD5Encrypt(string.Join(",", models.item.Select(t => t.Id).ToList())),
+                        PricePlanId = item.Id.ToString(),
                         TotalPrice = models.item.Sum(t => t.Price),
                         DayPrice = models.item!.ToDictionary(t => t.CurrentDate.ToString("yyyy-MM-dd"), t => t.Price),
                         IsBreakfast = item.BreakfastType.ToDescription(),
@@ -235,15 +240,4 @@ public class EbkApp : ApplicationService, IEbkApp
 
         //return result;
     }
-}
-
-/// <summary>
-/// 酒店房间信息
-/// </summary>
-public record HotelRoomWithPublishDo : HotelRoomDo
-{
-    /// <summary>
-    /// 酒店信息
-    /// </summary>
-    public List<HotelPublishDo> HotelPublishe { get; set; }
 }

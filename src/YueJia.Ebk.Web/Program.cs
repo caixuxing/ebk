@@ -2,8 +2,16 @@ using YueJia.Ebk.Infrastructure.JobWork;
 
 namespace YueJia.Ebk.Web;
 
+/// <summary>
+/// Program
+/// </summary>
 public class Program
 {
+    /// <summary>
+    /// Main
+    /// </summary>
+    /// <param name="args"></param>
+    /// <returns></returns>
     public async static Task Main(string[] args)
     {
 
@@ -13,6 +21,14 @@ public class Program
             builder.Host.AddAppSettingsSecretsJson().UseAutofac();
             builder.Services.AddControllersWithViews();
             builder.Services.ReplaceConfiguration(builder.Configuration);
+
+
+            //// 注册自定义序列化器，强制本地时间
+            //BsonSerializer.RegisterSerializer(typeof(DateTime),
+            //    new DateTimeSerializer(DateTimeKind.Local));
+            //BsonSerializer.RegisterSerializer(typeof(DateTime?),
+            //    new NullableSerializer<DateTime>(new DateTimeSerializer(DateTimeKind.Local)));
+
             builder.Services.AddHostedService<EbkDbSyncService>();
             builder.Services.Configure<HostOptions>(options =>
             {

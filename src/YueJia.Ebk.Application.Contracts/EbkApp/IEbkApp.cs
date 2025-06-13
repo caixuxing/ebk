@@ -13,4 +13,12 @@ public interface IEbkApp
     /// </summary>
     /// <returns></returns>
     Task<IEnumerable<HotelPriceDto>> PriceSearch(PriceSearchQry qry);
+
+
+    /// <summary>
+    /// 验价
+    /// </summary>
+    /// <param name="qry"></param>
+    /// <returns></returns>
+    Task<HotelPriceDto> PriceCheckQry(PriceCheckQry qry);
 }

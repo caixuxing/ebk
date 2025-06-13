@@ -347,9 +347,6 @@ public class YueJiaEbkInfrastructureModule : AbpModule
         var database = client.GetDatabase(mongodbConfig.DatabaseName);
         context.Services.AddSingleton(database);
 
-        context.Services.AddSingleton<IMongoClient>(serviceProvider => client);
-
-
         return base.ConfigureServicesAsync(context);
     }
 }
