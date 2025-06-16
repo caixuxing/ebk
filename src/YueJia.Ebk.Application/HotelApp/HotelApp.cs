@@ -10,6 +10,7 @@ using YueJia.Ebk.Application.Contracts.OuterServiceApp.Entity;
 using YueJia.Ebk.Application.Contracts.SysUserApp;
 using YueJia.Ebk.Domain.Hotel;
 using YueJia.Ebk.Domain.Shared.Const;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace YueJia.Ebk.Application.HotelApp;
 
@@ -142,7 +143,7 @@ public class HotelApp : ApplicationService, IHotelApp
         roomInventoryList.ForEach(x => x.IsDelete = true);
 
         //价格计划
-        var pricePlanEntity = PricePlanRepo.AsQueryable().Where(x => x.HotelRoomId == id && x.TenantId == SqlFunc.ToInt64(CurrentUserApp.TenantId)).ToList();
+        var pricePlanEntity = PricePlanRepo.AsQueryable().Where(x => x.HotelRoomId == entity.Id && x.TenantId == SqlFunc.ToInt64(CurrentUserApp.TenantId)).ToList();
         pricePlanEntity.ForEach(x => x.IsDelete = true);
 
 
@@ -206,7 +207,7 @@ public class HotelApp : ApplicationService, IHotelApp
         entity.IsDelete = true;
 
         //价格计划价格
-        var dailyPriceDoList = db.Queryable<DailyPriceDo>().Where(vv => vv.RoomId == entity.HotelRoomId  && vv.TenantId == SqlFunc.ToInt64(CurrentUserApp.TenantId)  ).ToList();
+        var dailyPriceDoList = db.Queryable<DailyPriceDo>().Where(vv => vv.RoomId == entity.HotelRoomId  && vv.PricePlanId == entity.Id  && vv.TenantId == SqlFunc.ToInt64(CurrentUserApp.TenantId)  ).ToList();
         dailyPriceDoList.ForEach(x => x.IsDelete = true);
 
 
@@ -335,7 +336,8 @@ public class HotelApp : ApplicationService, IHotelApp
                 HotelName = t2.HotelName,
                 RoomType = t1.RoomType,
                 HotelId = t1.HotelId.ToString(),
-                HotelNameEn = t2.HotelNameEn
+                HotelNameEn = t2.HotelNameEn,
+                PricePlanTitle = t.PricePlanTitle,
             }).SingleAsync();
 
         if (data is null) throw new InvalidOperationException("价格计划不存在！");
@@ -1197,7 +1199,60 @@ public class HotelApp : ApplicationService, IHotelApp
 
     }
 
+    public async Task<bool> CopeUserPlan(CopeUserPlanModel cmd)
+    {
+
+        var LowestPrice = db.Queryable<HotelPublishDo>()
+                        .InnerJoin<HotelRoomDo>((x1, x2) => x1.Id == x2.HotelId && x1.TenantId == x2.TenantId)
+                        .InnerJoin<PricePlanDo>((x1, x2, x3) => x3.HotelRoomId == x2.Id && x3.TenantId == x2.TenantId)
+                        .Where((x1, x2, x3) => x3.Id == SqlFunc.ToInt64(cmd.CopeUserPlanId) && x3.TenantId == SqlFunc.ToInt64(CurrentUserApp.TenantId))
+                        .ToList().First().LowestPrice;
+
+        return await DbTransaction.ExecuteInTransactionAsync(db, async () =>
+        {
+
+            var userPricePlan= db.Queryable<PricePlanDo>().Where(vv => vv.Id == SqlFunc.ToInt64(cmd.CopeUserPlanId) && vv.TenantId == SqlFunc.ToInt64( CurrentUserApp.TenantId)).ToList().First();
+
+            var hotelRoomObj = db.Queryable<HotelRoomDo>().Where(vv => vv.Id == userPricePlan.HotelRoomId && vv.TenantId == SqlFunc.ToInt64(CurrentUserApp.TenantId)).ToList().First();
+
+            var entity = PricePlanDo.Create(userPricePlan.HotelRoomId,
+                                            string.Empty,
+                                            cmd.BreakfastType,
+                                            cmd.DaysInAdvance,
+                                            cmd.ContinuousStayDays,
+                                            cmd.IsReservedRoom,
+                                            cmd.IsEnable);
+            entity.PricePlanTitle = $@"{hotelRoomObj.HotelRoomTitle}<{(cmd.BreakfastType == BreakfastTypeEnum.Breakfast ? "含早" : "无早")}><提前{cmd.DaysInAdvance}天><连住{cmd.ContinuousStayDays}天><{(cmd.IsReservedRoom == YesOrNoType.Yes ? "保留房" : "非保留房")}>";
 
 
+            List<DailyPriceDo> dailyPriceDoList = new List<DailyPriceDo>();
 
+            var copeDailyPriceList = db.Queryable<DailyPriceDo>().Where(vv => vv.PricePlanId == SqlFunc.ToInt64(cmd.CopeUserPlanId) && vv.TenantId == SqlFunc.ToInt64(CurrentUserApp.TenantId)).ToList();
+            foreach (var ele in copeDailyPriceList) {
+                var price = ele.Price ;
+                if (price > 0 ) {
+                    price = price + cmd.AddPrice;
+                }
+                if (price > 0 && price < LowestPrice)
+                {
+                    throw new InvalidOperationException($@"酒店最低价格为{LowestPrice}！");
+                }
+                
+                dailyPriceDoList.Add(new DailyPriceDo()
+                {
+                    RoomId = entity.HotelRoomId,
+                    PricePlanId = entity.Id,
+                    Price = Math.Max( price,0 ),
+                    IsEnable = YesOrNoType.Yes,
+                    CurrentDate = ele.CurrentDate,
+                });
+            }
+
+            await db.Insertable<DailyPriceDo>(dailyPriceDoList).ExecuteCommandAsync();
+            await db.Insertable<PricePlanDo>(entity).ExecuteCommandAsync();
+            return true;
+        });
+
+
+    }
 }

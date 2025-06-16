@@ -10,6 +10,7 @@ using YueJia.Ebk.Application.Contracts.OuterServiceApp;
 using YueJia.Ebk.Application.Contracts.OuterServiceApp.Entity;
 using YueJia.Ebk.Application.Contracts.OuterServiceApp.Qry;
 using YueJia.Ebk.Application.Contracts.SysApp;
+using YueJia.Ebk.Application.HotelApp;
 using YueJia.Ebk.Domain.Hotel;
 using YueJia.Ebk.Domain.Shared.Const;
 using YueJia.Ebk.Web.ViewModels.Hotel;
@@ -30,6 +31,8 @@ public class HotelController : AbpController
     private ISysEnumApp SysEnumApp => LazyServiceProvider.LazyGetRequiredService<ISysEnumApp>();
 
     private IHotelApp HotelApp => LazyServiceProvider.LazyGetRequiredService<IHotelApp>();
+
+
 
 
 
@@ -329,6 +332,45 @@ public class HotelController : AbpController
     /// <returns></returns>
     [HttpPost, Route("[controller]/ChangeUserPlanState/{id}")]
     public async Task<IResult> ChangeUserPlanState(string id) => ApiResult.HandleBoolResult(await HotelApp.UpdatePricePlanStateAsync(id.ToLong()));
+
+
+    /// <summary>
+    /// 复制价格计划
+    /// </summary>
+    /// <param name="userPlanId"></param>
+    /// <returns></returns>
+    public async Task<IActionResult> CopeUserPlanMgr(string userHotelId ,  string userPlanId) {
+        var userPlan = await HotelApp.GetPricePlanDetailsByIdAsync( Convert.ToInt64(userPlanId) );
+        var userHotel = await HotelPublishApp.GetHotelPublishDetailAsync( Convert.ToInt64(userHotelId));
+
+        ViewBag.HotelName = $"{userHotel.HotelName}({userHotel.HotelNameEn})";
+        ViewBag.LowestPrice = $"{userHotel.LowestPrice}";
+        ViewBag.PricePlanTitle = $"{userPlan.PricePlanTitle}";
+
+        CopeUserPlanModel vm = new CopeUserPlanModel()
+        {
+            CopeUserPlanId = userPlanId,
+            BreakfastType = userPlan.BreakfastType,
+            DaysInAdvance = userPlan.DaysInAdvance,
+            ContinuousStayDays = userPlan.ContinuousStayDays,
+            IsEnable = YesOrNoType.Yes,
+            IsReservedRoom = YesOrNoType.Yes,
+            AddPrice = 0,
+        };
+        return View(vm);
+    }
+
+    /// <summary>
+    /// 复制价格计划
+    /// </summary>
+    /// <param name="userPlanId"></param>
+    /// <returns></returns>
+    [HttpPost, Route("[controller]/CopeUserPlan")]
+    public async Task<IResult> CopeUserPlan([FromBody] CopeUserPlanModel cmd)
+    {
+        var result = await HotelApp.CopeUserPlan(cmd);
+        return ApiResult.HandleResult(result);
+    }
     #endregion
 
 

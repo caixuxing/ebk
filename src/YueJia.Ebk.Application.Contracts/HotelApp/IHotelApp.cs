@@ -191,4 +191,8 @@ public interface IHotelApp
 
     Task<bool> UserHotelDelete(string userHotelId);
 
+
+   
+    Task<bool> CopeUserPlan(CopeUserPlanModel cmd);
+
 }

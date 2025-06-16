@@ -64,4 +64,6 @@ public record PricePlanDetailDto
     public YesOrNoType IsReservedRoom { get; set; }
 
     public YesOrNoType IsEnable { get; set; }
+
+    public string PricePlanTitle { get; set; }
 }
