@@ -1,0 +1,255 @@
+﻿@using YueJia.Ebk.Application.Contracts.SysApp
+@using YueJia.Ebk.Web.ViewModels.Hotel
+@model YueJia.Ebk.Application.Contracts.HotelApp.Dto.HotelPublishDetailDto
+@inject ISysEnumApp enumApp
+
+
+@section head {
+    <style scoped>
+        .el-card__body{
+            padding:5px;
+        }
+        </style>
+}
+<el-container style="height:100vh;overflow: hidden;">
+    <el-main>
+        @Html.Partial("~/Views/Hotel/UserHotelNavigationMgr.cshtml", new ViewHotelVo { Id = Model.Id, HotelName = Model.HotelName })
+        <div style="height:50px;line-height:50px;  ">
+            <h1>库存和价格</h1>
+        </div>
+
+        <el-divider content-position="left"></el-divider>
+
+        <div style=" margin-bottom:10px; ">
+            <el-text type="primary" size="large"> @Model.HotelNameEn [@Model.HotelName]</el-text>
+        </div>
+
+        <el-form label-width="auto" :inline="true">
+            <div>
+                <el-form-item label="房间名称" style="margin-bottom:5px;">
+                    <el-select v-model="vmodel.userRoomId" placeholder="请选择房型" filterable style="width:600px" v-on:change="userEvent.onLoadData">
+                        <el-option v-for="ele in vmodel.userRoomList" :label="ele.hotelRoomTitle" :value="''+ele.id"></el-option>
+                    </el-select>
+                </el-form-item>
+            </div>
+            <div>
+                <el-form-item label="开始日期" style="margin-bottom:5px;">
+                    <el-date-picker v-model="vmodel.startDate"
+                                    type="date"
+                                    v-on:change="userEvent.onLoadData"
+                                    style="width:130px"
+                                    :clearable="false"
+                                    value-format="YYYY-MM-DD"> </el-date-picker>
+                </el-form-item>
+                <el-form-item label="显示天数" style="margin-bottom:5px;">
+
+                    <el-select v-model="vmodel.dataNumber" placeholder="Select" style="width: 140px" v-on:change="userEvent.onLoadData ">
+                        <el-option label="5天" :value="5"></el-option>
+                        <el-option label="10天" :value="10" ></el-option>
+                    </el-select>
+                    <el-button-group>
+                        <el-button type="primary" style="margin-left:10px;width:80px;" disabled v-show=" vmodel.startDate == '@DateTime.Now.ToString("yyyy-MM-dd")' ">前{{vmodel.dataNumber}}天</el-button>
+                        <el-button type="primary" style="margin-left:10px;width:80px;" v-on:click="userEvent.onAddMinus" v-show=" vmodel.startDate != '@DateTime.Now.ToString("yyyy-MM-dd")'  ">前{{vmodel.dataNumber}}天</el-button>
+                        <el-button type="primary" style="width:80px;" v-on:click=" userEvent. onAddDay  ">后{{vmodel.dataNumber}}天</el-button>
+                    </el-button-group>
+                </el-form-item>
+
+                <el-form-item style="margin-bottom:5px; float:right ">
+                    <el-button-group>
+                        <el-button type="primary" style=" pointer-events: auto; " v-on:click="userEvent.onRevoke">撤销</el-button>
+                        <el-button type="primary" style=" pointer-events: auto; " v-on:click="userEvent.onSave">保存</el-button>
+                    </el-button-group>
+                </el-form-item>
+
+            </div>
+        </el-form>
+        <el-scrollbar v-show=" vmodel.userRoomId!='' && vmodel.model && vmodel.model.dailyInventoryList && vmodel.model.dailyInventoryList.length>0  ">
+            <el-card class="box-card" >
+            <template #header>
+              <div class="card-header">
+                        <el-text>{{vmodel.model.startDateString}} 至 {{vmodel.model.endDateString}}</el-text>
+                        <el-text style="margin-left:20px;"> {{vmodel.model.userRoomTitle}}</el-text>
+              </div>
+            </template>
+            <div>
+                <el-descriptions direction="vertical"
+                                 :column="15"
+                                 :size="size"
+                                 border>
+
+                    <el-descriptions-item >
+                        <template #label>
+                            <div style="text-align:center" >
+                            #
+                            </div>
+                        </template>
+
+                        <div style="text-align:center;" >
+                            <el-text >库存数量</el-text>
+                        </div>
+                        <div style="text-align:center;">
+                            <el-text>库存状态</el-text>
+                        </div>
+                    </el-descriptions-item>
+
+                    <el-descriptions-item label="Username" v-for="ele in vmodel.model.dailyInventoryList">
+                        <template #label>
+                            <div style="text-align:center;" >{{  ele.currentDateString }}</div>
+                            <div style="text-align:center;">{{  ele.dayOfWeekName }}</div>
+                        </template>
+                        <div style="text-align:center; position:relative;  ">
+
+                            <div v-show=" ele.initialInventoryNum != ele.inventoryNum || ele.initialStatusBool !=ele.statusBool   "
+                                 style="position:absolute;right:-5px;top:-5px; width:20px; height:20px; background:#2bb3f8">
+                            </div>
+
+                            <el-input-number :controls="false"
+                                             style="width:70px "
+                                             v-model="ele.inventoryNum"
+                                             :value-on-clear="0"
+                                             :precision="0" :min="0" :max="100"></el-input-number>
+                        </div>
+                        <div style="text-align:center;">
+                                <el-switch v-model="ele.statusBool" inline-prompt  active-text="开" inactive-text="关" style="pointer-events: auto;"></el-switch>
+                        </div>
+                    </el-descriptions-item>
+                </el-descriptions>
+            </div>
+          </el-card>
+
+          <el-card class="box-card" v-for=" ele in vmodel.model.planList " style="margin-top:5px;" >
+                <template #header>
+                    <div class="card-header">
+                        <el-text style="margin-left:20px;"> {{ele.pricePlanName}}</el-text>
+                    </div>
+                </template>
+                <div>
+                    <el-descriptions direction="vertical"
+                                     :column="15"
+                                     :size="size"
+                                     border>
+
+                        <el-descriptions-item>
+                            <template #label>
+                                <div style="text-align:center">
+                                    #
+                                </div>
+                            </template>
+
+                            <div style="text-align:center;">
+                                <el-text>日期价格</el-text>
+                            </div>
+                            <div style="text-align:center;">
+                                <el-text>价格状态</el-text>
+                            </div>
+                        </el-descriptions-item>
+
+                        <el-descriptions-item label="Username" v-for="item in ele.dailyPriceList">
+                            <template #label>
+                                <div style="text-align:center;">{{  item.currentDateString }}</div>
+                                <div style="text-align:center;">{{  item.dayOfWeekName }}</div>
+                            </template>
+                            <div style="text-align:center;position:relative;  ">
+
+                                <div v-show=" item.price != item.initialPrice || item.initialStatusBool != item.statusBool   "
+                                     style="position:absolute;right:-5px;top:-5px; width:20px; height:20px; background:#2bb3f8">
+                                </div>
+                                <el-input-number :controls="false"
+                                                 style="width:70px "
+                                                 v-model="item.price"
+                                                 :value-on-clear="0"
+                                                 :precision="0" :min="0" :max="100000"></el-input-number>
+                            </div>
+                            <div style="text-align:center;">
+                                <el-switch v-model="item.statusBool" inline-prompt active-text="开" inactive-text="关" style="pointer-events: auto;"></el-switch>
+                            </div>
+                        </el-descriptions-item>
+                    </el-descriptions>
+                </div>
+            </el-card>
+        </el-scrollbar>
+    
+    </el-main>
+ 
+</el-container>
+@section scripts {
+    <script type="text/javascript" setup>
+        const app = Vue.createApp({
+        setup() {
+             const vmodel = Vue.reactive({
+                  userRoomList:@Html.Raw(System.Text.Json.JsonSerializer.Serialize(ViewBag.userRoomList, new System.Text.Json.JsonSerializerOptions() { PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase })),
+                  userHotelId:'@Model.Id.ToString()',
+                  userRoomId:'',
+                  startDate:'@DateTime.Now.ToString("yyyy-MM-dd")',
+                  dataNumber:10,
+                  dataIndex:1,
+                  model:{},
+             });
+
+            const userEvent ={
+                onLoadData:()=>{
+                       let reqData = { 
+                            userHotelId:vmodel.userHotelId,
+                            userRoomId:vmodel.userRoomId,
+                            startDate:vmodel.startDate,
+                            dataNumber:vmodel.dataNumber
+                       }
+                       axios.post(`/hotel/InventoryAndPriceDetailsByFilter`, reqData).then(response => {
+                         let {data,status}=response;
+
+                         vmodel.model= data.data;
+                         console.log( vmodel.model );
+                     })
+                },
+                onRevoke:()=>{
+                    ElMessageBox.confirm('您确定撤销吗?', { confirmButtonText: '确定', cancelButtonText: '取消', type: 'warning', }).then(() => {
+                        userEvent.onLoadData();
+                    })
+                },
+                /**
+                 * 日期加
+                 */
+                onAddDay:()=>{
+                       axios.get(`/Common/DateAddMinus?startDate=${vmodel.startDate}&DayNumber=${vmodel.dataNumber}`).then(function (res) {
+                            console.log(res);
+                             if(res.data.isSuccess){
+                                 vmodel.startDate = res.data.data;
+                                 userEvent.onLoadData();
+                             }
+                        })
+                },
+               /**
+                 * 日期减
+                 */
+                onAddMinus:()=>{
+                       axios.get(`/Common/DateAddMinus?startDate=${vmodel.startDate}&DayNumber=${vmodel.dataNumber*-1}`).then(function (res) {
+                            console.log(res);
+                             if(res.data.isSuccess){
+                                 vmodel.startDate = res.data.data;
+                                 userEvent.onLoadData();
+                             }
+                      })
+                },
+                onSave:()=>{
+                        let reqData = { ...vmodel.model };
+                        axios.post(`/Hotel/SaveInventoryAndPrice`, reqData).then(function (res) {
+                             top.window.vueElMessage({ message: res.data. message , type:  res.data.isSuccess?'success':'info' })
+                             if(res.data.isSuccess){
+                                 userEvent.onLoadData();
+                             }
+                        })
+                }
+            }
+
+            return {
+                vmodel,
+                userEvent
+            };
+        }
+        });
+        app.use(ElementPlus, { locale: ElementPlusLocaleZhCn });
+        app.mount('#app');
+    </script>
+}
+
+

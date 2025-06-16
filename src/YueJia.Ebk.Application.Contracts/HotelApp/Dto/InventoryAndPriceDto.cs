@@ -8,47 +8,64 @@ public class InventoryAndPriceDto
     /// <summary>
     /// 酒店Id
     /// </summary>
-    public string HotelId { get; set; } = default!;
+    public string UserHotelId { get; set; } = default!;
+
+    ///// <summary>
+    ///// 酒店名称
+    ///// </summary>
+    //public string HotelName { get; set; } = default!;
+    ///// <summary>
+    ///// 酒店名称（英文）
+    ///// </summary>
+    //public string HotelNameEn { get; set; } = default!;
+
+    ///// <summary>
+    ///// 酒店代码
+    ///// </summary>
+    //public string HotelCode { get; set; } = default!;
+
+    ///// <summary>
+    ///// 开始日期
+    ///// </summary>
+    //public DateTime StartDate { get; set; }
+    ///// <summary>
+    ///// 显示天数
+    ///// </summary>
+    //public int DataNumber { get; set; }
 
     /// <summary>
-    /// 酒店名称
+    /// 库存集合
     /// </summary>
-    public string HotelName { get; set; } = default!;
-    /// <summary>
-    /// 酒店名称（英文）
-    /// </summary>
-    public string HotelNameEn { get; set; } = default!;
-
-    /// <summary>
-    /// 酒店代码
-    /// </summary>
-    public string HotelCode { get; set; } = default!;
-
-    /// <summary>
-    /// 开始日期
-    /// </summary>
-    public DateTime StartDate { get; set; }
-    /// <summary>
-    /// 显示天数
-    /// </summary>
-    public int ShowDays { get; set; }
+    public List<DailyInventoryModel> DailyInventoryList { get; set; }
 
 
+    public string UserRoomId { get; set; }
 
-    /// <summary>
-    /// 房型默认选中值
-    /// </summary>
-    public string RoomTypeValue { get; set; } = default!;
+    public string UserRoomTitle { get; set; }
 
-    /// <summary>
-    /// 房型信息
-    /// </summary>
-    public RoomTypeInfoDto RoomTypeInfo { get; set; } = default!;
+    public string StartDateString { get; set; }
+    public string EndDateString { get; set; }
 
-    /// <summary>
-    ///房型下拉集合
-    /// </summary>
-    public List<SelectDataDto<string>> RoomDropDownList { get; set; } = new();
+    public List<PricePlanItemDto> PlanList { get; set; }
+
+    ///// <summary>
+    ///// 房型默认选中值
+    ///// </summary>
+    //public string RoomTypeValue { get; set; } = default!;
+
+    ///// <summary>
+    ///// 房型信息
+    ///// </summary>
+    //public RoomTypeInfoDto RoomTypeInfo { get; set; } = default!;
+    ///// <summary>
+    ///// 最低价格
+    ///// </summary>
+    //public decimal LowestPrice { get; set; }
+
+    ///// <summary>
+    /////房型下拉集合
+    ///// </summary>
+    //public List<SelectDataDto<string>> RoomDropDownList { get; set; } = new();
 }
 
 /// <summary>
@@ -203,4 +220,13 @@ public class DailyPriceDto
             return CurrentDate.ToString("yyyy-MM-dd");
         }
     }
+
+    public string DayOfWeekName
+    {
+        get
+        {
+            return new List<string>() { "星期日", "星期一", "星期二", "星期三", "星期四", "星期五", "星期六" }[(int)CurrentDate.DayOfWeek];
+        }
+    }
+
 }

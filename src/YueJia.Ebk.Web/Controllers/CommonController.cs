@@ -21,4 +21,15 @@ public class CommonController : AbpController
 
 
 
+    /// <summary>
+    /// 按枚举名称获取枚举集合
+    /// </summary>
+    /// <returns></returns>
+    [HttpGet, Route("DateAddMinus")]
+    //[HttpGet, Route("[controller]/{enumName}/create")]
+    public IResult DateAddMinus(string startDate,int DayNumber) {
+       return  ApiResult.HandleResult(Convert.ToDateTime(startDate).AddDays(DayNumber).ToString("yyyy-MM-dd"));
+    }
+
+
 }

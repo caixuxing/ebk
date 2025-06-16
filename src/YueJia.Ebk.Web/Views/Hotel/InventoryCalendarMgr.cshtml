@@ -44,7 +44,7 @@
         </div>
         <el-form :inline="true" label-width="auto">
             <div>
-                <el-form-item label="房型" style="margin-bottom:5px;"  >
+                <el-form-item label="房间名称" style="margin-bottom:5px;"  >
                     <el-select v-model="vmodel.model.ebkRoomId" placeholder="请选择房型" filterable style="width:600px" v-on:change="onRoomChange">
                         <el-option v-for="ele in ebkOtaRoomList" :label="ele.hotelRoomTitle" :value="''+ele.id"></el-option>
                     </el-select>
@@ -90,7 +90,7 @@
                     </div>
                     <div>
                         <el-text>状态：</el-text>
-                        <el-switch v-model="getDailyInventoryList(data.day)[0].statusBool" active-text="开" inactive-text="关" style="pointer-events: auto;"></el-switch>
+                            <el-switch v-model="getDailyInventoryList(data.day)[0].statusBool" inline-prompt active-text="开" inactive-text="关" style="pointer-events: auto;"></el-switch>
 
                     </div>
                 </div>

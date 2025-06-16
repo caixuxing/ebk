@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace YueJia.Ebk.Application.Contracts.HotelApp.Dto
 {
@@ -41,6 +42,13 @@ namespace YueJia.Ebk.Application.Contracts.HotelApp.Dto
             get
             {
                 return StatusBool;
+            }
+        }
+        public string DayOfWeekName
+        {
+            get {
+               return new List<string>() { "星期日", "星期一", "星期二", "星期三", "星期四", "星期五", "星期六" }[(int)CurrentDate.DayOfWeek];
+
             }
         }
 

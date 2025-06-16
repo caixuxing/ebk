@@ -32,7 +32,7 @@ public interface IHotelApp
     /// </summary>
     /// <param name="cmd"></param>
     /// <returns></returns>
-    Task<bool> SaveInventoryAndPriceAsync(SaveInventoryAndPriceCmd cmd);
+    Task<bool> SaveInventoryAndPriceAsync(InventoryAndPriceDto cmd);
 
     /// <summary>
     /// 添加酒店房间

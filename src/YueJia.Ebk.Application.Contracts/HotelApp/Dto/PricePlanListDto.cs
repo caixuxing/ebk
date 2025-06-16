@@ -80,4 +80,9 @@ public record PricePlanListDto
             return IsEnable == YesOrNoType.Yes ? "启用" : "禁用";
         }
     }
+
+
+    public List<DailyPriceDto> DailyPriceList { get; set; }
+
+
 }

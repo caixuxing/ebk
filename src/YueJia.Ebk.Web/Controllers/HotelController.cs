@@ -1,4 +1,5 @@
 ﻿using SqlSugar;
+using Volo.Abp.Threading;
 using YueJia.Ebk.Application.Contracts.Comm.BaseObj;
 using YueJia.Ebk.Application.Contracts.HotelApp;
 using YueJia.Ebk.Application.Contracts.HotelApp.Commands;
@@ -334,47 +335,48 @@ public class HotelController : AbpController
 
 
 
-
-
-
+    #region 库存和价格
     /// <summary>
     /// 库存和价格（View）
     /// </summary>
     /// <param name="id">酒店Id</param>
     /// <returns></returns>
-    public async Task<IActionResult> InventoryAndPrice(string id)
+    public async Task<IActionResult> InventoryAndPriceMgr(string userHotelId)
     {
-        long hotelId = id.ToLong();
+        //long hotelId = id.ToLong();
 
-        var entity = await HotelPublishRepo.GetByIdAsync(hotelId) ?? throw new InvalidOperationException("酒店不存在！");
+        var userHotel = await HotelPublishApp.GetHotelPublishDetailAsync(Convert.ToInt64(userHotelId));  
+        
+        //await HotelPublishRepo.GetByIdAsync(userHotelId.ToLong());
 
-        var room = await HotelRoomRepo.GetListAsync(x => x.HotelId == hotelId);
+        //var room = await HotelRoomRepo.GetListAsync(x => x.HotelId == hotelId);
 
-        InventoryAndPriceDetailsQry qry = new() { HotelId = id, RoomId = room.FirstOrDefault()?.Id.ToString() ?? "0" };
-        var result = await HotelApp.InventoryAndPriceViewAsync(qry);
+        //InventoryAndPriceDetailsQry qry = new() { HotelId = id, RoomId = room.FirstOrDefault()?.Id.ToString() ?? "0" };
+        //var result = await HotelApp.InventoryAndPriceViewAsync(qry);
 
-        result.HotelId = entity.Id.ToString();
-        result.HotelName = entity.HotelName;
-        result.HotelNameEn = entity.HotelNameEn;
-        result.HotelCode = entity.HotelCode;
-        result.RoomTypeValue = qry?.RoomId.ToString() ?? string.Empty;
+        //result.HotelId = entity.Id.ToString();
+        //result.HotelName = entity.HotelName;
+        //result.HotelNameEn = entity.HotelNameEn;
+        //result.HotelCode = entity.HotelCode;
+        //result.RoomTypeValue = qry?.RoomId.ToString() ?? string.Empty;
+        //result.LowestPrice = entity.LowestPrice;
 
-        var currentHotelRoomTypeDate = await SqlSugarClient.Queryable<OtaRoomEntity>()
-                            .Where(q => q.pfcode == "D" && q.hotelcode == entity.HotelCode)
-                            .Select(t => new { t.roomcode, t.roomname })
-                            .ToListAsync();
+        //var currentHotelRoomTypeDate = await SqlSugarClient.Queryable<OtaRoomEntity>()
+        //                    .Where(q => q.pfcode == "D" && q.hotelcode == entity.HotelCode)
+        //                    .Select(t => new { t.roomcode, t.roomname })
+        //                    .ToListAsync();
 
-        result.RoomDropDownList = room.Select(x => new SelectDataDto<string>()
-        {
-            Label = $"{x.Id} {currentHotelRoomTypeDate.FirstOrDefault(y => y.roomcode == int.Parse(x.RoomType))?.roomname ?? string.Empty},{x.BedType.ToDescription()}",
-            Value = x.Id.ToString()
-        }).ToList();
+        //result.RoomDropDownList = room.Select(x => new SelectDataDto<string>()
+        //{
+        //    Label = $"{x.Id} {currentHotelRoomTypeDate.FirstOrDefault(y => y.roomcode == int.Parse(x.RoomType))?.roomname ?? string.Empty},{x.BedType.ToDescription()}",
+        //    Value = x.Id.ToString()
+        //}).ToList();
 
 
+        ViewBag.userRoomList = await HotelApp.GetHotelRoomListByIdAsync(userHotelId.ToLong());
 
-        return View(result);
+        return View(userHotel);
     }
-
 
     /// <summary>
     /// 按条件筛选库存和价格
@@ -385,12 +387,8 @@ public class HotelController : AbpController
     public async Task<IResult> InventoryAndPriceDetailsByFilter([FromBody] InventoryAndPriceDetailsQry qry)
     {
         var result = await HotelApp.InventoryAndPriceViewAsync(qry);
-
-        return ApiResult.HandleResult(result.RoomTypeInfo);
+        return ApiResult.HandleResult(result);
     }
-
-
-
 
     /// <summary>
     /// 保存库存和价格
@@ -398,7 +396,17 @@ public class HotelController : AbpController
     /// <param name="cmd"></param>
     /// <returns></returns>
     [HttpPost, Route("[controller]/SaveInventoryAndPrice")]
-    public async Task<IResult> SaveInventoryAndPrice([FromBody] SaveInventoryAndPriceCmd cmd) => ApiResult.HandleBoolResult(await HotelApp.SaveInventoryAndPriceAsync(cmd));
+    public async Task<IResult> SaveInventoryAndPrice([FromBody] InventoryAndPriceDto cmd) => ApiResult.HandleBoolResult(await HotelApp.SaveInventoryAndPriceAsync(cmd));
+
+
+
+    #endregion
+
+
+
+
+
+
 
 
 
