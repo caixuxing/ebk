@@ -1,7 +1,10 @@
 ﻿using MongoDB.Driver;
 using YueJia.Ebk.Application.Contracts.EbkApp;
 using YueJia.Ebk.Application.Contracts.EbkApp.Query;
+using YueJia.Ebk.Domain.AggRoot;
 using YueJia.Ebk.Domain.Hotel;
+using YueJia.Ebk.Domain.Shared.Const;
+using YueJia.Ebk.Infrastructure.Uilts;
 
 namespace YueJia.Ebk.Application.EbkApp;
 
@@ -16,6 +19,65 @@ public class EbkApp : ApplicationService, IEbkApp
 
     private ISqlSugarClient db => LazyServiceProvider.LazyGetRequiredService<ISqlSugarClient>();
 
+    public async Task<HotelPriceDto> PriceCheckQry(PriceCheckQry qry)
+    {
+
+        //验证
+        await LazyServiceProvider.LazyGetRequiredService<FluentValidation.IValidator<PriceSearchQry>>().ValidateAndThrowAsync(qry);
+
+        //连住天数
+        int continuousStayDays = (qry.CheckOutDate.Date - qry.CheckInDate.Date).Days;
+        //提前天数
+        int advanceDays = (qry.CheckOutDate.Date - DateTime.Now.Date).Days;
+
+
+        //解密查价唯一值
+        var searchCodeStr = CompressedEncryptor.Decrypt(qry.SearchCode, SecretKeyConst.key, SecretKeyConst.iv);
+        if (string.IsNullOrWhiteSpace(searchCodeStr) || !searchCodeStr.Contains("|")) throw new ArgumentException("查价唯一值解密失败！");
+        var splitArray = searchCodeStr.Split('|');
+        var dailyPriceIds = splitArray[0].Split(',').Select(long.Parse).ToList();
+        var dailyInventoryIds = (splitArray[1]).Split(',').Select(long.Parse).ToList();
+
+
+        //按库存ID擦查询库存集合
+        var dailyInventoryDos = await db.Queryable<DailyInventoryDo>().ClearFilter<ITenantIdFilter>().Where(t => dailyInventoryIds.Contains(t.Id)).ToListAsync();
+        //按条件筛选：库存数、日期范围
+        var FilterData = dailyInventoryDos.Where(t => t.InventoryNum >= qry.RoomNum && t.CurrentDate >= qry.CheckInDate.Date && t.CurrentDate < qry.CheckOutDate.Date).ToList();
+        //验证库存数是否足够
+        bool areEqual = dailyInventoryIds.Count == FilterData.Count && dailyInventoryIds.All(id => dailyInventoryDos.Any(e => e.Id == id));
+        if (!areEqual) throw new ArgumentException("库存数不足！");
+
+
+        var dailyPriceDos = await db.Queryable<DailyPriceDo>().ClearFilter<ITenantIdFilter>().Where(t => dailyPriceIds.Contains(t.Id)).ToListAsync();
+        //收集价格计划
+        var pricePlanIds = dailyPriceDos.Select(t => t.PricePlanId).Distinct().ToList();
+
+        var hotel = await db.Queryable<HotelRoomDo>()
+             .InnerJoin<PricePlanDo>((r, p) => r.Id == p.HotelRoomId)
+             .Where((r, p) => r.HotelCode == qry.HotelCode && r.Id == p.HotelRoomId && pricePlanIds.Contains(p.Id))
+             .Where((r, p) => r.MaximumNumberOfPeople >= (qry.AdultNum + qry.ChildNum) && r.AdultLimit >= qry.AdultNum && r.ChildLimit >= qry.ChildNum)
+             .Where((r, p) => p.ContinuousStayDays >= continuousStayDays && p.DaysInAdvance <= advanceDays)
+             .Select((r, p) => new
+             {
+                 RoomCode = r.RoomType,
+                 RoomName = r.HotelRoomTitle ?? string.Empty,
+                 HotelCode = r.HotelCode,
+                 BreakfastType = p.BreakfastType,
+                 PricePlanId = p.Id.ToString(),
+             })
+             .SingleAsync() ?? throw new ArgumentException("未找到符合条件的房间！");
+        return new HotelPriceDto()
+        {
+            HotelCode = hotel.HotelCode,
+            RoomCode = hotel.RoomCode,
+            RoomName = hotel.RoomName,
+            IsBreakfast = hotel.BreakfastType.ToDescription(),
+            PricePlanId = hotel.PricePlanId,
+            DayPrice = dailyPriceDos.ToDictionary(t => t.CurrentDate.ToString("yyyy-MM-dd"), t => t.Price),
+            TotalPrice = dailyPriceDos.Sum(t => t.Price),
+            SearchCode = CompressedEncryptor.Encrypt($@"{string.Join(",", dailyPriceDos.Select(t => t.Id).ToList())}|{string.Join(",", dailyInventoryDos.Select(t => t.Id).ToList())}", SecretKeyConst.key, SecretKeyConst.iv)
+        };
+    }
 
     public async Task<IEnumerable<HotelPriceDto>> PriceSearch(PriceSearchQry qry)
     {
@@ -141,6 +203,11 @@ public class EbkApp : ApplicationService, IEbkApp
                 var dailyPrice = dailyPriceDataGroup.Where(t => t.RoomId == room.Id && roomPricePlanIds.Contains(t.PricePlanId) && t.Count == continuousStayDays).ToList();
                 if (dailyPrice?.Count <= 0) continue;
 
+
+
+
+
+
                 foreach (var item in pricePlan!)
                 {
                     var models = dailyPrice!.FirstOrDefault(x => x.PricePlanId == item.Id && x.RoomId == room.Id);
@@ -151,7 +218,9 @@ public class EbkApp : ApplicationService, IEbkApp
                         HotelCode = room.HotelCode,
                         RoomCode = room.RoomType,
                         RoomName = room.HotelRoomTitle ?? string.Empty,
-                        SearchCode = EncryptUtils.MD5Encrypt(string.Join(",", models.item.Select(t => t.Id).ToList())),
+                        SearchCode = CompressedEncryptor.Encrypt($@"{string.Join(",", models.item.Select(t => t.Id).ToList())}|{string.Join(",", dailyInventory!.item.Select(t => t.Id).ToList())}",
+                                                                SecretKeyConst.key, SecretKeyConst.iv),
+                        PricePlanId = item.Id.ToString(),
                         TotalPrice = models.item.Sum(t => t.Price),
                         DayPrice = models.item!.ToDictionary(t => t.CurrentDate.ToString("yyyy-MM-dd"), t => t.Price),
                         IsBreakfast = item.BreakfastType.ToDescription(),
@@ -235,15 +304,4 @@ public class EbkApp : ApplicationService, IEbkApp
 
         //return result;
     }
-}
-
-/// <summary>
-/// 酒店房间信息
-/// </summary>
-public record HotelRoomWithPublishDo : HotelRoomDo
-{
-    /// <summary>
-    /// 酒店信息
-    /// </summary>
-    public List<HotelPublishDo> HotelPublishe { get; set; }
 }

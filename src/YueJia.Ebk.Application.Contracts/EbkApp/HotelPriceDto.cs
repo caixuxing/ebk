@@ -36,6 +36,11 @@ public record HotelPriceDto
     public string IsBreakfast { get; set; } = default!;
 
     /// <summary>
+    /// 价格计划Id
+    /// </summary>
+    public string PricePlanId { get; set; } = default!;
+
+    /// <summary>
     /// 总价
     /// </summary>
     public decimal TotalPrice { get; set; }
