@@ -1202,6 +1202,10 @@ public class HotelApp : ApplicationService, IHotelApp
     public async Task<bool> CopeUserPlan(CopeUserPlanModel cmd)
     {
 
+    
+
+        
+
         var LowestPrice = db.Queryable<HotelPublishDo>()
                         .InnerJoin<HotelRoomDo>((x1, x2) => x1.Id == x2.HotelId && x1.TenantId == x2.TenantId)
                         .InnerJoin<PricePlanDo>((x1, x2, x3) => x3.HotelRoomId == x2.Id && x3.TenantId == x2.TenantId)
@@ -1212,7 +1216,11 @@ public class HotelApp : ApplicationService, IHotelApp
         {
 
             var userPricePlan= db.Queryable<PricePlanDo>().Where(vv => vv.Id == SqlFunc.ToInt64(cmd.CopeUserPlanId) && vv.TenantId == SqlFunc.ToInt64( CurrentUserApp.TenantId)).ToList().First();
-
+            //只能自己复制自己
+            if (userPricePlan.CreatedbyId != CurrentUserApp.Id.ToString())
+            {
+                throw new InvalidOperationException($@"复制错误！");
+            }
             var hotelRoomObj = db.Queryable<HotelRoomDo>().Where(vv => vv.Id == userPricePlan.HotelRoomId && vv.TenantId == SqlFunc.ToInt64(CurrentUserApp.TenantId)).ToList().First();
 
             var entity = PricePlanDo.Create(userPricePlan.HotelRoomId,
