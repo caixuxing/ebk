@@ -32,7 +32,7 @@
                     </el-select>
                 </el-form-item>
             </div>
-            <div>
+            <div v-show=" vmodel.userRoomId!='' " >
                 <el-form-item label="开始日期" style="margin-bottom:5px;">
                     <el-date-picker v-model="vmodel.startDate"
                                     type="date"
@@ -186,6 +186,14 @@
                   model:{},
              });
 
+            Vue.onMounted(() => {
+                    if(vmodel.userRoomList.length>0){
+                       vmodel.userRoomId = vmodel.userRoomList[0].id;
+                       userEvent.onLoadData();
+                    }
+             });
+
+
             const userEvent ={
                 onLoadData:()=>{
                        let reqData = { 
@@ -223,7 +231,6 @@
                  */
                 onAddMinus:()=>{
                        axios.get(`/Common/DateAddMinus?startDate=${vmodel.startDate}&DayNumber=${vmodel.dataNumber*-1}`).then(function (res) {
-                            console.log(res);
                              if(res.data.isSuccess){
                                  vmodel.startDate = res.data.data;
                                  userEvent.onLoadData();

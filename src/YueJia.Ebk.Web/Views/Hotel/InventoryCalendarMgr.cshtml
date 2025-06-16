@@ -181,7 +181,6 @@
                         ebkRoom: JSON.parse(JSON.stringify(ebkRoom)) ,
                         dailyInventoryList: JSON.parse(JSON.stringify(dailyInventoryList))
                     }
-                    console.log(reqData);
                     axios['post'](`/Hotel/SaveInventoryCalendar`, reqData).then(res=>{
                         top.window.vueElMessage({ message: res.data. message , type:  res.data.isSuccess?'success':'info' })
                         if(res.data.isSuccess){

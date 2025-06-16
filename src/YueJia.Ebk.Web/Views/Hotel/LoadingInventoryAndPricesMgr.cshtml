@@ -1,0 +1,254 @@
+﻿@using YueJia.Ebk.Application.Contracts.SysApp
+@using YueJia.Ebk.Web.ViewModels.Hotel
+@using YueJia.Ebk.Application.Contracts.HotelApp.Dto
+@model YueJia.Ebk.Application.Contracts.HotelApp.Dto.HotelPublishDetailDto
+@inject ISysEnumApp enumApp
+@section head {
+    <style scoped>
+        .el-card__body {
+            padding: 5px;
+        }
+    </style>
+}
+
+<el-container style="height:100vh;overflow: hidden;">
+    <el-main>
+        @Html.Partial("~/Views/Hotel/UserHotelNavigationMgr.cshtml", new ViewHotelVo { Id = Model.Id, HotelName = Model.HotelName })
+        <div style="height:50px;line-height:50px;  ">
+            <h1>批量加载库存与价格</h1>
+        </div>
+
+        <el-divider content-position="left"></el-divider>
+
+        <div style=" margin-bottom:10px; ">
+            <el-text type="primary" size="large"> @Model.HotelNameEn [@Model.HotelName]</el-text>
+        </div>
+        <el-form label-width="auto" :inline="true">
+            <div>
+                <el-form-item label="房间名称" style="margin-bottom:5px;">
+                    <el-select v-model="vmodel.userRoomId" placeholder="请选择房型" filterable style="width:600px" v-on:change="userEvent.onLoadData">
+                        <el-option v-for="ele in vmodel.userRoomList" :label="ele.hotelRoomTitle" :value="''+ele.id"   ></el-option>
+                    </el-select>
+                </el-form-item>
+            </div>
+            <div v-show=" vmodel.userRoomId!='' ">
+                <el-form-item label="房间范围" style="margin-bottom:5px;">
+                    <el-text>{{vmodel.model.startDateString}} 至 {{vmodel.model.endDateString}}</el-text>
+                </el-form-item>
+            </div>
+
+            <div v-show=" vmodel.userRoomId!='' ">
+                <el-form-item label="截止日期" style="margin-bottom:5px;">
+                    <el-date-picker v-model="vmodel.endDate"
+                                    type="date"
+                                    style="width:130px"
+                                    :clearable="false"
+                                    value-format="YYYY-MM-DD"> </el-date-picker>
+                </el-form-item>
+
+                <el-form-item style="margin-bottom:5px; float:right ">
+                    <el-button-group>
+                        <el-button type="primary" style=" pointer-events: auto; " v-on:click="userEvent.onSave">批量加载库存与价格</el-button>
+                    </el-button-group>
+                </el-form-item>
+            </div>
+        </el-form>
+        
+        <div v-show=" vmodel.userRoomId!='' " >
+            <el-alert  title="成本价若为0，则报价状态为关闭，成本价若大于0，则报价状态为开启" type="warning" :closable="false" show-icon></el-alert>
+        </div>
+
+        <el-scrollbar  v-show=" vmodel.userRoomId!='' " >
+        <el-card class="box-card" style="margin-bottom:5px;margin-top:5px;" >
+            <template #header>
+                <div class="card-header">
+                    <el-text>库存设置</el-text>
+                       
+                </div>
+            </template>
+            <div>
+                <el-descriptions direction="vertical" :column="8" border  >
+                    <el-descriptions-item label="批量编辑" align="center">
+                            <el-input-number v-model="vmodel.model.batchSetNumber" 
+                                            :controls="false" 
+                                            :value-on-clear="0" 
+                                            style="width:80px" 
+                                            :precision="0" 
+                                            :min="0" 
+                                            :max="100"
+                                             v-on:change="
+vmodel.model.sunday = vmodel.model.batchSetNumber;
+vmodel.model.monday = vmodel.model.batchSetNumber;
+vmodel.model.tuesday = vmodel.model.batchSetNumber;
+vmodel.model.wednesday = vmodel.model.batchSetNumber;
+vmodel.model.thursday = vmodel.model.batchSetNumber;
+vmodel.model.friday = vmodel.model.batchSetNumber;
+vmodel.model.saturday = vmodel.model.batchSetNumber;"></el-input-number>
+                    </el-descriptions-item>
+                    <el-descriptions-item label="星期天" align="center" >
+                             <el-input-number v-model="vmodel.model.sunday" :controls="false" :value-on-clear="0" style="width:80px" :precision="0" :min="0" :max="100"></el-input-number>
+                    </el-descriptions-item>
+                    <el-descriptions-item label="星期一" align="center">
+                        <div style="text-align:center">
+                             <el-input-number v-model="vmodel.model.monday" :controls="false" :value-on-clear="0" style="width:80px" :precision="0" :min="0" :max="100"></el-input-number>
+                        </div>
+                    </el-descriptions-item>
+                    <el-descriptions-item label="星期二" align="center">
+                        <div style="text-align:center">
+                             <el-input-number v-model="vmodel.model.tuesday" :controls="false" :value-on-clear="0" style="width:80px" :precision="0" :min="0" :max="100"></el-input-number>
+                        </div>
+                    </el-descriptions-item>
+                    <el-descriptions-item label="星期三" align="center">
+                        <div style="text-align:center">
+                             <el-input-number v-model="vmodel.model.wednesday" :controls="false" :value-on-clear="0" style="width:80px" :precision="0" :min="0" :max="100"></el-input-number>
+                        </div>
+                    </el-descriptions-item>
+                    <el-descriptions-item label="星期四" align="center">
+                        <div style="text-align:center">
+                              <el-input-number v-model="vmodel.model.thursday" :controls="false" :value-on-clear="0" style="width:80px" :precision="0" :min="0" :max="100"></el-input-number>
+                        </div>
+                    </el-descriptions-item>
+                    <el-descriptions-item label="星期五" align="center">
+                        <div style="text-align:center">
+                               <el-input-number v-model="vmodel.model.friday" :controls="false" :value-on-clear="0" style="width:80px" :precision="0" :min="0" :max="100"></el-input-number>
+                        </div>
+                    </el-descriptions-item>
+                    <el-descriptions-item label="星期六" align="center">
+                        <div style="text-align:center">
+                             <el-input-number v-model="vmodel.model.saturday" :controls="false" :value-on-clear="0" style="width:80px" :precision="0" :min="0" :max="100"></el-input-number>
+                        </div>
+                    </el-descriptions-item>
+                </el-descriptions>
+            </div>
+        </el-card>
+
+
+
+        <el-card class="box-card" v-for=" ele in vmodel.model.planList " style="margin-bottom:5px;" >
+            <template #header>
+                <div class="card-header">
+
+                        <el-tag v-show="ele.userPlanStatusBool==true " type="primary">启用</el-tag>
+                        <el-tag v-show="ele.userPlanStatusBool==false " type="danger">禁用</el-tag>
+
+                        <el-text style="margin-left:10px;" >价格设置==> {{ ele.userPlanTitel }}</el-text>
+
+                </div>
+            </template>
+            <div>
+                <el-descriptions direction="vertical" :column="8" border>
+                    <el-descriptions-item label="批量编辑" align="center">
+                            <el-input-number v-model="ele.batchSetPrice" 
+                                            :controls="false" 
+                                            :value-on-clear="0" 
+                                            style="width:80px" 
+                                            :precision="0" 
+                                            :min="0" 
+                                            :max="100000"
+                                             v-on:change="
+ele.sunday = ele.batchSetPrice;
+ele.monday = ele.batchSetPrice;
+ele.tuesday = ele.batchSetPrice;
+ele.wednesday = ele.batchSetPrice;
+ele.thursday = ele.batchSetPrice;
+ele.friday = ele.batchSetPrice;
+ele.saturday = ele.batchSetPrice;"></el-input-number>
+                    </el-descriptions-item>
+                    <el-descriptions-item label="星期天" align="center">
+                            <el-input-number v-model="ele.sunday" :controls="false" :value-on-clear="0" style="width:80px" :precision="0" :min="0" :max="100000"></el-input-number>
+                    </el-descriptions-item>
+                    <el-descriptions-item label="星期一" align="center">
+                        <div style="text-align:center">
+                                <el-input-number v-model="ele.monday" :controls="false" :value-on-clear="0" style="width:80px" :precision="0" :min="0" :max="100000"></el-input-number>
+                        </div>
+                    </el-descriptions-item>
+                    <el-descriptions-item label="星期二" align="center">
+                        <div style="text-align:center">
+                                <el-input-number v-model="ele.tuesday" :controls="false" :value-on-clear="0" style="width:80px" :precision="0" :min="0" :max="100000"></el-input-number>
+                        </div>
+                    </el-descriptions-item>
+                    <el-descriptions-item label="星期三" align="center">
+                        <div style="text-align:center">
+                                <el-input-number v-model="ele.wednesday" :controls="false" :value-on-clear="0" style="width:80px" :precision="0" :min="0" :max="100000"></el-input-number>
+                        </div>
+                    </el-descriptions-item>
+                    <el-descriptions-item label="星期四" align="center">
+                        <div style="text-align:center">
+                                <el-input-number v-model="ele.thursday" :controls="false" :value-on-clear="0" style="width:80px" :precision="0" :min="0" :max="100000"></el-input-number>
+                        </div>
+                    </el-descriptions-item>
+                    <el-descriptions-item label="星期五" align="center">
+                        <div style="text-align:center">
+                                <el-input-number v-model="ele.friday" :controls="false" :value-on-clear="0" style="width:80px" :precision="0" :min="0" :max="100000"></el-input-number>
+                        </div>
+                    </el-descriptions-item>
+                    <el-descriptions-item label="星期六" align="center">
+                        <div style="text-align:center">
+                                <el-input-number v-model="ele.saturday" :controls="false" :value-on-clear="0" style="width:80px" :precision="0" :min="0" :max="100000"></el-input-number>
+                        </div>
+                    </el-descriptions-item>
+                </el-descriptions>
+            </div>
+        </el-card>
+
+        </el-scrollbar>
+    </el-main>
+
+</el-container>
+
+@section scripts {
+    <script type="text/javascript" setup>
+        const app = Vue.createApp({
+        setup() {
+             const vmodel = Vue.reactive({
+                  userRoomList:@Html.Raw(System.Text.Json.JsonSerializer.Serialize(ViewBag.userRoomList, new System.Text.Json.JsonSerializerOptions() { PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase })),
+                  userRoomId:'',
+                  endDate:'@DateTime.Now.AddMonths(1).ToString("yyyy-MM-dd")',
+                  model:{},
+             });
+
+             Vue.onMounted(() => {
+                    if(vmodel.userRoomList.length>0){
+                       vmodel.userRoomId = vmodel.userRoomList[0].id;
+                       userEvent.onLoadData();
+                    }
+             });
+
+            const userEvent ={
+                onLoadData:()=>{
+                       axios.get(`/hotel/GetLoadingInventoryAndPrices?userRoomId=${vmodel.userRoomId}`).then(res => {
+                         let {data,status}=res;
+                            if(data.isSuccess){
+                                vmodel.model = data.data;
+                                        console.log(  vmodel.model );
+                             }
+                     })
+                },
+                onSave:()=>{
+                      let reqData = { ...vmodel.model };
+                           reqData.newEndDateString =  vmodel.endDate;
+                                   reqData.userHotelId =  '@Model.Id';
+                       axios['post'](`/Hotel/SaveLoadingInventoryAndPrices`, reqData).then(res=>{
+                        top.window.vueElMessage({ message: res.data. message , type:  res.data.isSuccess?'success':'info' })
+                        if(res.data.isSuccess){
+                             userEvent.onLoadData();
+                        }
+                    })
+                }
+            }
+
+            return {
+                vmodel,
+                userEvent
+            };
+        }
+        });
+        app.use(ElementPlus, { locale: ElementPlusLocaleZhCn });
+        app.mount('#app');
+    </script>
+}
+
+
+
+
+

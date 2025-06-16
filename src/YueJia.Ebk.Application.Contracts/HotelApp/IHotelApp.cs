@@ -18,14 +18,14 @@ public interface IHotelApp
     /// </summary>
     /// <param name="cmd"></param>
     /// <returns></returns>
-    Task<bool> SaveLoadingInventoryAndPricesAsync(SaveLoadingInventoryAndPricesCmd cmd);
+    Task<bool> SaveLoadingInventoryAndPricesAsync(LoadingInventoryAndPriceModel cmd);
 
     /// <summary>
     /// 按房间ID获取价格计划列表
     /// </summary>
     /// <param name="roomId"></param>
     /// <returns></returns>
-    Task<List<RoomPricingPlanListDto>> PricePlanListDataByRoomIdAsync(long roomId);
+    Task<LoadingInventoryAndPriceModel> PricePlanListDataByRoomIdAsync(string userRoomId);
 
     /// <summary>
     /// 保存库存和价格

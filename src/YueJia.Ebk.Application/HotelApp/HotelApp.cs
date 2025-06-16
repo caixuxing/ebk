@@ -661,7 +661,6 @@ public class HotelApp : ApplicationService, IHotelApp
                                                                                 InventoryNum = vv.InventoryNum,
                                                                                 StatusBool = vv.IsEnable == YesOrNoType.Yes
                                                                       }).ToList()
-
         };
     }
 
@@ -1036,17 +1035,27 @@ public class HotelApp : ApplicationService, IHotelApp
 
     }
 
-    public async Task<List<RoomPricingPlanListDto>> PricePlanListDataByRoomIdAsync(long roomId)
+    public async Task<LoadingInventoryAndPriceModel> PricePlanListDataByRoomIdAsync(string UserRoomId)
     {
-        return await PricePlanRepo.AsQueryable()
-             .Where(x => x.HotelRoomId == roomId)
-             .Select(x => new RoomPricingPlanListDto()
-             {
-                 IsEnabled = x.IsEnable,
-                 PricePlanId = x.Id.ToString(),
-                 PricePlanTitle = x.PricePlanTitle ?? string.Empty,
-                 RoomId = x.HotelRoomId.ToString(),
-             }).ToListAsync();
+
+        var userRoom = await HotelRoomRepo.GetByIdAsync( Convert.ToInt64(UserRoomId));
+
+        var planList = await PricePlanRepo.AsQueryable().Where(vv => vv.HotelRoomId == SqlFunc.ToInt64(UserRoomId) &&
+                                                                     vv.TenantId == SqlFunc.ToInt64(CurrentUserApp.TenantId))
+                                                        .Select(vv=> new LoadingInventoryAndPricePlanModel
+                                                        { 
+                                                              UserPlanId = SqlFunc.ToString(vv.Id) ,
+                                                              UserPlanTitel = vv.PricePlanTitle,
+                                                              UserPlanStatusBool = vv.IsEnable== YesOrNoType.Yes,
+                                                        }).ToListAsync();
+
+        return new LoadingInventoryAndPriceModel
+        {
+            UserRoomId = UserRoomId,
+            StartDateString = userRoom.StartDate.ToString("yyyy-MM-dd"),
+            EndDateString = userRoom.EndDate.ToString("yyyy-MM-dd"),
+            PlanList = planList,
+        };
     }
 
     /// <summary>
@@ -1054,88 +1063,82 @@ public class HotelApp : ApplicationService, IHotelApp
     /// </summary>
     /// <param name="cmd"></param>
     /// <returns></returns>
-    public async Task<bool> SaveLoadingInventoryAndPricesAsync(SaveLoadingInventoryAndPricesCmd cmd)
+    public async Task<bool> SaveLoadingInventoryAndPricesAsync(LoadingInventoryAndPriceModel cmd)
     {
-
-
-        await LazyServiceProvider.LazyGetRequiredService<FluentValidation.IValidator<SaveLoadingInventoryAndPricesCmd>>().ValidateAndThrowAsync(cmd);
-
-        DateTime startDate = DateTime.Now.Date;
-
-        var roomIds = cmd.Rooms.Select(t => long.Parse(t.RoomId)).ToList();
-        //查询房间日期范围内的库存数据
-        var oldInventory = await DailyInventoryRepo.AsQueryable()
-             .Where(x => x.CurrentDate >= startDate && x.CurrentDate <= cmd.EndDate.Date && roomIds.Contains(x.RoomId))
-             .ToListAsync();
-
-
-        //查询房间日期范围内的价格数据
-        var oldPrice = await DailyPriceRepo.AsQueryable()
-            .Where(x => x.CurrentDate >= startDate && x.CurrentDate <= cmd.EndDate.Date && roomIds.Contains(x.RoomId))
-            .ToListAsync();
-
-        List<DailyInventoryDo> insertDailyInventoryDos = new();
-        List<DailyInventoryDo> updateDailyInventoryDos = new();
-        List<DailyPriceDo> insertDailyPriceDos = new();
-        List<DailyPriceDo> updateDailyPriceDos = new();
-        foreach (var item in cmd.Rooms)
-        {
-            long roomId = item.RoomId.ToLong();
-
-            for (DateTime date = startDate; date <= cmd.EndDate.Date; date = date.AddDays(1).Date)
-            {
-                //创建库存数据
-                DayOfWeek dayOfWeek = date.DayOfWeek;
-                int inventoryNum = cmd.Rooms.Single(t => t.RoomId == item.RoomId).Inventory.GetValueOrDefault(dayOfWeek) ?? 0;
-                var oldInventoryModel = oldInventory.SingleOrDefault(x => x.CurrentDate == date && x.RoomId == roomId);
-                if (oldInventoryModel is null) insertDailyInventoryDos.Add(DailyInventoryDo.Create(item.RoomId.ToLong(), date, inventoryNum, inventoryNum > 0 ? YesOrNoType.Yes : YesOrNoType.No).CreateByInfo(CurrentUserApp.TenantId.ToLong(), CurrentUserApp.Id, CurrentUserApp.UserName));
-                else
-                {
-                    oldInventoryModel.SetInventoryNum(inventoryNum);
-                    oldInventoryModel.SetIsEnable(inventoryNum > 0 ? YesOrNoType.Yes : YesOrNoType.No);
-                    oldInventoryModel.UpdateByInfo(CurrentUserApp.Id, CurrentUserApp.UserName);
-                    updateDailyInventoryDos.Add(oldInventoryModel);
-                }
-
-                //创建价格数据
-                var pricePlan = cmd.Rooms.Single(t => t.RoomId == item.RoomId).Prices;
-                pricePlan.ForEach(p =>
-                {
-                    decimal price = p.DailyPrices.GetValueOrDefault(dayOfWeek) ?? 0;
-                    var oldPriceModel = oldPrice.SingleOrDefault(x => x.CurrentDate == date && x.RoomId == roomId && x.PricePlanId == p.PricePlanId.ToLong());
-                    if (oldPriceModel is null) insertDailyPriceDos.Add(DailyPriceDo.Create(item.RoomId.ToLong(), p.PricePlanId.ToLong(), date, price, price > 0 ? YesOrNoType.Yes : YesOrNoType.No).CreateByInfo(CurrentUserApp.TenantId.ToLong(), CurrentUserApp.Id, CurrentUserApp.UserName));
-                    else
-                    {
-                        oldPriceModel.SetPrice(price);
-                        oldPriceModel.SetIsEnable(price > 0 ? YesOrNoType.Yes : YesOrNoType.No);
-                        oldPriceModel.UpdateByInfo(CurrentUserApp.Id, CurrentUserApp.UserName);
-                        updateDailyPriceDos.Add(oldPriceModel);
-                    }
-                });
-            }
-        }
-        var hotelRooms = await HotelRoomRepo.AsQueryable().Where(t => roomIds.Contains(t.Id)).ToListAsync();
-        hotelRooms.ForEach(item =>
-        {
-            if (item.EndDate.Date < cmd.EndDate.Date) item.SetEndDate(cmd.EndDate);
-
-        });
-
 
         return await DbTransaction.ExecuteInTransactionAsync(db, async () =>
         {
-            //var insertInventory = dailyInventoryDos.Where(x => x.Id == 0).ToList();
-            //var updateInventory = dailyInventoryDos.Where(x => x.Id > 0).ToList();
-            var ttx = await db.Fastest<DailyInventoryDo>().PageSize(1000).BulkCopyAsync(insertDailyInventoryDos);
-            await db.Fastest<DailyInventoryDo>().PageSize(1000).BulkUpdateAsync(updateDailyInventoryDos);
+            //第一步验证库存有效期
+            var userRoom = await HotelRoomRepo.GetByIdAsync(Convert.ToInt64(cmd.UserRoomId));
+            if (userRoom.EndDate >= Convert.ToDateTime(cmd.NewEndDateString))
+            {
+                throw new InvalidOperationException($@"新截至时间必须大于{userRoom.EndDate.ToString("yyyy-MM-dd")}！");
+            }
 
-            //var insertPrice = dailyPriceDos.Where(x => x.Id == 0).ToList();
-            //var updatePrice = dailyPriceDos.Where(x => x.Id > 0).ToList();
-            await db.Fastest<DailyPriceDo>().PageSize(1000).BulkCopyAsync(insertDailyPriceDos);
-            await db.Fastest<DailyPriceDo>().PageSize(1000).BulkUpdateAsync(updateDailyPriceDos);
+            var LowestPrice = db.Queryable<HotelPublishDo>().Where(vv => vv.Id == SqlFunc.ToInt64(cmd.UserHotelId)).ToList().First().LowestPrice;
+            if (LowestPrice > 0 && cmd.PlanList.Any(vv => (vv.Monday > 0 && vv.Monday < LowestPrice) ||
+                                                          (vv.Tuesday > 0 && vv.Tuesday < LowestPrice) ||
+                                                          (vv.Wednesday > 0 && vv.Wednesday < LowestPrice) ||
+                                                          (vv.Thursday > 0 && vv.Thursday < LowestPrice) ||
+                                                          (vv.Friday > 0 && vv.Friday < LowestPrice) ||
+                                                          (vv.Saturday > 0 && vv.Saturday < LowestPrice) ||
+                                                          (vv.Sunday > 0 && vv.Sunday < LowestPrice)))
+            {
+                throw new InvalidOperationException($@"酒店最低价格为{LowestPrice}！");
+            }
 
 
-            await db.Updateable(hotelRooms).ExecuteCommandAsync();
+
+            //库存处理
+            List<DailyInventoryDo> dailyInventoryDoList = new List<DailyInventoryDo>();
+            for (DateTime date = userRoom.EndDate.AddDays(1); date <= Convert.ToDateTime(cmd.NewEndDateString); date = date.AddDays(1))
+            {
+                int stockNum = 0;
+                switch (date.DayOfWeek)
+                {
+                    case DayOfWeek.Monday: stockNum = cmd.Monday; break;
+                    case DayOfWeek.Tuesday: stockNum = cmd.Tuesday; break;
+                    case DayOfWeek.Wednesday: stockNum = cmd.Wednesday; break;
+                    case DayOfWeek.Thursday: stockNum = cmd.Thursday; break;
+                    case DayOfWeek.Friday: stockNum = cmd.Friday; break;
+                    case DayOfWeek.Saturday: stockNum = cmd.Saturday; break;
+                    case DayOfWeek.Sunday: stockNum = cmd.Sunday; break;
+                }
+                dailyInventoryDoList.Add(DailyInventoryDo.Create(userRoom.Id, date, stockNum, (stockNum > 0 ? YesOrNoType.Yes : YesOrNoType.No)));
+            }
+
+            List<DailyPriceDo> dailyPriceDoList = new List<DailyPriceDo>();
+            foreach (var userPlan in cmd.PlanList)
+            {
+
+                for (DateTime date = userRoom.EndDate.AddDays(1); date <= Convert.ToDateTime(cmd.NewEndDateString); date = date.AddDays(1))
+                {
+                    decimal price = Convert.ToDecimal(0);
+                    switch (date.DayOfWeek)
+                    {
+                        case DayOfWeek.Monday: price = userPlan.Monday; break;
+                        case DayOfWeek.Tuesday: price = userPlan.Tuesday; break;
+                        case DayOfWeek.Wednesday: price = userPlan.Wednesday; break;
+                        case DayOfWeek.Thursday: price = userPlan.Thursday; break;
+                        case DayOfWeek.Friday: price = userPlan.Friday; break;
+                        case DayOfWeek.Saturday: price = userPlan.Saturday; break;
+                        case DayOfWeek.Sunday: price = userPlan.Sunday; break;
+                    }
+
+                    dailyPriceDoList.Add(new DailyPriceDo()
+                    {
+                        RoomId = userRoom.Id,
+                        PricePlanId = Convert.ToInt64(userPlan.UserPlanId),
+                        Price = price,
+                        IsEnable = price > 0 ? YesOrNoType.Yes : YesOrNoType.No,
+                        CurrentDate = date,
+                    });
+                }
+            }
+            userRoom.EndDate = Convert.ToDateTime(cmd.NewEndDateString);
+            await db.Updateable<HotelRoomDo>(userRoom).ExecuteCommandAsync();
+            await db.Insertable<DailyInventoryDo>(dailyInventoryDoList).ExecuteCommandAsync();
+            await db.Insertable<DailyPriceDo>(dailyPriceDoList).ExecuteCommandAsync();
 
             return true;
         });
