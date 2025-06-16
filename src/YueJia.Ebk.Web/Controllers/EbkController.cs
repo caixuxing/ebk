@@ -18,7 +18,7 @@ public class EbkController : AbpController
     /// 查价
     /// </summary>
     /// <returns></returns>
-    [HttpPost("pricesearch")]
+    [HttpPost("PriceSearch")]
     public async Task<IResult> PriceSearch([FromBody] PriceSearchQry qry) => ApiResult.HandleResult(await EbkApp.PriceSearch(qry));
 
 
