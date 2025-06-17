@@ -7,6 +7,7 @@
 /// </summary>
 public class CreateOrUpHotelPublishCmd
 {
+
     /// <summary>
     /// 酒店编号
     /// </summary>

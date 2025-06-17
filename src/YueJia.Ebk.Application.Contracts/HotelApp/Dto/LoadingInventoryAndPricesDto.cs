@@ -90,5 +90,5 @@ public record PricePlanItemDto
     /// <summary>
     /// 每日价格
     /// </summary>
-    public List<DailyPriceDto> DailyPrices { get; set; } = new();
+    public List<DailyPriceModel> DailyPriceList { get; set; } = new();
 }

@@ -18,21 +18,21 @@ public interface IHotelApp
     /// </summary>
     /// <param name="cmd"></param>
     /// <returns></returns>
-    Task<bool> SaveLoadingInventoryAndPricesAsync(SaveLoadingInventoryAndPricesCmd cmd);
+    Task<bool> SaveLoadingInventoryAndPricesAsync(LoadingInventoryAndPriceModel cmd);
 
     /// <summary>
     /// 按房间ID获取价格计划列表
     /// </summary>
     /// <param name="roomId"></param>
     /// <returns></returns>
-    Task<List<RoomPricingPlanListDto>> PricePlanListDataByRoomIdAsync(long roomId);
+    Task<LoadingInventoryAndPriceModel> PricePlanListDataByRoomIdAsync(string userRoomId);
 
     /// <summary>
     /// 保存库存和价格
     /// </summary>
     /// <param name="cmd"></param>
     /// <returns></returns>
-    Task<bool> SaveInventoryAndPriceAsync(SaveInventoryAndPriceCmd cmd);
+    Task<bool> SaveInventoryAndPriceAsync(InventoryAndPriceDto cmd);
 
     /// <summary>
     /// 添加酒店房间
@@ -190,5 +190,9 @@ public interface IHotelApp
 
 
     Task<bool> UserHotelDelete(string userHotelId);
+
+
+   
+    Task<bool> CopeUserPlan(CopeUserPlanModel cmd);
 
 }

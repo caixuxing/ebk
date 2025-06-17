@@ -33,6 +33,7 @@ public class HotelPublishApp : ApplicationService, IHotelPublishApp
         var entity = await HotelPublishRepo.GetByIdAsync(id) ?? throw new InvalidOperationException($"酒店ID:{id}资源不存在！");
         return new HotelPublishDetailDto()
         {
+            Id = entity.Id.ToString(),
             HotelCode = entity.HotelCode,
             HotelName = entity.HotelName,
             HotelNameEn = entity.HotelNameEn,

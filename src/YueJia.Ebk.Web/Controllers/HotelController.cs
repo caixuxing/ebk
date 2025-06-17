@@ -1,4 +1,6 @@
-﻿using SqlSugar;
+﻿using Castle.Components.DictionaryAdapter.Xml;
+using SqlSugar;
+using Volo.Abp.Threading;
 using YueJia.Ebk.Application.Contracts.Comm.BaseObj;
 using YueJia.Ebk.Application.Contracts.HotelApp;
 using YueJia.Ebk.Application.Contracts.HotelApp.Commands;
@@ -8,6 +10,7 @@ using YueJia.Ebk.Application.Contracts.OuterServiceApp;
 using YueJia.Ebk.Application.Contracts.OuterServiceApp.Entity;
 using YueJia.Ebk.Application.Contracts.OuterServiceApp.Qry;
 using YueJia.Ebk.Application.Contracts.SysApp;
+using YueJia.Ebk.Application.HotelApp;
 using YueJia.Ebk.Domain.Hotel;
 using YueJia.Ebk.Domain.Shared.Const;
 using YueJia.Ebk.Web.ViewModels.Hotel;
@@ -28,6 +31,8 @@ public class HotelController : AbpController
     private ISysEnumApp SysEnumApp => LazyServiceProvider.LazyGetRequiredService<ISysEnumApp>();
 
     private IHotelApp HotelApp => LazyServiceProvider.LazyGetRequiredService<IHotelApp>();
+
+
 
 
 
@@ -327,54 +332,61 @@ public class HotelController : AbpController
     /// <returns></returns>
     [HttpPost, Route("[controller]/ChangeUserPlanState/{id}")]
     public async Task<IResult> ChangeUserPlanState(string id) => ApiResult.HandleBoolResult(await HotelApp.UpdatePricePlanStateAsync(id.ToLong()));
+
+
+    /// <summary>
+    /// 复制价格计划
+    /// </summary>
+    /// <param name="userPlanId"></param>
+    /// <returns></returns>
+    public async Task<IActionResult> CopeUserPlanMgr(string userHotelId ,  string userPlanId) {
+        var userPlan = await HotelApp.GetPricePlanDetailsByIdAsync( Convert.ToInt64(userPlanId) );
+        var userHotel = await HotelPublishApp.GetHotelPublishDetailAsync( Convert.ToInt64(userHotelId));
+
+        ViewBag.HotelName = $"{userHotel.HotelName}({userHotel.HotelNameEn})";
+        ViewBag.LowestPrice = $"{userHotel.LowestPrice}";
+        ViewBag.PricePlanTitle = $"{userPlan.PricePlanTitle}";
+
+        CopeUserPlanModel vm = new CopeUserPlanModel()
+        {
+            CopeUserPlanId = userPlanId,
+            BreakfastType = userPlan.BreakfastType,
+            DaysInAdvance = userPlan.DaysInAdvance,
+            ContinuousStayDays = userPlan.ContinuousStayDays,
+            IsEnable = YesOrNoType.Yes,
+            IsReservedRoom = YesOrNoType.Yes,
+            AddPrice = 0,
+        };
+        return View(vm);
+    }
+
+    /// <summary>
+    /// 复制价格计划
+    /// </summary>
+    /// <param name="userPlanId"></param>
+    /// <returns></returns>
+    [HttpPost, Route("[controller]/CopeUserPlan")]
+    public async Task<IResult> CopeUserPlan([FromBody] CopeUserPlanModel cmd)
+    {
+        var result = await HotelApp.CopeUserPlan(cmd);
+        return ApiResult.HandleResult(result);
+    }
     #endregion
 
 
 
-
-
-
-
-
-
+    #region 库存和价格
     /// <summary>
     /// 库存和价格（View）
     /// </summary>
     /// <param name="id">酒店Id</param>
     /// <returns></returns>
-    public async Task<IActionResult> InventoryAndPrice(string id)
+    public async Task<IActionResult> InventoryAndPriceMgr(string userHotelId)
     {
-        long hotelId = id.ToLong();
-
-        var entity = await HotelPublishRepo.GetByIdAsync(hotelId) ?? throw new InvalidOperationException("酒店不存在！");
-
-        var room = await HotelRoomRepo.GetListAsync(x => x.HotelId == hotelId);
-
-        InventoryAndPriceDetailsQry qry = new() { HotelId = id, RoomId = room.FirstOrDefault()?.Id.ToString() ?? "0" };
-        var result = await HotelApp.InventoryAndPriceViewAsync(qry);
-
-        result.HotelId = entity.Id.ToString();
-        result.HotelName = entity.HotelName;
-        result.HotelNameEn = entity.HotelNameEn;
-        result.HotelCode = entity.HotelCode;
-        result.RoomTypeValue = qry?.RoomId.ToString() ?? string.Empty;
-
-        var currentHotelRoomTypeDate = await SqlSugarClient.Queryable<OtaRoomEntity>()
-                            .Where(q => q.pfcode == "D" && q.hotelcode == entity.HotelCode)
-                            .Select(t => new { t.roomcode, t.roomname })
-                            .ToListAsync();
-
-        result.RoomDropDownList = room.Select(x => new SelectDataDto<string>()
-        {
-            Label = $"{x.Id} {currentHotelRoomTypeDate.FirstOrDefault(y => y.roomcode == int.Parse(x.RoomType))?.roomname ?? string.Empty},{x.BedType.ToDescription()}",
-            Value = x.Id.ToString()
-        }).ToList();
-
-
-
-        return View(result);
+        var userHotel = await HotelPublishApp.GetHotelPublishDetailAsync(Convert.ToInt64(userHotelId));  
+        ViewBag.userRoomList = await HotelApp.GetHotelRoomListByIdAsync(userHotelId.ToLong());
+        return View(userHotel);
     }
-
 
     /// <summary>
     /// 按条件筛选库存和价格
@@ -385,12 +397,8 @@ public class HotelController : AbpController
     public async Task<IResult> InventoryAndPriceDetailsByFilter([FromBody] InventoryAndPriceDetailsQry qry)
     {
         var result = await HotelApp.InventoryAndPriceViewAsync(qry);
-
-        return ApiResult.HandleResult(result.RoomTypeInfo);
+        return ApiResult.HandleResult(result);
     }
-
-
-
 
     /// <summary>
     /// 保存库存和价格
@@ -398,16 +406,32 @@ public class HotelController : AbpController
     /// <param name="cmd"></param>
     /// <returns></returns>
     [HttpPost, Route("[controller]/SaveInventoryAndPrice")]
-    public async Task<IResult> SaveInventoryAndPrice([FromBody] SaveInventoryAndPriceCmd cmd) => ApiResult.HandleBoolResult(await HotelApp.SaveInventoryAndPriceAsync(cmd));
-
+    public async Task<IResult> SaveInventoryAndPrice([FromBody] InventoryAndPriceDto cmd) => ApiResult.HandleBoolResult(await HotelApp.SaveInventoryAndPriceAsync(cmd));
+    #endregion
 
 
     /// <summary>
     /// 加载库存和价格（View）
     /// </summary>
     /// <returns></returns>
-    public async Task<IActionResult> LoadingInventoryAndPrices(string id) => View(await HotelApp.LoadingInventoryAndPricesViewAsync(id.ToLong()));
+    public async Task<IActionResult> LoadingInventoryAndPricesMgr(string userHotelId)
+    {
+        var userHotel = await HotelPublishApp.GetHotelPublishDetailAsync(Convert.ToInt64(userHotelId));
+        ViewBag.userRoomList = await HotelApp.GetHotelRoomListByIdAsync(userHotelId.ToLong());
+        return View(userHotel);
+    }
 
+    /// <summary>
+    /// 按房间ID获取价格计划列表
+    /// </summary>
+    /// <param name="roomId"></param>
+    /// <returns></returns>
+    [HttpGet, Route("[controller]/GetLoadingInventoryAndPrices")]
+    public async Task<IResult> PricePlanListDataByRoomId(string userRoomId)
+    {
+        var result = await HotelApp.PricePlanListDataByRoomIdAsync(userRoomId);
+        return ApiResult.HandleResult(result);
+    }
 
 
     /// <summary>
@@ -416,22 +440,12 @@ public class HotelController : AbpController
     /// <param name="cmd"></param>
     /// <returns></returns>
     [HttpPost, Route("[controller]/SaveLoadingInventoryAndPrices")]
-    public async Task<IResult> SaveLoadingInventoryAndPrices([FromBody] SaveLoadingInventoryAndPricesCmd cmd)
+    public async Task<IResult> SaveLoadingInventoryAndPrices([FromBody] LoadingInventoryAndPriceModel cmd)
     {
         return ApiResult.HandleBoolResult(await HotelApp.SaveLoadingInventoryAndPricesAsync(cmd));
     }
 
-    /// <summary>
-    /// 按房间ID获取价格计划列表
-    /// </summary>
-    /// <param name="roomId"></param>
-    /// <returns></returns>
-    [HttpGet, Route("[controller]/{roomId}/RoomPricePlanList")]
-    public async Task<IResult> PricePlanListDataByRoomId([FromRoute] string roomId)
-    {
-        var result = await HotelApp.PricePlanListDataByRoomIdAsync(roomId.ToLong());
-        return ApiResult.HandleResult(result);
-    }
+
 
 
 

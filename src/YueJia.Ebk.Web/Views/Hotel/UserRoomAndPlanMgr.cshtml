@@ -102,9 +102,10 @@
                             </template>
                         </el-table-column>
 
-                        <el-table-column label="操作" width="180px" align="center">
+                        <el-table-column label="操作" width="220px" align="center">
                             <template #default="scope">
                                 <el-button size="small" v-on:click="userEvent.onChangeUserPlanState(scope.row)">切换状态</el-button>
+                                <el-button size="small" v-on:click="userEvent.onCopePlan(scope.row)">复制 </el-button>
                                 <el-button size="small" type="danger" v-on:click="userEvent.onDeletePlan(scope.row)">删除 </el-button>
                             </template>
                         </el-table-column>
@@ -178,6 +179,19 @@
                         fix: false,
                         maxmin: true,
                         content:  `/Hotel/AddUserPlanMgr/${row.id}`,
+                        end: function () {
+                          userEvent. loadData();
+                        }
+                    });
+                },
+                onCopePlan:(row)=>{
+                     layer.open({
+                        type: 2,
+                        title: '复制价格计划',
+                        area: ['800px', '600px'],
+                        fix: false,
+                        maxmin: true,
+                        content:  `/Hotel/CopeUserPlanMgr?userHotelId=${'@ViewBag.mv.Id'}&userPlanId=${row.id}`,
                         end: function () {
                           userEvent. loadData();
                         }

@@ -1,0 +1,115 @@
+﻿@model YueJia.Ebk.Application.Contracts.HotelApp.Dto.CopeUserPlanModel
+@using YueJia.Ebk.Application.Contracts.SysApp
+@inject ISysEnumApp enumApp
+
+<el-container style="padding:20px">
+    <el-main>
+        <el-form label-width="auto" :inline="true" style="width:810px;margin:0px auto">
+            <div>
+                <el-form-item label="酒店名称：" style="margin-bottom:5px;">
+                    <label>@ViewBag.HotelName </label>
+                </el-form-item>
+            </div>
+        
+            <div>
+                <el-form-item label="参考计划：" style="margin-bottom:5px;">
+                    <label>@ViewBag.PricePlanTitle </label>
+                </el-form-item>
+            </div>
+        </el-form>
+
+        <el-divider content-position="left" style="width:810px;margin:10px auto 20px auto;">价格计划设置</el-divider>
+
+        <el-form label-width="auto" style="width:810px;margin:0px auto">
+            <el-form-item label="早餐类型：" style="margin-bottom:5px;">
+                <el-select v-model="vmodel.model.breakfastType" placeholder="请选择早餐类型" filterable style="width:100px">
+                    @foreach (var ele in enumApp.GetEnumDataList(nameof(BreakfastTypeEnum)))
+                    {
+                        <el-option label="@ele.Describe" :value="@ele.Value"></el-option>
+                    }
+                </el-select>
+            </el-form-item>
+
+            <el-form-item label="提前天数：" style="margin-bottom:5px;">
+                <el-input-number v-model="vmodel.model.daysInAdvance" :controls="false" :value-on-clear="1" :precision="0" :min="0" :max="30" style="width:100px"></el-input-number>
+            </el-form-item>
+
+            <el-form-item label="连住天数：" style="margin-bottom:5px;">
+                <el-input-number v-model="vmodel.model.continuousStayDays" :controls="false" :value-on-clear="1" :precision="0" :min="1" :max="5" style="width:100px"></el-input-number>
+            </el-form-item>
+
+            <el-form-item label="是否保留房：" style="margin-bottom:5px; display:none ">
+                <el-switch v-model="vmodel.A_isReservedRoom" inline-prompt active-text="是" inactive-text="否" />
+            </el-form-item>
+
+            <el-form-item label="是否启用：" style="margin-bottom:5px;">
+                <el-switch v-model="vmodel.A_isEnable" inline-prompt active-text="是" inactive-text="否" />
+            </el-form-item>
+
+            <el-form-item label="价格增加：" style="margin-bottom:5px;">
+                <el-input-number v-model="vmodel.model.addPrice" :controls="false" :value-on-clear="0" :precision="0" :min="-100000" :max="100000" style="width:100px"></el-input-number>
+            </el-form-item>
+
+        </el-form>
+
+ 
+
+    </el-main>
+    <el-footer>
+        <div style="text-align: center;">
+            <el-button type="primary" v-on:click="onSave">保存 </el-button>
+        </div>
+    </el-footer>
+</el-container>
+@section scripts {
+    <script type="text/javascript">
+            var frameIndex = parent.layer.getFrameIndex(window.name);
+
+        const app = Vue.createApp({
+        setup() {
+
+               const vmodel = Vue.reactive({
+                    model :  @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model, new System.Text.Json.JsonSerializerOptions() { PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase })),
+                    A_isReservedRoom :true,
+                    A_isEnable :true,
+               });
+
+                Vue.onMounted(() => {
+                    console.log(vmodel.model );
+
+                     vmodel.A_isReservedRoom = vmodel.model.isReservedRoom==1;
+                     vmodel.A_isEnable =  vmodel.model.isEnable==1;
+                 });
+
+
+                /*
+                * 新增=> 保存
+                */
+                const onSave = async () => {
+                    let reqData = { ...vmodel.model };
+                    reqData.isEnable=vmodel.A_isEnable==true?1:0;
+                    reqData.isReservedRoom=vmodel.A_isReservedRoom==true?1:0;
+
+
+                    axios['post'](`/Hotel/CopeUserPlan`, reqData).then(res=>{
+                          top.window.vueElMessage({ message: res.data. message , type:  res.data.isSuccess?'success':'info' })
+                          if(res.data.isSuccess){
+                             parent.layer.close(frameIndex); // 关闭当前弹框
+                          }
+                   })
+                 }
+
+
+
+                return {
+                    vmodel
+                    ,onSave
+                }
+        }
+        });
+        app.use(ElementPlus);
+        app.mount('#app');
+    </script>
+}
+
+

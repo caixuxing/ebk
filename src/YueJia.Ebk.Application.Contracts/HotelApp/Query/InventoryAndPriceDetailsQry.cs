@@ -9,11 +9,11 @@
         /// <summary>
         /// 酒店ID
         /// </summary>
-        public string HotelId { get; set; }
+        public string UserHotelId { get; set; }
         /// <summary>
         /// 房间ID
         /// </summary>
-        public string RoomId { get; set; }
+        public string UserRoomId { get; set; }
 
         /// <summary>
         /// 开始时间
@@ -23,6 +23,6 @@
         /// <summary>
         /// 天数
         /// </summary>
-        public int Days { get; set; } = 14;
+        public int DataNumber { get; set; } = 14;
     }
 }
