@@ -1,6 +1,4 @@
-﻿using MongoDB.Bson.Serialization.Attributes;
-
-namespace YueJia.Ebk.Domain.AggRoot;
+﻿namespace YueJia.Ebk.Domain.AggRoot;
 
 
 /// <summary>
@@ -24,7 +22,6 @@ public abstract record EntityBase : EntityBaseId, IDeletedFilter
     /// 创建时间
     /// </summary>
     [SugarColumn(ColumnDescription = "创建时间", IsNullable = true, IsOnlyIgnoreUpdate = true, InsertServerTime = true)]
-    [BsonDateTimeOptions(Kind = DateTimeKind.Local)]
     public DateTime CreateTime { get; set; }
     /// <summary>
     /// 创建者ID
@@ -41,7 +38,6 @@ public abstract record EntityBase : EntityBaseId, IDeletedFilter
     /// 最后修改时间
     /// </summary>
     [SugarColumn(ColumnDescription = "最后修改时间", IsNullable = true, IsOnlyIgnoreInsert = true, UpdateServerTime = true)]
-    [BsonDateTimeOptions(Kind = DateTimeKind.Local)]
     public DateTime LastModifiedTime { get; set; }
 
     /// <summary>

@@ -143,7 +143,7 @@ public class EbkApp : ApplicationService, IEbkApp
         //查询价格计划
         var pricePlanFilter = Builders<PricePlanDo>.Filter.And(
         Builders<PricePlanDo>.Filter.In(x => x.HotelRoomId, roomids),
-        Builders<PricePlanDo>.Filter.Gte(x => x.ContinuousStayDays, continuousStayDays),
+        Builders<PricePlanDo>.Filter.Lte(x => x.ContinuousStayDays, continuousStayDays),
         Builders<PricePlanDo>.Filter.Lte(x => x.DaysInAdvance, advanceDays));
         var pricePlanData = await MongoDb.GetCollection<PricePlanDo>(nameof(PricePlanDo)).Find(pricePlanFilter).ToListAsync();
         if (pricePlanData is null || pricePlanData.Count == 0) return default!;
@@ -190,7 +190,7 @@ public class EbkApp : ApplicationService, IEbkApp
                 if (dailyInventory is null || dailyInventory?.Count <= 0) continue;
 
                 //价格计划   
-                var pricePlan = pricePlanData.Where(x => x.HotelRoomId == room.Id && x.ContinuousStayDays >= continuousStayDays && x.DaysInAdvance <= advanceDays).ToList();
+                var pricePlan = pricePlanData.Where(x => x.HotelRoomId == room.Id && x.ContinuousStayDays <= continuousStayDays && x.DaysInAdvance <= advanceDays).ToList();
                 if (pricePlan?.Count <= 0) continue;
 
 

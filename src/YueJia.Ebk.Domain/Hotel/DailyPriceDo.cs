@@ -1,6 +1,4 @@
-﻿using MongoDB.Bson.Serialization.Attributes;
-
-namespace YueJia.Ebk.Domain.Hotel;
+﻿namespace YueJia.Ebk.Domain.Hotel;
 
 /// <summary>
 /// 每日价格
@@ -25,7 +23,6 @@ public partial record DailyPriceDo : EntityTenant
     /// 当前日期
     /// </summary>
     [SugarColumn(ColumnDescription = "当前日期", ColumnDataType = "date")]
-    [BsonDateTimeOptions(Kind = DateTimeKind.Local)]
     public DateTime CurrentDate { get; set; }
 
     /// <summary>
