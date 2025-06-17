@@ -1,5 +1,6 @@
 ﻿using MongoDB.Driver;
 using YueJia.Ebk.Application.Contracts.EbkApp;
+using YueJia.Ebk.Application.Contracts.EbkApp.Dto;
 using YueJia.Ebk.Application.Contracts.EbkApp.Query;
 using YueJia.Ebk.Domain.AggRoot;
 using YueJia.Ebk.Domain.Hotel;
@@ -30,14 +31,12 @@ public class EbkApp : ApplicationService, IEbkApp
         //提前天数
         int advanceDays = (qry.CheckOutDate.Date - DateTime.Now.Date).Days;
 
-
         //解密查价唯一值
         var searchCodeStr = CompressedEncryptor.Decrypt(qry.SearchCode, SecretKeyConst.key, SecretKeyConst.iv);
         if (string.IsNullOrWhiteSpace(searchCodeStr) || !searchCodeStr.Contains("|")) throw new ArgumentException("查价唯一值解密失败！");
         var splitArray = searchCodeStr.Split('|');
         var dailyPriceIds = splitArray[0].Split(',').Select(long.Parse).ToList();
         var dailyInventoryIds = (splitArray[1]).Split(',').Select(long.Parse).ToList();
-
 
         //按库存ID擦查询库存集合
         var dailyInventoryDos = await db.Queryable<DailyInventoryDo>().ClearFilter<ITenantIdFilter>().Where(t => dailyInventoryIds.Contains(t.Id)).ToListAsync();

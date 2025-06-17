@@ -1,4 +1,4 @@
-﻿namespace YueJia.Ebk.Application.Contracts.EbkApp;
+﻿namespace YueJia.Ebk.Application.Contracts.EbkApp.Dto;
 
 /// <summary>
 /// 查价结果Dto

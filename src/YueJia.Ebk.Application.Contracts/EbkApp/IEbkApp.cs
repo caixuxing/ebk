@@ -1,4 +1,5 @@
-﻿using YueJia.Ebk.Application.Contracts.EbkApp.Query;
+﻿using YueJia.Ebk.Application.Contracts.EbkApp.Dto;
+using YueJia.Ebk.Application.Contracts.EbkApp.Query;
 
 namespace YueJia.Ebk.Application.Contracts.EbkApp;
 

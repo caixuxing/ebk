@@ -1,4 +1,5 @@
 ﻿using YueJia.Ebk.Application.Contracts.EbkApp;
+using YueJia.Ebk.Application.Contracts.EbkApp.Commands;
 using YueJia.Ebk.Application.Contracts.EbkApp.Query;
 
 namespace YueJia.Ebk.Web.Controllers;
@@ -35,7 +36,8 @@ public class EbkController : AbpController
     /// </summary>
     /// <returns></returns>
     [HttpPost("CreateOrder")]
-    public async Task<IResult> CreateOrder([FromBody] PriceSearchQry qry) => ApiResult.HandleResult(string.Empty);
+    public async Task<IResult> CreateOrder([FromBody] CreateOrderCmd qry) => ApiResult.HandleResult(string.Empty);
+
 
 
 

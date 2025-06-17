@@ -3,19 +3,21 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.11.35222.181
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "YueJia.Ebk.Domain", "YueJia.Ebk.Domain\YueJia.Ebk.Domain.csproj", "{0B056521-D15A-4241-83F7-67AC2EBF59BB}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "YueJia.Ebk.Domain", "YueJia.Ebk.Domain\YueJia.Ebk.Domain.csproj", "{0B056521-D15A-4241-83F7-67AC2EBF59BB}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "YueJia.Ebk.Web", "YueJia.Ebk.Web\YueJia.Ebk.Web.csproj", "{4389E37A-11D4-46FD-8DCB-8FC02699D115}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "YueJia.Ebk.Web", "YueJia.Ebk.Web\YueJia.Ebk.Web.csproj", "{4389E37A-11D4-46FD-8DCB-8FC02699D115}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "YueJia.Ebk.Domain.Shared", "YueJia.Ebk.Domain.Shared\YueJia.Ebk.Domain.Shared.csproj", "{AEE22CE4-24D5-40BA-AB12-29014B38590C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "YueJia.Ebk.Domain.Shared", "YueJia.Ebk.Domain.Shared\YueJia.Ebk.Domain.Shared.csproj", "{AEE22CE4-24D5-40BA-AB12-29014B38590C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "YueJia.Ebk.Application.Contracts", "YueJia.Ebk.Application.Contracts\YueJia.Ebk.Application.Contracts.csproj", "{9FD2C6CA-A357-412B-A721-48B5DCCFAFE9}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "YueJia.Ebk.Application.Contracts", "YueJia.Ebk.Application.Contracts\YueJia.Ebk.Application.Contracts.csproj", "{9FD2C6CA-A357-412B-A721-48B5DCCFAFE9}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "YueJia.Ebk.Application", "YueJia.Ebk.Application\YueJia.Ebk.Application.csproj", "{5E266493-1223-4BA0-B127-0CA5A47A6B52}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "YueJia.Ebk.Application", "YueJia.Ebk.Application\YueJia.Ebk.Application.csproj", "{5E266493-1223-4BA0-B127-0CA5A47A6B52}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "YueJia.Ebk.Infrastructure", "YueJia.Ebk.Infrastructure\YueJia.Ebk.Infrastructure.csproj", "{831DA34B-2118-4CA0-AC63-27E9F251B5CC}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "YueJia.Ebk.Infrastructure", "YueJia.Ebk.Infrastructure\YueJia.Ebk.Infrastructure.csproj", "{831DA34B-2118-4CA0-AC63-27E9F251B5CC}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "YueJia.Ebk.DbMigrator", "YueJia.Ebk.DbMigrator\YueJia.Ebk.DbMigrator.csproj", "{DB67CCCA-FB01-4378-9370-B96FAEBB31D4}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "YueJia.Ebk.DbMigrator", "YueJia.Ebk.DbMigrator\YueJia.Ebk.DbMigrator.csproj", "{DB67CCCA-FB01-4378-9370-B96FAEBB31D4}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "YueJia.Ebk.Api", "YueJia.Ebk.Api\YueJia.Ebk.Api.csproj", "{39B2C780-5749-46FA-9FF0-4A0E61762C87}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -51,6 +53,10 @@ Global
 		{DB67CCCA-FB01-4378-9370-B96FAEBB31D4}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{DB67CCCA-FB01-4378-9370-B96FAEBB31D4}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{DB67CCCA-FB01-4378-9370-B96FAEBB31D4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{39B2C780-5749-46FA-9FF0-4A0E61762C87}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{39B2C780-5749-46FA-9FF0-4A0E61762C87}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{39B2C780-5749-46FA-9FF0-4A0E61762C87}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{39B2C780-5749-46FA-9FF0-4A0E61762C87}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
