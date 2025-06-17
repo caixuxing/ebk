@@ -1,9 +1,12 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿using Medallion.Threading;
+using Medallion.Threading.Redis;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using MongoDB.Driver;
 using SqlSugar;
 using SqlSugar.DistributedSystem.Snowflake;
 using SqlSugar.IOC;
+using StackExchange.Redis;
 using System.Reflection;
 using YueJia.Ebk.Domain.AggRoot;
 using YueJia.Ebk.Domain.Shared.Config;
@@ -347,6 +350,25 @@ public class YueJiaEbkInfrastructureModule : AbpModule
         var database = client.GetDatabase(mongodbConfig.DatabaseName);
         context.Services.AddSingleton(database);
 
+
+
+        var redisConfig = new ConfigurationOptions
+        {
+            EndPoints = { "redis:6379" },
+            //Password = "123456",
+            ConnectTimeout = 5000,
+            SyncTimeout = 10000,
+            DefaultDatabase = 2,
+            AbortOnConnectFail = false
+        };
+        var connectionMultiplexer = ConnectionMultiplexer.ConnectAsync(redisConfig);
+        context.Services.AddSingleton(connectionMultiplexer.Result);
+
+        //使用redis方式 分布式锁
+        context.Services.AddSingleton<IDistributedLockProvider>(sp =>
+        {
+            return new RedisDistributedSynchronizationProvider(connectionMultiplexer.Result.GetDatabase(6));
+        });
         return base.ConfigureServicesAsync(context);
     }
 }

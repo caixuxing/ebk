@@ -1,15 +1,20 @@
-var builder = WebApplication.CreateBuilder(args);
+using YueJia.Ebk.Api;
+try
+{
+    var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
+    builder.Host.AddAppSettingsSecretsJson().UseAutofac();
+    builder.Services.AddControllersWithViews();
+    builder.Services.ReplaceConfiguration(builder.Configuration);
+    await builder.AddApplicationAsync<YueJiaEbkApiModule>();
+    var app = builder.Build();
+    await app.InitializeApplicationAsync();
+    //app.UseAuthorization();
 
-builder.Services.AddControllers();
-
-var app = builder.Build();
-
-// Configure the HTTP request pipeline.
-
-app.UseAuthorization();
-
-app.MapControllers();
-
-app.Run();
+    app.MapControllers();
+    await app.RunAsync();
+}
+catch (Exception ex)
+{
+    Console.WriteLine(ex.Message);
+}

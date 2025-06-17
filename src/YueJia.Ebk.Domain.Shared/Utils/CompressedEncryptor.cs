@@ -2,7 +2,7 @@
 using System.Security.Cryptography;
 using System.Text;
 
-namespace YueJia.Ebk.Infrastructure.Uilts;
+namespace YueJia.Ebk.Domain.Shared.Utils;
 
 /// <summary>
 /// 提供文本压缩和加密功能的工具类
@@ -17,7 +17,7 @@ public class CompressedEncryptor
     /// <param name="key">加密密钥(32字节，256位)</param>
     /// <param name="iv">初始化向量(16字节，128位)</param>
     /// <returns>Base64编码的加密结果</returns>
-    public static string Encrypt(string plainText, byte[] key, byte[] iv)
+    public static (bool, string) Encrypt(string plainText, byte[] key, byte[] iv)
     {
         try
         {
@@ -28,11 +28,11 @@ public class CompressedEncryptor
             byte[] encrypted = EncryptBytes(compressed, key, iv);
 
             // 3. 将加密结果转换为Base64字符串以便安全传输/存储
-            return Convert.ToBase64String(encrypted);
+            return (true, Convert.ToBase64String(encrypted));
         }
         catch (Exception ex)
         {
-            throw new InvalidOperationException("加密失败:", ex);
+            return (false, $"加密失败：{ex.Message}");
         }
     }
 
@@ -43,7 +43,7 @@ public class CompressedEncryptor
     /// <param name="key">加密时使用的密钥(32字节)</param>
     /// <param name="iv">加密时使用的初始化向量(16字节)</param>
     /// <returns>解密后的原始文本</returns>
-    public static string Decrypt(string cipherText, byte[] key, byte[] iv)
+    public static (bool, string) Decrypt(string cipherText, byte[] key, byte[] iv)
     {
         try
         {
@@ -57,12 +57,12 @@ public class CompressedEncryptor
             byte[] decompressed = Decompress(decrypted);
 
             // 4. 将字节数组转换回UTF-8字符串
-            return Encoding.UTF8.GetString(decompressed);
+            return (true, Encoding.UTF8.GetString(decompressed));
         }
 
         catch (Exception ex)
         {
-            throw new InvalidOperationException("解密失败:", ex);
+            return (false, $"解密失败：{ex.Message}");
         }
     }
 

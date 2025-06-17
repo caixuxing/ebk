@@ -7,6 +7,7 @@
 [SugarTable("OrderRoom", "订单房间表")]
 public partial record OrderRoomDo : EntityBase
 {
+    public OrderRoomDo() { }
     /// <summary>
     /// 预订号
     /// </summary>
@@ -57,4 +58,26 @@ public partial record OrderRoomDo : EntityBase
     [SugarColumn(ColumnDescription = "早餐类型")]
     public BreakfastTypeEnum BreakfastType { get; set; } = default!;
 
+}
+
+public partial record OrderRoomDo
+{
+
+
+    private OrderRoomDo(string orderNum, string roomName, string roomCode, string bedName, string bedCode, string pricePlanName, long pricePlanId, BreakfastTypeEnum breakfastType)
+    {
+        OrderNum = orderNum;
+        RoomName = roomName;
+        RoomCode = roomCode;
+        BedName = bedName;
+        BedCode = bedCode;
+        PricePlanName = pricePlanName;
+        PricePlanId = pricePlanId;
+        BreakfastType = breakfastType;
+    }
+
+    public static OrderRoomDo Create(string orderNum, string roomName, string roomCode, string bedName, string bedCode, string pricePlanName, long pricePlanId, BreakfastTypeEnum breakfastType)
+    {
+        return new OrderRoomDo(orderNum, roomName, roomCode, bedName, bedCode, pricePlanName, pricePlanId, breakfastType);
+    }
 }

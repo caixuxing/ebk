@@ -1,4 +1,4 @@
-﻿namespace YueJia.Ebk.Application.Contracts.EbkApp.Query;
+﻿namespace YueJia.Ebk.Application.Contracts.HotelApp.Query;
 
 
 /// <summary>

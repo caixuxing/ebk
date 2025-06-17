@@ -4,8 +4,9 @@
 /// 订单房间每天价格明细
 /// </summary>
 [SugarTable("OrderRoomDailyPriceDetail", "订单房间每天价格明细")]
-public record OrderRoomDailyPriceDetailDo : EntityBaseId, IDeletedFilter
+public partial record OrderRoomDailyPriceDetailDo : EntityBaseId, IDeletedFilter
 {
+    public OrderRoomDailyPriceDetailDo() { }
     /// <summary>
     /// 预订号
     /// </summary>
@@ -35,4 +36,21 @@ public record OrderRoomDailyPriceDetailDo : EntityBaseId, IDeletedFilter
     /// </summary>
     [SugarColumn(ColumnDescription = "是否删除")]
     public bool IsDelete { get; set; }
+}
+
+public partial record OrderRoomDailyPriceDetailDo
+{
+    private OrderRoomDailyPriceDetailDo(string orderNum, long orderRoomId, DateTime currentDate, decimal dayPrice)
+    {
+        OrderNum = orderNum;
+        OrderRoomId = orderRoomId;
+        CurrentDate = currentDate;
+        DayPrice = dayPrice;
+        this.IsDelete = false;
+    }
+
+    public static OrderRoomDailyPriceDetailDo Create(string orderNum, long orderRoomId, DateTime currentDate, decimal dayPrice)
+    {
+        return new OrderRoomDailyPriceDetailDo(orderNum, orderRoomId, currentDate, dayPrice);
+    }
 }

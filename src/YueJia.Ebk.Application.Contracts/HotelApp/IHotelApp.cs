@@ -1,6 +1,4 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using YueJia.Ebk.Application.Contracts.HotelApp.Commands;
+﻿using YueJia.Ebk.Application.Contracts.HotelApp.Commands;
 using YueJia.Ebk.Application.Contracts.HotelApp.Dto;
 using YueJia.Ebk.Application.Contracts.HotelApp.Query;
 
@@ -11,6 +9,21 @@ namespace YueJia.Ebk.Application.Contracts.HotelApp;
 /// </summary>
 public interface IHotelApp
 {
+
+
+    /// <summary>
+    /// 查询酒店价格
+    /// </summary>
+    /// <returns></returns>
+    Task<IEnumerable<HotelPriceDto>> PriceSearch(PriceSearchQry qry);
+
+
+    /// <summary>
+    /// 验价
+    /// </summary>
+    /// <param name="qry"></param>
+    /// <returns></returns>
+    Task<HotelPriceDto> PriceCheckQry(PriceCheckQry qry);
 
 
     /// <summary>
@@ -169,9 +182,9 @@ public interface IHotelApp
 
     Task<bool> BatchSaveInventoryAndPricesSimple(BatchEditInventoryAndPricesModel qry);
 
-    Task<bool> BatchSaveInventoryAndPricesSenior([FromBody] BatchEditInventoryAndPricesSeniorModel qry);
+    Task<bool> BatchSaveInventoryAndPricesSenior(BatchEditInventoryAndPricesSeniorModel qry);
 
-    
+
     /// <summary>
     /// 切换酒店状态
     /// </summary>
@@ -192,7 +205,7 @@ public interface IHotelApp
     Task<bool> UserHotelDelete(string userHotelId);
 
 
-   
+
     Task<bool> CopeUserPlan(CopeUserPlanModel cmd);
 
 }
