@@ -9,6 +9,7 @@ using YueJia.Ebk.Application.Contracts.HotelApp.Query;
 using YueJia.Ebk.Application.Contracts.OuterServiceApp.Entity;
 using YueJia.Ebk.Application.Contracts.SysUserApp;
 using YueJia.Ebk.Domain.AggRoot;
+using YueJia.Ebk.Domain.Company;
 using YueJia.Ebk.Domain.Hotel;
 using YueJia.Ebk.Domain.Shared.Const;
 
@@ -1305,27 +1306,36 @@ public class HotelApp : ApplicationService, IHotelApp
 
         //解密查价唯一值
         var (isSuccess, searchCodeStr) = CompressedEncryptor.Decrypt(qry.SearchCode, SecretKeyConst.key, SecretKeyConst.iv);
-        if (!isSuccess || string.IsNullOrWhiteSpace(searchCodeStr) || !searchCodeStr.Contains("|")) throw new InvalidOperationException("查价唯一值解密失败！");
-        var splitArray = searchCodeStr.Split('|');
-        var dailyPriceIds = splitArray[0].Split(',').Select(long.Parse).ToList();
-        var dailyInventoryIds = (splitArray[1]).Split(',').Select(long.Parse).ToList();
+        if (!isSuccess || string.IsNullOrWhiteSpace(searchCodeStr)) throw new InvalidOperationException("请勿篡改查价唯一码!");
+        //解析查价唯一码
+        var searchCode = JsonUtils.AnalysisSearchCode(searchCodeStr);
+        if (searchCode is null || searchCode.DailyInventoryIds.Count == 0 || searchCode.DailyPriceIds.Count == 0) throw new InvalidOperationException("查价唯一码无效!");
 
         //按库存ID擦查询库存集合
-        var dailyInventoryDos = await db.Queryable<DailyInventoryDo>().ClearFilter<ITenantIdFilter>().Where(t => dailyInventoryIds.Contains(t.Id)).ToListAsync();
+        var dailyInventoryDos = await db.Queryable<DailyInventoryDo>()
+            .ClearFilter<ITenantIdFilter>()
+            .Where(t => searchCode.DailyInventoryIds.Contains(t.Id) && t.IsEnable == YesOrNoType.Yes)
+            .ToListAsync();
         //按条件筛选：库存数、日期范围
         var FilterData = dailyInventoryDos.Where(t => t.InventoryNum >= qry.RoomNum && t.CurrentDate >= qry.CheckInDate.Date && t.CurrentDate < qry.CheckOutDate.Date).ToList();
         //验证库存数是否足够
-        bool areEqual = dailyInventoryIds.Count == FilterData.Count && dailyInventoryIds.All(id => dailyInventoryDos.Any(e => e.Id == id));
+        bool areEqual = searchCode.DailyInventoryIds.Count == FilterData.Count && searchCode.DailyInventoryIds.All(id => dailyInventoryDos.Any(e => e.Id == id));
         if (!areEqual) throw new InvalidOperationException("库存数不足！");
+        if (dailyInventoryDos.GroupBy(t => t.CreatedbyId).Count() > 1) throw new InvalidOperationException("当前查价唯一码非同一用户库存！");
 
 
-        var dailyPriceDos = await db.Queryable<DailyPriceDo>().ClearFilter<ITenantIdFilter>().Where(t => dailyPriceIds.Contains(t.Id)).ToListAsync();
+        var dailyPriceDos = await db.Queryable<DailyPriceDo>().ClearFilter<ITenantIdFilter>().Where(t => searchCode.DailyPriceIds.Contains(t.Id) && t.IsEnable == YesOrNoType.Yes).ToListAsync();
+        if (!dailyPriceDos.Any()) throw new InvalidOperationException("暂无报价数据！");
+        if (dailyPriceDos.GroupBy(t => t.CreatedbyId).Count() > 1) throw new InvalidOperationException("当前查价唯一码非同一用户报价！");
+
+
+
         //收集价格计划
         var pricePlanIds = dailyPriceDos.Select(t => t.PricePlanId).Distinct().ToList();
 
         var hotel = await db.Queryable<HotelRoomDo>()
              .InnerJoin<PricePlanDo>((r, p) => r.Id == p.HotelRoomId)
-             .Where((r, p) => r.HotelCode == qry.HotelCode && r.Id == p.HotelRoomId && pricePlanIds.Contains(p.Id))
+             .Where((r, p) => r.HotelCode == qry.HotelCode && r.Id == p.HotelRoomId && pricePlanIds.Contains(p.Id) && p.IsEnable == YesOrNoType.Yes && p.IsEnable == YesOrNoType.Yes)
              .Where((r, p) => r.MaximumNumberOfPeople >= (qry.AdultNum + qry.ChildNum) && r.AdultLimit >= qry.AdultNum && r.ChildLimit >= qry.ChildNum)
              .Where((r, p) => p.ContinuousStayDays <= continuousStayDays && p.DaysInAdvance <= advanceDays)
              .Select((r, p) => new
@@ -1335,12 +1345,47 @@ public class HotelApp : ApplicationService, IHotelApp
                  HotelCode = r.HotelCode,
                  BreakfastType = p.BreakfastType,
                  PricePlanId = p.Id.ToString(),
+                 r.TenantId
              })
              .SingleAsync() ?? throw new InvalidOperationException("未找到符合条件的房间！");
 
 
-        var (isFlag, searchCode) = CompressedEncryptor.Encrypt($@"{string.Join(",", dailyPriceDos.Select(t => t.Id).ToList())}|{string.Join(",", dailyInventoryDos.Select(t => t.Id).ToList())}", SecretKeyConst.key, SecretKeyConst.iv);
-        if (!isFlag) throw new InvalidOperationException("查价唯一值加密失败！");
+
+
+
+
+        //查询公司价格调整规则
+        var priceAdjustData = await db.Queryable<CompanyDO>()
+            .ClearFilter<ITenantIdFilter>()
+            .Where(t => t.Status == YesOrNoType.Yes)
+            .Select(t => new { t.TenantId, t.AdjustmentPriceType, t.AdjustmentPriceValue })
+            .ToListAsync();
+
+
+        var tempTotalPrice = dailyPriceDos.Sum(t => t.Price);
+
+        var adjustmentPrice = priceAdjustData.FirstOrDefault(t => t.TenantId == hotel.TenantId);
+        if (adjustmentPrice is not null)
+        {
+
+            decimal adjustDailyPrice = adjustmentPrice.AdjustmentPriceType switch
+            {
+                AdjustmentPriceTypeEnum.FixedValueIncrease => Math.Ceiling((tempTotalPrice + (adjustmentPrice.AdjustmentPriceValue ?? 0)) / continuousStayDays),
+                AdjustmentPriceTypeEnum.PercentageIncrease => Math.Ceiling(tempTotalPrice * (decimal)((double)(adjustmentPrice.AdjustmentPriceValue ?? 0) / 100) / continuousStayDays),
+                _ => 0
+            };
+
+            foreach (var c in dailyPriceDos)
+            {
+                c.Price = adjustmentPrice.AdjustmentPriceType switch
+                {
+                    AdjustmentPriceTypeEnum.FixedValueIncrease => adjustDailyPrice,
+                    AdjustmentPriceTypeEnum.PercentageIncrease => c.Price + adjustDailyPrice,
+                    _ => c.Price
+                };
+            }
+        }
+
 
         return new HotelPriceDto()
         {
@@ -1351,9 +1396,12 @@ public class HotelApp : ApplicationService, IHotelApp
             PricePlanId = hotel.PricePlanId,
             DayPrice = dailyPriceDos.ToDictionary(t => t.CurrentDate.ToString("yyyy-MM-dd"), t => t.Price),
             TotalPrice = dailyPriceDos.Sum(t => t.Price),
-            SearchCode = searchCode
+            SearchCode = qry.SearchCode
         };
     }
+
+
+
 
     public async Task<IEnumerable<HotelPriceDto>> PriceSearch(PriceSearchQry qry)
     {
@@ -1433,6 +1481,14 @@ public class HotelApp : ApplicationService, IHotelApp
 
 
 
+        //查询公司价格调整规则
+        var priceAdjustData = db.Queryable<CompanyDO>()
+            .ClearFilter<ITenantIdFilter>()
+            .Select(t => new { t.TenantId, t.AdjustmentPriceType, t.AdjustmentPriceValue })
+            .ToListAsync();
+
+
+
         foreach (var roomCodeGroup in RoomCodeGroupData)
         {
             List<HotelPriceDto> roomOptions = new List<HotelPriceDto>();
@@ -1460,9 +1516,33 @@ public class HotelApp : ApplicationService, IHotelApp
                     var models = dailyPrice!.FirstOrDefault(x => x.PricePlanId == item.Id && x.RoomId == room.Id);
                     if (models is null) continue;
 
-
-                    var (isSuccess, searchCode) = CompressedEncryptor.Encrypt($@"{string.Join(",", models.item.Select(t => t.Id).ToList())}|{string.Join(",", dailyInventory!.item.Select(t => t.Id).ToList())}", SecretKeyConst.key, SecretKeyConst.iv);
+                    var (isSuccess, searchCode) = CompressedEncryptor.Encrypt(System.Text.Json.JsonSerializer.Serialize(new { DailyPriceIds = models.item.Select(t => t.Id).ToList(), DailyInventoryIds = dailyInventory!.item.Select(t => t.Id).ToList() }), SecretKeyConst.key, SecretKeyConst.iv);
                     if (!isSuccess) throw new InvalidOperationException("查价唯一值加密失败！");
+
+                    var tempTotalPrice = models.item.Sum(t => t.Price);
+
+                    var adjustmentPrice = (await priceAdjustData).FirstOrDefault(t => t.TenantId == item.TenantId);
+                    if (adjustmentPrice is not null)
+                    {
+
+                        decimal adjustDailyPrice = adjustmentPrice.AdjustmentPriceType switch
+                        {
+                            AdjustmentPriceTypeEnum.FixedValueIncrease => Math.Ceiling((tempTotalPrice + (adjustmentPrice.AdjustmentPriceValue ?? 0)) / continuousStayDays),
+                            AdjustmentPriceTypeEnum.PercentageIncrease => Math.Ceiling(tempTotalPrice * (decimal)((double)(adjustmentPrice.AdjustmentPriceValue ?? 0) / 100) / continuousStayDays),
+                            _ => 0
+                        };
+
+                        foreach (var c in models.item)
+                        {
+                            c.Price = adjustmentPrice.AdjustmentPriceType switch
+                            {
+                                AdjustmentPriceTypeEnum.FixedValueIncrease => adjustDailyPrice,
+                                AdjustmentPriceTypeEnum.PercentageIncrease => c.Price + adjustDailyPrice,
+                                _ => c.Price
+                            };
+                        }
+
+                    }
                     roomOptions.Add(new HotelPriceDto()
                     {
                         HotelCode = room.HotelCode,

@@ -8,6 +8,7 @@ using SqlSugar.DistributedSystem.Snowflake;
 using SqlSugar.IOC;
 using StackExchange.Redis;
 using System.Reflection;
+using Volo.Abp.DistributedLocking;
 using YueJia.Ebk.Domain.AggRoot;
 using YueJia.Ebk.Domain.Shared.Config;
 using YueJia.Ebk.Domain.Shared.Const;
@@ -17,6 +18,10 @@ namespace YueJia.Ebk.Infrastructure;
 
 
 
+
+[DependsOn(
+    typeof(AbpDistributedLockingModule)
+    )]
 public class YueJiaEbkInfrastructureModule : AbpModule
 {
 
@@ -354,7 +359,7 @@ public class YueJiaEbkInfrastructureModule : AbpModule
 
         var redisConfig = new ConfigurationOptions
         {
-            EndPoints = { "redis:6379" },
+            EndPoints = { "192.168.124.7:6379" },
             //Password = "123456",
             ConnectTimeout = 5000,
             SyncTimeout = 10000,
@@ -364,10 +369,15 @@ public class YueJiaEbkInfrastructureModule : AbpModule
         var connectionMultiplexer = ConnectionMultiplexer.ConnectAsync(redisConfig);
         context.Services.AddSingleton(connectionMultiplexer.Result);
 
+
         //使用redis方式 分布式锁
         context.Services.AddSingleton<IDistributedLockProvider>(sp =>
         {
             return new RedisDistributedSynchronizationProvider(connectionMultiplexer.Result.GetDatabase(6));
+        });
+        Configure<AbpDistributedLockOptions>(options =>
+        {
+            options.KeyPrefix = "YueJia-Ebk:Distributed-Lock:";
         });
         return base.ConfigureServicesAsync(context);
     }

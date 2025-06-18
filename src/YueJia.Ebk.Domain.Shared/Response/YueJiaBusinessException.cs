@@ -21,5 +21,6 @@ public class YueJiaBusinessException : Exception
     {
         this.Message = message;
         this.Data = data;
+
     }
 }

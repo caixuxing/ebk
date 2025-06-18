@@ -5,6 +5,7 @@
 /// 订单表
 /// </summary>
 [SugarTable("Order", "订单表")]
+[SugarIndex("index_{table}_OrderNum", nameof(OrderNum), OrderByType.Asc, true)]
 public partial record OrderDo : EntityTenant
 {
     public OrderDo() { }
