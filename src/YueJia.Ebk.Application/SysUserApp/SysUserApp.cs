@@ -18,15 +18,18 @@ public class SysUserApp : ApplicationService, ISysUserApp
     public async Task<long> CreateAsync(CreateOrUpdateSysUserCmd cmd)
     {
         await LazyServiceProvider.LazyGetRequiredService<FluentValidation.IValidator<CreateOrUpdateSysUserCmd>>().ValidateAndThrowAsync(cmd);
-        if (await SysUserRepo.AsQueryable().ClearFilter<ITenantIdFilter>().AnyAsync(x => x.ContactPhone == cmd.ContactPhone)) {
+        if (await SysUserRepo.AsQueryable().ClearFilter<ITenantIdFilter>().AnyAsync(x => x.ContactPhone == cmd.ContactPhone))
+        {
             throw new InvalidOperationException("联系电话已存在！");
         }
 
-        if (await SysUserRepo.AsQueryable().ClearFilter<ITenantIdFilter>().AnyAsync(x => x.AccountName == cmd.AccountName)) {
+        if (await SysUserRepo.AsQueryable().ClearFilter<ITenantIdFilter>().AnyAsync(x => x.AccountName == cmd.AccountName))
+        {
             throw new InvalidOperationException("账户已存在！");
         }
         var entity = SysUserDo.Create(cmd.AccountName,
                                       cmd.RealName,
+                                      cmd.Email,
                                       AccountTypeEnum.NormalUser,
                                       cmd.IsEnabled,
                                       string.IsNullOrWhiteSpace(cmd.DeptId) ? null : cmd.DeptId.ToLong(),
@@ -38,16 +41,19 @@ public class SysUserApp : ApplicationService, ISysUserApp
     public async Task<bool> DeleteAsync(long id)
     {
         var entity = await SysUserRepo.GetByIdAsync(id);
-        if (entity==null) {
+        if (entity == null)
+        {
             throw new InvalidOperationException($"系统用户ID:{id}资源不存在！");
         }
-        if (entity.Id.ToString() == CurrentUserApp.Id) {
+        if (entity.Id.ToString() == CurrentUserApp.Id)
+        {
             throw new InvalidOperationException($"不能删除当前登录用户！");
-        }    
+        }
 
         var delEntity = entity with { };
         delEntity.IsDelete = true;
-        if (entity.Equals(delEntity)) {
+        if (entity.Equals(delEntity))
+        {
             return true;
         }
         await SysUserRepo.AsUpdateable(delEntity)
@@ -60,25 +66,27 @@ public class SysUserApp : ApplicationService, ISysUserApp
     {
         await LazyServiceProvider.LazyGetRequiredService<FluentValidation.IValidator<CreateOrUpdateSysUserCmd>>().ValidateAndThrowAsync(cmd);
         var entity = await SysUserRepo.GetByIdAsync(id);
-        if(entity == null)
+        if (entity == null)
         {
             throw new InvalidOperationException($"数据不存在！");
         }
-        if (await SysUserRepo.AsQueryable().ClearFilter<ITenantIdFilter>().AnyAsync(x => x.ContactPhone == cmd.ContactPhone && x.Id != id)) { 
+        if (await SysUserRepo.AsQueryable().ClearFilter<ITenantIdFilter>().AnyAsync(x => x.ContactPhone == cmd.ContactPhone && x.Id != id))
+        {
             throw new InvalidOperationException("联系电话已存在！");
         }
-        if (await SysUserRepo.AsQueryable().ClearFilter<ITenantIdFilter>().AnyAsync(x => x.AccountName == cmd.AccountName && x.Id != id)) {
+        if (await SysUserRepo.AsQueryable().ClearFilter<ITenantIdFilter>().AnyAsync(x => x.AccountName == cmd.AccountName && x.Id != id))
+        {
             throw new InvalidOperationException("账户已存在！");
         }
-  
+
         var upEntity = entity with { };
         upEntity.SetAccountName(cmd.AccountName)
              .SetRealName(cmd.RealName)
              .SetContactPhone(cmd.ContactPhone)
              .SetDeptId(cmd.DeptId?.ToLong())
              .SetIsEnabled(cmd.IsEnabled)
+             .SetEmail(cmd.Email)
             .SetDeptAdmin(cmd.DeptAdmin);
-
         if (entity.Equals(upEntity)) return true;
         await SysUserRepo.AsUpdateable(upEntity).ExecuteCommandWithOptLockAsync();
         return true;
@@ -105,6 +113,7 @@ public class SysUserApp : ApplicationService, ISysUserApp
                    ContactPhone = t.ContactPhone ?? string.Empty,
                    AccountType = t.AccountType,
                    DeptAdmin = t.DeptAdmin,
+                   Email = t.Email
 
                });
         var data = await query.ToPageListAsync(qry.PageIndex, qry.PageSize, total);
@@ -125,6 +134,7 @@ public class SysUserApp : ApplicationService, ISysUserApp
             ContactPhone = entity.ContactPhone,
             DeptId = entity.DeptId,
             DeptAdmin = entity.DeptAdmin,
+            Email = entity.Email,
         };
     }
 

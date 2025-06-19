@@ -112,7 +112,7 @@ public class CurrentUserApp : ApplicationService, ICurrentUserApp
             if (this.AccountType != AccountTypeEnum.SuperAdmin)
             {
                 long companyId = this.CompanyId.ToLong();
-                var model = CompanyRepo.GetSingle(x => x.Id == companyId);
+                var model = CompanyRepo.AsQueryable().With(SqlWith.NoLock).Single(x => x.Id == companyId);
                 return new CurrentAccountCompanyDto()
                 {
                     CompanyId = model?.Id.ToString(),
@@ -129,7 +129,7 @@ public class CurrentUserApp : ApplicationService, ICurrentUserApp
         {
             if (this.AccountType != AccountTypeEnum.SuperAdmin)
             {
-                var data = DepartmentRepo.AsQueryable().Where(x => x.Id == DeptId || x.ParentId == DeptId).ToList();
+                var data = DepartmentRepo.AsQueryable().With(SqlWith.NoLock).Where(x => x.Id == DeptId || x.ParentId == DeptId).ToList();
                 var first = data.FirstOrDefault(x => x.Id == DeptId);
                 return new CurrentAccountDeptDto()
                 {
@@ -148,7 +148,8 @@ public class CurrentUserApp : ApplicationService, ICurrentUserApp
     {
         get
         {
-            return SysUserRepo.GetById(this.Id.ToLong()).DeptAdmin;
+            long id = this.Id.ToLong();
+            return SysUserRepo.AsQueryable().With(SqlWith.NoLock).Single(t => t.Id == id)?.DeptAdmin ?? false;
         }
     }
 }

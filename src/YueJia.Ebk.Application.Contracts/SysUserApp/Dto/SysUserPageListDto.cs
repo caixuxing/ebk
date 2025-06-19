@@ -1,10 +1,19 @@
 ﻿namespace YueJia.Ebk.Application.Contracts.SysUserApp.Dto;
 
+/// <summary>
+/// 系统用户列表
+/// </summary>
 public record SysUserPageListDto
 {
-    [JsonNumberHandling(JsonNumberHandling.WriteAsString)]
+    /// <summary>
+    /// 主键ID
+    /// </summary>
+    [JsonConverter(typeof(LongToStringConverter))]
     public long Id { get; set; }
 
+    /// <summary>
+    /// 账户名
+    /// </summary>
     public string AccountName { get; set; } = default!;
 
     /// <summary>
@@ -56,11 +65,6 @@ public record SysUserPageListDto
     {
         get { return AccountType.ToDescription(); }
     }
-
-
-
-
-
     /// <summary>
     /// 部门ID
     /// </summary>
@@ -77,5 +81,10 @@ public record SysUserPageListDto
     /// </summary>
     [JsonConverter(typeof(DateTimeConverter))]
     public DateTime CreateTime { get; set; }
+
+    /// <summary>
+    /// 邮箱
+    /// </summary>
+    public string? Email { get; set; }
 
 }

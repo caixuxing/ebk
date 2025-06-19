@@ -23,6 +23,13 @@ public partial record SysUserDo : EntityTenant
     /// </summary>
     [SugarColumn(ColumnDescription = "真实姓名（昵称）", Length = 10)]
     public string RealName { get; set; } = default!;
+
+    /// <summary>
+    /// 邮箱
+    /// </summary>
+    [SugarColumn(ColumnDescription = "邮箱", Length = 50, IsNullable = true)]
+    public string? Email { get; set; }
+
     /// <summary>
     /// 账户类型
     /// </summary>
@@ -51,7 +58,7 @@ public partial record SysUserDo : EntityTenant
 
 public partial record SysUserDo
 {
-    private SysUserDo(string accountName, string password, string realName, AccountTypeEnum accountType, YesOrNoType isEnabled, long? deptId, string? contactPhone)
+    private SysUserDo(string accountName, string password, string realName, string? email, AccountTypeEnum accountType, YesOrNoType isEnabled, long? deptId, string? contactPhone)
     {
         AccountName = accountName;
         Password = password;
@@ -60,14 +67,15 @@ public partial record SysUserDo
         IsEnabled = isEnabled;
         DeptId = deptId;
         ContactPhone = contactPhone;
+        this.Email = email;
     }
 
 
 
-    public static SysUserDo Create(string accountName, string realName, AccountTypeEnum accountType, YesOrNoType isEnabled, long? deptId, string? contactPhone)
+    public static SysUserDo Create(string accountName, string realName, string? email, AccountTypeEnum accountType, YesOrNoType isEnabled, long? deptId, string? contactPhone)
     {
         var password = EncryptUtils.MD5Encrypt("123456");
-        return new SysUserDo(accountName, password, realName, accountType, isEnabled, deptId, contactPhone);
+        return new SysUserDo(accountName, password, realName, email, accountType, isEnabled, deptId, contactPhone);
     }
 
 
@@ -86,6 +94,12 @@ public partial record SysUserDo
     public SysUserDo SetRealName(string realName)
     {
         RealName = realName;
+        return this;
+    }
+
+    public SysUserDo SetEmail(string? email)
+    {
+        Email = email;
         return this;
     }
 

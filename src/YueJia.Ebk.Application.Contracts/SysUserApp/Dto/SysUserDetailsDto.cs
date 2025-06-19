@@ -38,4 +38,9 @@ public record SysUserDetailsDto
     /// 部门管理
     /// </summary>
     public bool DeptAdmin { get; set; }
+
+    /// <summary>
+    /// 邮箱
+    /// </summary>
+    public string? Email { get; set; }
 }

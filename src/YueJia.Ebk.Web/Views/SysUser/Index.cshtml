@@ -27,16 +27,15 @@
         </el-form>
         <el-table :data="state.dataList"
                   border
-                  height="100%"
-                 >
-            <el-table-column label="#" width="60" align="center">
+                  height="100%" width="100%">
+            <el-table-column label="#" width="60" align="center" fixed >
                 <template #default="scope">
                     <div style="text-align:left">
                         <span>{{ (state.qry.pageIndex-1) * state.qry.pageSize + scope.$index +1   }}</span>
                     </div>
                 </template>
             </el-table-column>
-            <el-table-column label="用户名" width="180px" align="center">
+            <el-table-column label="用户名" width="180px" align="center" fixed>
                 <template #default="scope">
                     <div style="text-align:left">
                         {{ scope.row.realName }}
@@ -52,9 +51,19 @@
             </el-table-column>
                <el-table-column label="联系电话" width="140px" align="center"  >
                 <template #default="scope" align="right">
-                    {{ scope.row.contactPhone }}
+                      {{ scope.row.contactPhone }}
+                 
                 </template>
             </el-table-column>
+
+                <el-table-column label="邮箱" width="auto" align="center"  >
+                <template #default="scope" align="right">
+                     <div style="text-align:right">
+                             {{ scope.row.email }}
+                    </div>
+                </template>
+            </el-table-column>
+
                <el-table-column label="部门" width="auto" max-width="120px" align="center"  >
                 <template #default="scope">
                     <div style="text-align:left" >
@@ -94,7 +103,7 @@
                 </template>
             </el-table-column>
 
-            <el-table-column label="操作" prop="opt" width="240px" align="center">
+            <el-table-column label="操作" prop="opt" align="center" fixed="right"  min-width="230" width="230px">
                 <template #default="scope">
                     <div style="text-align:center">
                         <el-button size="small" v-on:click="onResetPassword(scope.row)">重置密码</el-button>

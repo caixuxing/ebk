@@ -17,7 +17,7 @@ public partial record OrderRoomDo : EntityBase
     /// <summary>
     /// 房间名称
     /// </summary>
-    [SugarColumn(ColumnDescription = "房间名称", Length = 50)]
+    [SugarColumn(ColumnDescription = "房间名称", Length = 200)]
     public string RoomName { get; set; } = default!;
 
     /// <summary>
@@ -29,7 +29,7 @@ public partial record OrderRoomDo : EntityBase
     /// <summary>
     /// 床型名称
     /// </summary>
-    [SugarColumn(ColumnDescription = "床型名称", Length = 50)]
+    [SugarColumn(ColumnDescription = "床型名称", Length = 200)]
     public string BedName { get; set; } = default!;
 
     /// <summary>
@@ -42,7 +42,7 @@ public partial record OrderRoomDo : EntityBase
     /// <summary>
     /// 价格计划名称
     /// </summary>
-    [SugarColumn(ColumnDescription = "价格计划名称", Length = 50)]
+    [SugarColumn(ColumnDescription = "价格计划名称", Length = 200)]
     public string PricePlanName { get; set; } = default!;
 
 

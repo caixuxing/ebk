@@ -8,8 +8,12 @@
             <el-form-item label="登录账户" required prop="accountName">
                 <el-input v-model="model.accountName" autocomplete="off" clearable placeholder="请输入登录账户" maxlength="30" @(Html.Raw(ViewBag.id>0?"disabled":""))></el-input>
             </el-form-item>
+            
             <el-form-item label="联系电话" required prop="contactPhone">
                 <el-input v-model="model.contactPhone" autocomplete="off" clearable placeholder="请输入联系电话" maxlength="15"></el-input>
+            </el-form-item>
+             <el-form-item label="邮箱" prop="email">
+                <el-input v-model="model.email" autocomplete="off" clearable placeholder="邮箱" maxlength="30"></el-input>
             </el-form-item>
              <el-form-item label="部门" prop="deptId">
                 <el-select v-model="model.deptId"   style="width:200px">
@@ -64,15 +68,26 @@
                     accountName: [{ required: true, message: '登录账户必填!', trigger: 'blur' }],
                     contactPhone: [{ required: true, message: '联系电话必填!', trigger: 'blur' },
                                    { pattern: /^1[3456789]\d{9}$/, message: '手机号码格式不正确', trigger: 'blur' }],
+                    email: [
+                            { required: false },
+                            {
+                                pattern: /^[a-zA-Z0-9_-]+@@[a-zA-Z0-9_-]+(\.[a-zA-Z0-9_-]+)+$/,
+                                message: '邮箱格式不正确',
+                                trigger: 'blur',
+                                validator: (rule, value, callback) => {
+                                    if (!value || value.trim()  === '') callback();
+                                    else rule.pattern.test(value)  ? callback() : callback(new Error(rule.message));
+                                }
+                            }
+                        ]
                     //deptId: [{ required: true, message: '部门必填!', trigger: 'blur' }]
                 };
 
                 /*
                 * 编辑=> 保存
                 */
-                const onEditSave =  () => {
-
-                     let isValid =  FormDataRef.value.validate();
+                const onEditSave =  async () => {
+                     let isValid =  await FormDataRef.value.validate().catch(() => false);
                      if(!isValid)
                      {
                           ElMessage({ message: "请完善表单信息!", type: "error" });
@@ -93,9 +108,9 @@
                 /*
                 * 新增=> 保存
                 */
-                const onNewSave =  () => {
+                const onNewSave =  async () => {
 
-                     let isValid =  FormDataRef.value.validate();
+                      let isValid =  await FormDataRef.value.validate().catch(() => false);
                      if(!isValid)
                      {
                           ElMessage({ message: "请完善表单信息!", type: "error" });

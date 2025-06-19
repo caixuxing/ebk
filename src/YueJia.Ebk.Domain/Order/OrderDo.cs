@@ -48,13 +48,13 @@ public partial record OrderDo : EntityTenant
     /// <summary>
     /// 房型名称
     /// </summary>
-    [SugarColumn(ColumnDescription = "床型名称", Length = 60)]
+    [SugarColumn(ColumnDescription = "床型名称", Length = 200)]
     public string RoomName { get; set; } = default!;
 
     /// <summary>
     /// 床型名称
     /// </summary>
-    [SugarColumn(ColumnDescription = "床型名称", Length = 60)]
+    [SugarColumn(ColumnDescription = "床型名称", Length = 200)]
     public string BedName { get; set; } = default!;
 
     /// <summary>
@@ -62,6 +62,12 @@ public partial record OrderDo : EntityTenant
     /// </summary>
     [SugarColumn(ColumnDescription = "床型Code", Length = 20)]
     public string BedCode { get; set; } = default!;
+
+    /// <summary>
+    /// 餐食类型
+    /// </summary>
+    [SugarColumn(ColumnDescription = "餐食类型")]
+    public BreakfastTypeEnum BreakfastType { get; set; }
 
     /// <summary>
     /// 入店日期
@@ -101,13 +107,13 @@ public partial record OrderDo : EntityTenant
     /// <summary>
     /// 客户姓名（第一房  第一入住人）
     /// </summary>
-    [SugarColumn(ColumnDescription = "客户姓名", Length = 30)]
+    [SugarColumn(ColumnDescription = "客户姓名", Length = 150)]
     public string CustomerName { get; set; } = default!;
 
     /// <summary>
     /// 备注
     /// </summary>
-    [SugarColumn(ColumnDescription = "备注", Length = 100)]
+    [SugarColumn(ColumnDescription = "备注", Length = 300)]
 
     public string Remark { get; set; } = default!;
 
@@ -116,7 +122,7 @@ public partial record OrderDo : EntityTenant
 public partial record OrderDo
 {
     private OrderDo(string orderNum, DateTime bookingDate, BookingStateTypeEnum state, string hotelCode,
-        long userHotelId, string roomCode, string roomName, string bedName, string bedCode, DateTime checkInDate,
+        long userHotelId, string roomCode, string roomName, string bedName, string bedCode, BreakfastTypeEnum breakfastType, DateTime checkInDate,
         DateTime checkOutDate, decimal totalAmount, string hotelConfirmNum, int numberOfRoomsBooked,
         int howManyNights, string customerName, string remark, string createdbyId, string createdbyName, long tenantId)
     {
@@ -129,6 +135,7 @@ public partial record OrderDo
         RoomName = roomName;
         BedName = bedName;
         BedCode = bedCode;
+        BreakfastType = breakfastType;
         CheckInDate = checkInDate;
         CheckOutDate = checkOutDate;
         TotalAmount = totalAmount;
@@ -142,8 +149,8 @@ public partial record OrderDo
         this.TenantId = tenantId;
     }
 
-    public static OrderDo Create(string orderNum, DateTime bookingDate, BookingStateTypeEnum state, string hotelCode, long userHotelId, string roomCode, string roomName, string bedName, string bedCode, DateTime checkInDate, DateTime checkOutDate, decimal totalAmount, string hotelConfirmNum, int numberOfRoomsBooked, int howManyNights, string customerName, string remark, string createdbyId, string createdbyName, long tenantId)
+    public static OrderDo Create(string orderNum, DateTime bookingDate, BookingStateTypeEnum state, string hotelCode, long userHotelId, string roomCode, string roomName, string bedName, string bedCode, BreakfastTypeEnum breakfastType, DateTime checkInDate, DateTime checkOutDate, decimal totalAmount, string hotelConfirmNum, int numberOfRoomsBooked, int howManyNights, string customerName, string remark, string createdbyId, string createdbyName, long tenantId)
     {
-        return new OrderDo(orderNum, bookingDate, state, hotelCode, userHotelId, roomCode, roomName, bedName, bedCode, checkInDate, checkOutDate, totalAmount, hotelConfirmNum, numberOfRoomsBooked, howManyNights, customerName, remark, createdbyId, createdbyName, tenantId);
+        return new OrderDo(orderNum, bookingDate, state, hotelCode, userHotelId, roomCode, roomName, bedName, bedCode, breakfastType, checkInDate, checkOutDate, totalAmount, hotelConfirmNum, numberOfRoomsBooked, howManyNights, customerName, remark, createdbyId, createdbyName, tenantId);
     }
 }

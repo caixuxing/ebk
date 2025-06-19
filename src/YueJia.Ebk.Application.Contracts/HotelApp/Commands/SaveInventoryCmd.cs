@@ -1,15 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Volo.Abp.Validation;
-using YueJia.Ebk.Application.Contracts.HotelApp.Dto;
+﻿using YueJia.Ebk.Application.Contracts.HotelApp.Dto;
 
 namespace YueJia.Ebk.Application.Contracts.HotelApp.Commands
 {
 
-    [DisableValidation]
+
     public class SaveInventoryCmd
     {
         /// <summary>

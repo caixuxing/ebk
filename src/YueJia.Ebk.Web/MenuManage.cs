@@ -1,6 +1,4 @@
-﻿using YueJia.Ebk.Domain.Company;
-using YueJia.Ebk.Domain.SysUser;
-using YueJia.Ebk.Web.ViewModels;
+﻿using YueJia.Ebk.Web.ViewModels;
 
 namespace YueJia.Ebk.Web
 {
@@ -21,6 +19,12 @@ namespace YueJia.Ebk.Web
                          pageIndex ="page3",
                          title = "酒店管理",
                          url = "/Hotel/UserHotelMgr" ,
+                         isShow = new List<AccountTypeEnum>(){  AccountTypeEnum.SysAdmin,AccountTypeEnum.NormalUser }.Contains(userAccountType),
+                      },
+                      new MenuModel(){
+                         pageIndex ="page4",
+                         title = "订单管理",
+                         url = "/Order/UserOrderMgr" ,
                          isShow = new List<AccountTypeEnum>(){  AccountTypeEnum.SysAdmin,AccountTypeEnum.NormalUser }.Contains(userAccountType),
                       },
                       new MenuModel(){
@@ -53,4 +57,3 @@ namespace YueJia.Ebk.Web
     }
 }
 
-               

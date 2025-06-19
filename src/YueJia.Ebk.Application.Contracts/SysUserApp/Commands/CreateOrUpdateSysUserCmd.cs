@@ -16,6 +16,12 @@ public class CreateOrUpdateSysUserCmd
     /// </summary>
     [Required]
     public string RealName { get; set; } = default!;
+
+    /// <summary>
+    /// 邮箱
+    /// </summary>
+    public string? Email { get; set; }
+
     /// <summary>
     /// 是否启用
     /// </summary>
@@ -66,6 +72,10 @@ public class CreateOrUpdateSysUserCmdValidator : AbstractValidator<CreateOrUpdat
                                                  //.MustAsync(async (phone, cancellation) => await IsContactPhoneExistAsync(phone)).WithMessage("联系电话已被占用");
 
         RuleFor(x => x.IsEnabled).IsInEnum().WithMessage("是否启用参数无效！");
+
+        RuleFor(x => x.Email)
+        .MaximumLength(30).When(x => !string.IsNullOrEmpty(x.Email)).WithMessage("邮箱长度不能超过30个字符！")
+        .EmailAddress().When(x => !string.IsNullOrEmpty(x.Email)).WithMessage("邮箱格式不正确");
 
     }
 }

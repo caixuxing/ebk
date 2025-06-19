@@ -9,6 +9,7 @@ public record OrderPageListDto
     /// <summary>
     /// 订单ID
     /// </summary>
+    [JsonConverter(typeof(LongToStringConverter))]
     public long Id { get; set; }
     /// <summary>
     /// 预订号
@@ -27,21 +28,49 @@ public record OrderPageListDto
     /// <summary>
     /// 预订日期
     /// </summary>
+    [JsonConverter(typeof(DateTimeConverter))]
     public DateTime BookingDate { get; set; } = default!;
 
     /// <summary>
     /// 预订单状态
     /// </summary>
     public BookingStateTypeEnum State { get; set; } = default!;
+    /// <summary>
+    /// 预订单状态描述
+    /// </summary>
+
+    public string StateName
+    {
+        get
+        {
+            return State.ToDescription();
+        }
+    }
 
     /// <summary>
     /// 入店日期
     /// </summary>
+    [JsonConverter(typeof(DateConverter))]
     public DateTime CheckInDate { get; set; }
     /// <summary>
     /// 离店日期
     /// </summary>
+    [JsonConverter(typeof(DateConverter))]
     public DateTime CheckOutDate { get; set; }
+
+    /// <summary>
+    /// 餐食类型
+    /// </summary>
+    public BreakfastTypeEnum BreakfastType { get; set; }
+
+    /// <summary>
+    /// 餐食类型描述
+    /// </summary>
+    public string BreakfastTypeName
+    {
+        get { return BreakfastType.ToDescription(); }
+
+    }
 
     /// <summary>
     /// 订单总金额

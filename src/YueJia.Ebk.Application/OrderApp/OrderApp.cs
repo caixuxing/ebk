@@ -1,11 +1,15 @@
-﻿using YueJia.Ebk.Application.Contracts.OrderApp;
+﻿using LiteDB;
+using YueJia.Ebk.Application.Contracts.OrderApp;
 using YueJia.Ebk.Application.Contracts.OrderApp.Commands;
 using YueJia.Ebk.Application.Contracts.OrderApp.Dto;
 using YueJia.Ebk.Application.Contracts.OrderApp.Qry;
+using YueJia.Ebk.Application.Contracts.SysUserApp;
 using YueJia.Ebk.Domain.AggRoot;
+using YueJia.Ebk.Domain.Company;
 using YueJia.Ebk.Domain.Hotel;
 using YueJia.Ebk.Domain.Order;
 using YueJia.Ebk.Domain.Shared.Const;
+using YueJia.Ebk.Domain.SysUser;
 using YueJia.Ebk.Infrastructure.DistributedLock;
 
 namespace YueJia.Ebk.Application.OrderApp;
@@ -17,6 +21,10 @@ public class OrderApp : ApplicationService, IOrderApp
 
     private ISqlSugarClient db => LazyServiceProvider.LazyGetRequiredService<ISqlSugarClient>();
     private ISimpleClient<OrderDo> OrderRepo => LazyServiceProvider.LazyGetRequiredService<ISimpleClient<OrderDo>>();
+
+    private ICurrentUserApp CurrentUserApp => LazyServiceProvider.LazyGetRequiredService<ICurrentUserApp>();
+
+    private ISimpleClient<SysUserDo> SysUserRepo => LazyServiceProvider.LazyGetRequiredService<ISimpleClient<SysUserDo>>();
 
 
     private IDistributedLockService DistributedLockService => LazyServiceProvider.LazyGetRequiredService<IDistributedLockService>();
@@ -33,15 +41,6 @@ public class OrderApp : ApplicationService, IOrderApp
         int advanceDays = (cmd.CheckOutDate.Date - DateTime.Now.Date).Days;
 
         //解密查价唯一值
-        //var (isSuccess, searchCodeStr) = CompressedEncryptor.Decrypt(cmd.SearchCode, SecretKeyConst.key, SecretKeyConst.iv);
-        //if (!isSuccess || string.IsNullOrWhiteSpace(searchCodeStr) || !searchCodeStr.Contains("|")) throw new InvalidOperationException("查价唯一值解密失败！");
-        //var splitArray = searchCodeStr.Split('|');
-        //var dailyPriceIds = splitArray[0].Split(',').Select(long.Parse).ToList();
-        //var dailyInventoryIds = (splitArray[1]).Split(',').Select(long.Parse).ToList();
-
-
-
-        //解密查价唯一值
         var (isSuccess, searchCodeStr) = CompressedEncryptor.Decrypt(cmd.SearchCode, SecretKeyConst.key, SecretKeyConst.iv);
         if (!isSuccess || string.IsNullOrWhiteSpace(searchCodeStr)) throw new InvalidOperationException("请勿篡改查价唯一码!");
         //解析查价唯一码
@@ -51,6 +50,14 @@ public class OrderApp : ApplicationService, IOrderApp
 
 
 
+        //查询公司价格调整规则
+        var priceAdjustData = await db.Queryable<CompanyDO>()
+            .ClearFilter<ITenantIdFilter>()
+            .Where(t => t.Status == YesOrNoType.Yes)
+            .Select(t => new { t.TenantId, t.AdjustmentPriceType, t.AdjustmentPriceValue })
+            .ToListAsync();
+
+
         var LockKey = await db.Queryable<DailyInventoryDo>()
             .InnerJoin<HotelRoomDo>((t, r) => t.RoomId == r.Id)
             .ClearFilter<ITenantIdFilter>()
@@ -58,14 +65,13 @@ public class OrderApp : ApplicationService, IOrderApp
             .Where((t, r) => t.Id == searchCode.DailyInventoryIds.FirstOrDefault())
             .Select((t, r) => $"{r.HotelId}_{r.HotelCode}_{r.RoomType}").SingleAsync() ?? throw new InvalidOperationException("生成锁Key失败！");
 
-
-
-
         await DistributedLockService.LockAsync(LockKey, async () =>
         {
 
             //按库存ID擦查询库存集合
             var dailyInventoryDos = await db.Queryable<DailyInventoryDo>().ClearFilter<ITenantIdFilter>().Where(t => searchCode.DailyInventoryIds.Contains(t.Id) && t.IsEnable == YesOrNoType.Yes).ToListAsync();
+            if (!dailyInventoryDos.Any()) throw new InvalidOperationException("暂无库存数据！");
+            if (dailyInventoryDos.GroupBy(t => t.CreatedbyId).Count() > 1) throw new InvalidOperationException("当前查价唯一码非同一用户库存！");
 
             //按条件筛选：库存数、日期范围
             var FilterData = dailyInventoryDos.Where(t => t.InventoryNum >= cmd.RoomNum && t.CurrentDate >= cmd.CheckInDate.Date && t.CurrentDate < cmd.CheckOutDate.Date).ToList();
@@ -74,8 +80,15 @@ public class OrderApp : ApplicationService, IOrderApp
             if (!areEqual) throw new InvalidOperationException("库存数不足！");
 
             var dailyPriceDos = await db.Queryable<DailyPriceDo>().ClearFilter<ITenantIdFilter>().Where(t => searchCode.DailyPriceIds.Contains(t.Id) && t.IsEnable == YesOrNoType.Yes).ToListAsync();
+            if (!dailyPriceDos.Any()) throw new InvalidOperationException("暂无报价数据！");
+            if (dailyPriceDos.GroupBy(t => t.CreatedbyId).Count() > 1) throw new InvalidOperationException("当前查价唯一码非同一用户报价！");
             //收集价格计划
             var pricePlanIds = dailyPriceDos.Select(t => t.PricePlanId).Distinct().ToList();
+
+
+
+
+
 
 
             var hotel = await db.Queryable<HotelRoomDo>()
@@ -103,12 +116,35 @@ public class OrderApp : ApplicationService, IOrderApp
                  })
                  .SingleAsync() ?? throw new InvalidOperationException("未找到符合条件的房间！");
 
+            var tempTotalPrice = dailyPriceDos.Sum(t => t.Price);
+            var adjustmentPrice = priceAdjustData.FirstOrDefault(t => t.TenantId == hotel.TenantId);
+            if (adjustmentPrice is not null)
+            {
+
+                decimal adjustDailyPrice = adjustmentPrice.AdjustmentPriceType switch
+                {
+                    AdjustmentPriceTypeEnum.FixedValueIncrease => Math.Ceiling((tempTotalPrice + (adjustmentPrice.AdjustmentPriceValue ?? 0)) / continuousStayDays),
+                    AdjustmentPriceTypeEnum.PercentageIncrease => Math.Ceiling(tempTotalPrice * (decimal)((double)(adjustmentPrice.AdjustmentPriceValue ?? 0) / 100) / continuousStayDays),
+                    _ => 0
+                };
+
+                foreach (var c in dailyPriceDos)
+                {
+                    c.Price = adjustmentPrice.AdjustmentPriceType switch
+                    {
+                        AdjustmentPriceTypeEnum.FixedValueIncrease => adjustDailyPrice,
+                        AdjustmentPriceTypeEnum.PercentageIncrease => c.Price + adjustDailyPrice,
+                        _ => c.Price
+                    };
+                }
+            }
+
             //验证 客户下单数据、与服务端数据是否一致
-            if (cmd.RoomNum != cmd.RoomList.Count) throw new InvalidOperationException("下单房间数不匹配,请勿非法操作！");
+            if (cmd.RoomNum != cmd.RoomList.Count) throw new InvalidOperationException("下单房间数不匹配,请核对房间数！");
 
             if (cmd.HotelCode.Trim().ToLower() != hotel.HotelCode.Trim().ToLower() || cmd.OtaRoomCode.Trim().ToLower() != hotel.RoomCode.Trim().ToLower()) throw new InvalidOperationException("下单酒店或房间不匹配,请勿非法操作！");
 
-            //if (cmd.SalePrice != 9000) throw new InvalidOperationException("价格已发生变化,请重新下单！");
+            if (cmd.SalePrice != dailyPriceDos.Sum(t => t.Price) * cmd.RoomNum) throw new InvalidOperationException("价格已发生变化,请重新下单！");
 
             if (cmd.IsBreakfast != (hotel.BreakfastType == BreakfastTypeEnum.Breakfast ? true : false)) throw new InvalidOperationException("餐食已发生变化,请重新下单！");
 
@@ -129,6 +165,7 @@ public class OrderApp : ApplicationService, IOrderApp
                                          roomName: hotel.RoomName,
                                           bedCode: hotel.BedType.GetHashCode().ToString(),
                                           bedName: $"{hotel.BedType.ToDescription()} {hotel.BedType.ToString()}",
+                                    breakfastType: hotel.BreakfastType,
                                       checkInDate: cmd.CheckInDate,
                                      checkOutDate: cmd.CheckOutDate,
                                       totalAmount: cmd.SalePrice,
@@ -136,7 +173,7 @@ public class OrderApp : ApplicationService, IOrderApp
                               numberOfRoomsBooked: cmd.RoomNum,
                                     howManyNights: continuousStayDays,
                                      customerName: string.Join(",", customerName),
-                                           remark: string.Empty,
+                                           remark: cmd.SpecialRemark ?? string.Empty,
                                       createdbyId: hotel.CreatedbyId!,
                                     createdbyName: hotel.CreatedbyName!,
                                          tenantId: hotel.TenantId ?? 0);
@@ -199,6 +236,22 @@ public class OrderApp : ApplicationService, IOrderApp
 
                 //订单房间每天价格明细
                 await db.Insertable(orderRoomDailyPriceDetailDos).ExecuteCommandAsync();
+
+                //库存扣减
+                foreach (var item in dailyInventoryDos)
+                {
+                    var updateRows = await db.Updateable<DailyInventoryDo>()
+                    .SetColumns(it => new DailyInventoryDo()
+                    {
+                        Version = it.Version + 1,
+                        LastModifiedTime = DateTime.Now,
+                        InventoryNum = (it.InventoryNum - cmd.RoomNum) <= 0 ? 0 : (it.InventoryNum - cmd.RoomNum),
+                        IsEnable = (it.InventoryNum - cmd.RoomNum) <= 0 ? YesOrNoType.No : it.IsEnable,
+                    })
+                    .Where(it => it.Id == item.Id && it.InventoryNum >= cmd.RoomNum)
+                    .ExecuteCommandAsync();
+                    if (updateRows <= 0) throw new InvalidOperationException("库存扣减失败！");
+                }
                 return true;
             });
 
@@ -213,7 +266,7 @@ public class OrderApp : ApplicationService, IOrderApp
     public async Task<PageData<IEnumerable<OrderPageListDto>>> QueryOrderPageAsync(OrderPageListFilterQry qry)
     {
         RefAsync<int> total = 0;
-        var query = OrderRepo.AsQueryable()
+        var query = OrderRepo.AsQueryable().WhereDeptFilter(CurrentUserApp, db)
             .LeftJoin<HotelPublishDo>((t, h) => t.HotelCode == h.HotelCode && t.UserHotelId == h.Id)
             .With(SqlWith.NoLock)
             .WhereIF(!string.IsNullOrWhiteSpace(qry.HotelCode), t => t.HotelCode == qry.HotelCode)
@@ -233,9 +286,36 @@ public class OrderApp : ApplicationService, IOrderApp
                 RoomName = t.RoomName,
                 State = t.State,
                 TotalAmount = t.TotalAmount,
-                Id = t.Id
+                Id = t.Id,
+                BreakfastType = t.BreakfastType
             });
         var data = await query.ToPageListAsync(qry.PageIndex, qry.PageSize, total);
         return new PageData<IEnumerable<OrderPageListDto>>(total, qry.PageSize, qry.PageIndex, data);
+    }
+}
+
+internal static partial class MapExt
+{
+
+    /// <summary>
+    /// MapUserDtoList
+    /// </summary>
+    /// <param name="entities"></param>
+    /// <returns></returns>
+    internal static ISugarQueryable<T> WhereDeptFilter<T>(this ISugarQueryable<T> query, ICurrentUserApp CurrentUserApp, ISqlSugarClient db) where T : EntityBase
+    {
+        if (new List<AccountTypeEnum>() { AccountTypeEnum.SysAdmin, AccountTypeEnum.SuperAdmin }.ToList().Contains(CurrentUserApp.AccountType!.Value))
+        {
+            return query;
+        }
+        if (CurrentUserApp.IsDeptAdmin)
+        {
+            var deptUserIds = db.Queryable<SysUserDo>().Where(x => x.DeptId == CurrentUserApp.Dept.DeptId)
+                .Select(x => x.Id.ToString())
+                .ToList();
+            deptUserIds.Insert(0, CurrentUserApp.Id.ToString());
+            return query.Where(x => deptUserIds.Contains(x.CreatedbyId!));
+        }
+        return query.Where(x => x.CreatedbyId == CurrentUserApp.Id);
     }
 }

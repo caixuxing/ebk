@@ -102,7 +102,7 @@ namespace YueJia.Ebk.DbMigrator
         {
             if (!await db.Queryable<SysUserDo>().AnyAsync(x => x.AccountName == "admin"))
             {
-                var entity = SysUserDo.Create("admin", "超级管理员", AccountTypeEnum.SuperAdmin, YesOrNoType.Yes, null, null);
+                var entity = SysUserDo.Create("admin", "超级管理员", "admin@ebk.com", AccountTypeEnum.SuperAdmin, YesOrNoType.Yes, null, null);
                 entity.TenantId = 1000000000000000000L;
                 entity.CreatedbyId = "-1";
                 entity.CreatedbyName = "默认用户";

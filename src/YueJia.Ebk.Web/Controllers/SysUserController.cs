@@ -59,6 +59,7 @@ public class SysUserController : AbpController
             ContactPhone = model.ContactPhone,
             IsEnabled = model.IsEnabled,
             DeptAdmin = model.DeptAdmin,
+            Email = model.Email,
         };
         return View();
     }

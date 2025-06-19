@@ -61,7 +61,7 @@ public class CompanyApp : ApplicationService, ICompanyApp
         // var DeptEntity = DepartmentDo.Create("默认部门", -1, entity.Id, YesOrNoType.Yes, entity.TenantId.GetValueOrDefault(0)) ?? throw new InvalidOperationException("部门创建失败！");
 
 
-        var UserEntity = SysUserDo.Create(cmd.ContactPhone, cmd.Responsible, AccountTypeEnum.SysAdmin, YesOrNoType.Yes, null, cmd.ContactPhone);
+        var UserEntity = SysUserDo.Create(cmd.ContactPhone, cmd.Responsible, cmd.Email, AccountTypeEnum.SysAdmin, YesOrNoType.Yes, null, cmd.ContactPhone);
         UserEntity.TenantId = entity.TenantId;
 
         //校验唯一性

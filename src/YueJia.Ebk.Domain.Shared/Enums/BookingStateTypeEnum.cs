@@ -6,6 +6,7 @@ namespace YueJia.Ebk.Domain.Shared.Enums;
 /// <summary>
 /// 预订状态类型
 /// </summary>
+
 public enum BookingStateTypeEnum
 {
 

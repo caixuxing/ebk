@@ -1335,7 +1335,7 @@ public class HotelApp : ApplicationService, IHotelApp
 
         var hotel = await db.Queryable<HotelRoomDo>()
              .InnerJoin<PricePlanDo>((r, p) => r.Id == p.HotelRoomId)
-             .Where((r, p) => r.HotelCode == qry.HotelCode && r.Id == p.HotelRoomId && pricePlanIds.Contains(p.Id) && p.IsEnable == YesOrNoType.Yes && p.IsEnable == YesOrNoType.Yes)
+             .Where((r, p) => r.HotelCode == qry.HotelCode && r.Id == p.HotelRoomId && pricePlanIds.Contains(p.Id) && p.IsEnable == YesOrNoType.Yes && r.IsEnabled == YesOrNoType.Yes)
              .Where((r, p) => r.MaximumNumberOfPeople >= (qry.AdultNum + qry.ChildNum) && r.AdultLimit >= qry.AdultNum && r.ChildLimit >= qry.ChildNum)
              .Where((r, p) => p.ContinuousStayDays <= continuousStayDays && p.DaysInAdvance <= advanceDays)
              .Select((r, p) => new
