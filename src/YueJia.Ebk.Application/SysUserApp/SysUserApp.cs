@@ -92,15 +92,23 @@ public class SysUserApp : ApplicationService, ISysUserApp
         return true;
     }
 
+
+    /// <summary>
+    /// 用户分页数据
+    /// 1）：系统管理员
+    /// 2）：部门管理员
+    /// </summary>
+    /// <param name="qry"></param>
+    /// <returns></returns>
     public async Task<PageData<IEnumerable<SysUserPageListDto>>> GetPageListAsync(SysUserPageFilterQry qry)
     {
         RefAsync<int> total = 0;
-
         var query = SysUserRepo.AsQueryable()
                                .LeftJoin<DepartmentDo>((t, t1) => t.DeptId == t1.Id).With(SqlWith.NoLock)
                                .WhereIF(!string.IsNullOrWhiteSpace(qry.AccountName), (t, t1) => SqlFunc.Like(t.AccountName, $"{qry.AccountName}%"))
                                .WhereIF(!string.IsNullOrWhiteSpace(qry.RealName), (t, t1) => SqlFunc.Like(t.RealName, $"{qry.RealName}%"))
                                .WhereIF(qry.IsEnabled.HasValue, (t, t1) => t.IsEnabled.Equals(qry.IsEnabled))
+                               .WhereIF( CurrentUserApp.AccountType == AccountTypeEnum.NormalUser && CurrentUserApp.IsDeptAdmin, (t, t1) => t.DeptId == CurrentUserApp.Dept.DeptId )
                .Select((t, t1) => new SysUserPageListDto()
                {
                    Id = t.Id,

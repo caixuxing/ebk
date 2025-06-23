@@ -4,6 +4,7 @@ using YueJia.Ebk.Application.Contracts.SysUserApp;
 using YueJia.Ebk.Application.Contracts.SysUserApp.Commands;
 using YueJia.Ebk.Application.Contracts.SysUserApp.Dto;
 using YueJia.Ebk.Application.Contracts.SysUserApp.Query;
+using YueJia.Ebk.Application.SysUserApp;
 
 namespace YueJia.Ebk.Web.Controllers;
 
@@ -19,6 +20,8 @@ public class SysUserController : AbpController
     private IDeptApp DeptApp => LazyServiceProvider.LazyGetRequiredService<IDeptApp>();
 
     private ISysEnumApp SysEnumApp => LazyServiceProvider.LazyGetRequiredService<ISysEnumApp>();
+
+    private ICurrentUserApp CurrentUserApp => LazyServiceProvider.LazyGetRequiredService<ICurrentUserApp>();
 
 
     /// <summary>
@@ -40,8 +43,12 @@ public class SysUserController : AbpController
     public async Task<IActionResult> AddEditMgr(long id)
     {
         ViewBag.DeptData = (await DeptApp.GetPageListDeptAsync(new Application.Contracts.DeptApp.Query.DeptPageListQry() { PageIndex = 1, PageSize = int.MaxValue })).List.ToList();
-
-        var model = new SysUserDetailsDto() { IsEnabled = YesOrNoType.Yes };
+        ViewBag.IsDeptAdmin = CurrentUserApp.IsDeptAdmin;
+        var model = new SysUserDetailsDto() { IsEnabled = YesOrNoType.Yes  };
+        if (CurrentUserApp.IsDeptAdmin)
+        {
+            model.DeptId = CurrentUserApp.Dept.DeptId;
+        }
         if (id > 0)
         {
             model = await SysUserApp.GetByIdAsync(id);

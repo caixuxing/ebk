@@ -1,12 +1,15 @@
-﻿using YueJia.Ebk.Web.ViewModels;
+﻿using YueJia.Ebk.Application.Contracts.SysUserApp;
+using YueJia.Ebk.Web.ViewModels;
 
 namespace YueJia.Ebk.Web
 {
     public class MenuManage
     {
 
-        public List<MenuModel> UserMenuList(AccountTypeEnum userAccountType)
+        public List<MenuModel> UserMenuList(AccountTypeEnum userAccountType,bool IsDeptAdmin)
         {
+            //部门管理员
+
             return new List<MenuModel>()
                 {
                       new MenuModel(){
@@ -30,7 +33,7 @@ namespace YueJia.Ebk.Web
                       new MenuModel(){
                          pageIndex ="page2",
                          title = "系统管理",
-                         isShow = new List<AccountTypeEnum>(){  AccountTypeEnum.SuperAdmin, AccountTypeEnum.SysAdmin}.Contains(userAccountType),
+                         isShow = new List<AccountTypeEnum>(){  AccountTypeEnum.SuperAdmin, AccountTypeEnum.SysAdmin}.Contains(userAccountType) ||IsDeptAdmin ,
                          children = new List<MenuModel>(){
                              new MenuModel(){
                                  pageIndex = "page2-1" ,
@@ -48,7 +51,7 @@ namespace YueJia.Ebk.Web
                                  pageIndex = "page2-3" ,
                                  title ="用户管理",
                                  url = "/SysUser/Index" ,
-                                 isShow = new List<AccountTypeEnum>(){ AccountTypeEnum.SysAdmin }.Contains(userAccountType)
+                                 isShow = new List<AccountTypeEnum>(){ AccountTypeEnum.SysAdmin }.Contains(userAccountType) ||IsDeptAdmin
                              },
                          }
                       },
