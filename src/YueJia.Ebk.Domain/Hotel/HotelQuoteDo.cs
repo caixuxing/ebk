@@ -12,6 +12,12 @@ using OBT = SqlSugar.OrderByType;
     [OBT.Asc, OBT.Asc, OBT.Asc, OBT.Asc, OBT.Asc], isUnique: true)]
 public record HotelQuoteDo : EntityBaseId, IDeletedFilter, ITenantIdFilter
 {
+
+
+
+    [SugarColumn(ColumnDescription = "主键ID", IsPrimaryKey = true, ColumnName = "Id", IsIdentity = true)]
+    public new virtual long Id { get; init; }
+
     public HotelQuoteDo() { }
     /// <summary>
     /// 用户酒店发布ID
