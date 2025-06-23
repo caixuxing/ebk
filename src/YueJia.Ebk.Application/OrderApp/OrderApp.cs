@@ -47,9 +47,6 @@ public class OrderApp : ApplicationService, IOrderApp
         var searchCode = JsonUtils.AnalysisSearchCode(searchCodeStr);
         if (searchCode is null || searchCode.DailyInventoryIds.Count == 0 || searchCode.DailyPriceIds.Count == 0) throw new InvalidOperationException("查价唯一码无效!");
 
-
-
-
         //查询公司价格调整规则
         var priceAdjustData = await db.Queryable<CompanyDO>()
             .ClearFilter<ITenantIdFilter>()

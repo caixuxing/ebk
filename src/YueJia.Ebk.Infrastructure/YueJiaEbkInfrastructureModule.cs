@@ -8,6 +8,7 @@ using SqlSugar.DistributedSystem.Snowflake;
 using SqlSugar.IOC;
 using StackExchange.Redis;
 using System.Reflection;
+using Volo.Abp.Auditing;
 using Volo.Abp.DistributedLocking;
 using YueJia.Ebk.Domain.AggRoot;
 using YueJia.Ebk.Domain.Shared.Config;
@@ -20,7 +21,8 @@ namespace YueJia.Ebk.Infrastructure;
 
 
 [DependsOn(
-    typeof(AbpDistributedLockingModule)
+    typeof(AbpDistributedLockingModule),
+    typeof(AbpAuditingModule)
     )]
 public class YueJiaEbkInfrastructureModule : AbpModule
 {

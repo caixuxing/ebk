@@ -29,7 +29,7 @@ public static class DbTransaction
         catch (Exception ex) when (ex is SqlException || ex is DbException)
         {
             await db.Ado.RollbackTranAsync();
-            throw new InvalidOperationException($"事务执行失败: {ex.Message}", ex);
+            throw new InvalidOperationException($"事务执行失败", ex);
         }
     }
 }

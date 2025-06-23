@@ -1,6 +1,7 @@
 ﻿using Dm.util;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using MongoDB.Driver;
 using YueJia.Ebk.Application.Contracts.HotelApp;
 using YueJia.Ebk.Application.Contracts.HotelApp.Commands;
@@ -19,6 +20,8 @@ namespace YueJia.Ebk.Application.HotelApp;
 [DisableValidation]
 public class HotelApp : ApplicationService, IHotelApp
 {
+
+    private ILogger<HotelApp> _Logger => LazyServiceProvider.LazyGetRequiredService<ILogger<HotelApp>>();
 
     private ICurrentUserApp CurrentUserApp => LazyServiceProvider.LazyGetRequiredService<ICurrentUserApp>();
     private ISqlSugarClient db => LazyServiceProvider.LazyGetRequiredService<ISqlSugarClient>();
@@ -1306,7 +1309,7 @@ public class HotelApp : ApplicationService, IHotelApp
 
         //解密查价唯一值
         var (isSuccess, searchCodeStr) = CompressedEncryptor.Decrypt(qry.SearchCode, SecretKeyConst.key, SecretKeyConst.iv);
-        if (!isSuccess || string.IsNullOrWhiteSpace(searchCodeStr)) throw new InvalidOperationException("请勿篡改查价唯一码!");
+        if (!isSuccess || string.IsNullOrWhiteSpace(searchCodeStr)) throw new InvalidOperationException("查价唯一码解析失败!");
         //解析查价唯一码
         var searchCode = JsonUtils.AnalysisSearchCode(searchCodeStr);
         if (searchCode is null || searchCode.DailyInventoryIds.Count == 0 || searchCode.DailyPriceIds.Count == 0) throw new InvalidOperationException("查价唯一码无效!");
@@ -1422,7 +1425,7 @@ public class HotelApp : ApplicationService, IHotelApp
 
         var roomData = await MongoDb.GetCollection<HotelRoomDo>(nameof(HotelRoomDo)).Find(filter).ToListAsync();
 
-        if (roomData is null || roomData.Count == 0) return default!;
+        if (roomData is null || roomData.Count == 0) return Enumerable.Empty<HotelPriceDto>();
 
         //收集房间id
         var roomids = roomData!.Select(t => t.Id).ToList();
@@ -1440,7 +1443,7 @@ public class HotelApp : ApplicationService, IHotelApp
         var inventoryGroup = inventoryData!.GroupBy(x => new { x.CreatedbyId, x.RoomId })
             .Select(g => new { CreatedbyId = g.Key.CreatedbyId, RoomId = g.Key.RoomId, Count = g.Count(), item = g.ToList() })
             .ToList();
-        if (!inventoryGroup.Any(t => t.Count == continuousStayDays)) return default!;
+        if (!inventoryGroup.Any(t => t.Count == continuousStayDays)) return Enumerable.Empty<HotelPriceDto>();
 
 
         //查询价格计划
@@ -1448,7 +1451,7 @@ public class HotelApp : ApplicationService, IHotelApp
         Builders<PricePlanDo>.Filter.In(x => x.HotelRoomId, roomids),
         Builders<PricePlanDo>.Filter.Lte(x => x.ContinuousStayDays, continuousStayDays),
         Builders<PricePlanDo>.Filter.Lte(x => x.DaysInAdvance, advanceDays))).ToListAsync();
-        if (pricePlanData is null || pricePlanData.Count == 0) return default!;
+        if (pricePlanData is null || pricePlanData.Count == 0) return Enumerable.Empty<HotelPriceDto>();
 
         //收集价格计划id
         var pricePlanIds = pricePlanData!.Select(t => t.Id).ToList();
@@ -1469,7 +1472,7 @@ public class HotelApp : ApplicationService, IHotelApp
             item = g.ToList()
         });
         //价格记录行数与连住天数一致
-        if (!dailyPriceDataGroup.Any(t => t.Count == continuousStayDays)) return default!;
+        if (!dailyPriceDataGroup.Any(t => t.Count == continuousStayDays)) return Enumerable.Empty<HotelPriceDto>();
 
 
         //组装查价结果
