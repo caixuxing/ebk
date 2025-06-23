@@ -38,7 +38,7 @@
             <el-table-column label="订单号" width="120px" align="center" fixed>
                    <template #default="scope">
       @*               <label v-on:click="userEvent.onToUserHotel(scope.row)" style="color: #1890ff;cursor: pointer; "> </label> *@
-                     <el-link :underline="false" type="primary">{{ scope.row.orderNum }}</el-link>
+                     <el-link :underline="false" type="primary" v-on:click="ViewDetail(scope.row)">{{ scope.row.orderNum }}</el-link>
                 </template>
             </el-table-column>
             <el-table-column label="订单时间" width="160px" align="center">
@@ -168,13 +168,30 @@
                 state.qry  = JSON.parse(JSON.stringify( qry))
              };
 
+            const ViewDetail = (row)=>{
+              
+                      layer.open({
+                             type: 2,
+                             title: '订单详情',
+                             area: ['90%', '80%'],
+                             fix: false,
+                             maxmin: true,
+                             content:  `/Order/OrderDetail/${row.id}`,
+                             end: function () {
+                                loadData();
+                             }
+                         });
+
+
+             };
+
             return {
                 state
                 ,loadData
                 ,handleSizeChange
                 ,handleCurrentChange
                 ,resetQueryForm
-              
+                ,ViewDetail
                 };
                }
             });

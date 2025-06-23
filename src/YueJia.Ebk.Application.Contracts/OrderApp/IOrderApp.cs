@@ -25,5 +25,13 @@ namespace YueJia.Ebk.Application.Contracts.OrderApp
         /// <returns></returns>
         Task<PageData<IEnumerable<OrderPageListDto>>> QueryOrderPageAsync(OrderPageListFilterQry qry);
 
+
+
+        /// <summary>
+        /// 按Id查询订单详情
+        /// </summary>
+        /// <param name="id">订单ID</param>
+        /// <returns></returns>
+        Task<OrderDetailDto> OrderDetailByIdAsync(long id);
     }
 }

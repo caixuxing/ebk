@@ -30,5 +30,16 @@ namespace YueJia.Ebk.Web.Controllers
         [HttpPost, Route("[controller]/OrderPageList")]
         public async Task<IResult> OrderPageList([FromBody] OrderPageListFilterQry qry) => ApiResult.HandleResult(await OrderApp.QueryOrderPageAsync(qry));
 
+
+
+        /// <summary>
+        /// 订单详情
+        /// </summary>
+        /// <returns></returns>
+        public async Task<IActionResult> OrderDetail(string id)
+        {
+            return View(await OrderApp.OrderDetailByIdAsync(id.ToLong()));
+        }
+
     }
 }
