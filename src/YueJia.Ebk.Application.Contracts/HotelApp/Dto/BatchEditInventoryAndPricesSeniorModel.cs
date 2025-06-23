@@ -14,8 +14,11 @@ namespace YueJia.Ebk.Application.Contracts.HotelApp.Dto
         public List<int> weekIndexList { get; set; }
 
 
-        public string startDate { get; set; }
-        public string endDate { get; set; }
+
+        /// <summary>
+        /// 日期范围
+        /// </summary>
+        public List<List<string>> dateRangeList { get; set; }
         public List<UserRoomModel> userRoomList { get; set; }
         public List<UserPlanList> userPlanList { get; set; }
     }

@@ -6,6 +6,12 @@ public record HotelPublishPageFilterQry : BasePageQry
     /// 酒店编码
     /// </summary>
     public string? HotelCode { get; set; }
+
+    /// <summary>
+    /// 用户ID
+    /// </summary>
+    public string UserId { get; set; }
+
     /// <summary>
     /// 酒店名称Or英文名称
     /// </summary>

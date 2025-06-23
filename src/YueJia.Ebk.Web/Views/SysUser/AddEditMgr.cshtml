@@ -8,22 +8,25 @@
             <el-form-item label="登录账户" required prop="accountName">
                 <el-input v-model="model.accountName" autocomplete="off" clearable placeholder="请输入登录账户" maxlength="30" @(Html.Raw(ViewBag.id>0?"disabled":""))></el-input>
             </el-form-item>
-            
+
             <el-form-item label="联系电话" required prop="contactPhone">
                 <el-input v-model="model.contactPhone" autocomplete="off" clearable placeholder="请输入联系电话" maxlength="15"></el-input>
             </el-form-item>
-             <el-form-item label="邮箱" prop="email">
+            <el-form-item label="邮箱" prop="email">
                 <el-input v-model="model.email" autocomplete="off" clearable placeholder="邮箱" maxlength="30"></el-input>
             </el-form-item>
-             <el-form-item label="部门" prop="deptId">
-                <el-select v-model="model.deptId"   style="width:200px">
-                    <el-option label="--不限--" value="0"></el-option>
-                    @foreach (YueJia.Ebk.Application.Contracts.DeptApp.Dto.DeptPageListBaseDto ele in ViewBag.DeptData)
-                    {
-                        <el-option label="@ele.DeptName" value="@ele.DeptId"></el-option>
-                    }
-                </el-select>
-            </el-form-item>
+            @if (ViewBag.IsDeptAdmin == false)
+            {
+                <el-form-item label="部门" prop="deptId">
+                    <el-select v-model="model.deptId" style="width:200px">
+                        <el-option label="--不限--" value="0"></el-option>
+                        @foreach (YueJia.Ebk.Application.Contracts.DeptApp.Dto.DeptPageListBaseDto ele in ViewBag.DeptData)
+                        {
+                            <el-option label="@ele.DeptName" value="@ele.DeptId"></el-option>
+                        }
+                    </el-select>
+                </el-form-item>
+            }
 
             <el-form-item label="管理部门" label-width="auto">
                 <el-switch v-model="model.deptAdmin" inline-prompt active-text="是" inactive-text="否" />

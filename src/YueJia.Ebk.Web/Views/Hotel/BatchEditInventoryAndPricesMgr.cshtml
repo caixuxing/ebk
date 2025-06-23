@@ -45,16 +45,23 @@
         </el-card>
 
         <el-form :inline="true" label-width="auto">
-            <div>
-                <el-form-item label="日期范围">
+                <div  v-for="(dateRange, index) in vmodel.dateRangeList" :key="index">
+                <el-form-item label="日期范围" style="margin-bottom:5px;"  >
                     <el-date-picker is-range type="daterange" class="full-width-input"
-                                    v-model="vmodel.dateRange"
+                                        v-model="vmodel.dateRangeList[index]"
                                     :clearable="false"
                                     format="YYYY-MM-DD" value-format="YYYY-MM-DD" start-placeholder="开始日期" end-placeholder="结束日期"></el-date-picker>
                 </el-form-item>
+                    <el-form-item v-if="index==0" style="margin-bottom:5px;">
+                     <el-button size="small" v-on:click="vmodel.dateRangeList.push([ '@DateTime.Now.ToString("yyyy-MM-dd")', '@DateTime.Now.AddMonths(1).AddDays(-1).ToString("yyyy-MM-dd")'])  ">+</el-button>
+                 </el-form-item>
+                    <el-form-item v-if="index > 0" style="margin-bottom:5px;">
+                        <el-button size="small" v-on:click="vmodel.dateRangeList.splice(index,1)  ">-</el-button>
+                        {{dateRange}} * {{index}}
+                 </el-form-item>
             </div>
             <div>
-                    <el-form-item label="星期范围">
+                    <el-form-item label="星期范围" style="margin-bottom:5px;">
                         <el-checkbox-group v-model="vmodel.weekIndexList">
                             <el-checkbox  :value="0"> 星期天</el-checkbox>
                             <el-checkbox :value="1"> 星期一</el-checkbox>
@@ -64,6 +71,12 @@
                             <el-checkbox :value="5"> 星期五</el-checkbox>
                             <el-checkbox :value="6"> 星期六</el-checkbox>
                         </el-checkbox-group>
+                    </el-form-item>
+                    <el-form-item >
+                         <el-button-group>
+                            <el-button size="small" v-on:click="vmodel.weekIndexList=[0,1,2,3,4,5,6]">全选</el-button>
+                            <el-button size="small" v-on:click="vmodel.weekIndexList=[]">清空</el-button>
+                        </el-button-group>
                     </el-form-item>
             </div>
         </el-form>
@@ -234,7 +247,12 @@
                     },
                     AState:false,
                     activeName:'simple',
-                    dateRange:[ '@DateTime.Now.ToString("yyyy-MM-dd")', '@DateTime.Now.AddMonths(1).AddDays(-1).ToString("yyyy-MM-dd")'],
+                    dateRangeList:[
+                        [ '@DateTime.Now.ToString("yyyy-MM-dd")', '@DateTime.Now.AddMonths(1).AddDays(-1).ToString("yyyy-MM-dd")'],
+                        [ '@DateTime.Now.ToString("yyyy-MM-dd")', '@DateTime.Now.AddMonths(1).AddDays(-1).ToString("yyyy-MM-dd")'],
+                    ],
+                    
+                    // ,
                     weekIndexList:[0,1,2,3,4,5,6],
                     simpleModel:{
 
@@ -319,9 +337,9 @@
                        let reqData =  JSON.parse(JSON.stringify(vmodel.simpleModel))
                        reqData.userRoomIdList =userRoomIdList.value;
                        reqData.userPlanIdList =  userPlanIdList.value;
-                       reqData.startDate =vmodel.dateRange[0];
-                       reqData.endDate=vmodel.dateRange[1];
+  
                        reqData.weekIndexList = vmodel.weekIndexList;
+                       reqData.dateRangeList = vmodel.dateRangeList;
 
                        axios['post'](`/Hotel/BatchSaveInventoryAndPricesSimple`, reqData).then(res=>{
                            top.window.vueElMessage({ message: res.data. message , type:  res.data.isSuccess?'success':'info' })
@@ -355,15 +373,11 @@
                       });
 
 
-      
-                         
-
                        let reqData = {
                             userHotelId:'@ViewBag.mv.Id',
                             userRoomList:userRoomList,
                             userPlanList:userPlanList,
-                            startDate :vmodel.dateRange[0],
-                            endDate:vmodel.dateRange[1],
+                            dateRangeList = vmodel.dateRangeList,
                             weekIndexList : vmodel.weekIndexList,
                        }
                        console.log(reqData);

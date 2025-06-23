@@ -10,7 +10,9 @@ using YueJia.Ebk.Application.Contracts.OuterServiceApp;
 using YueJia.Ebk.Application.Contracts.OuterServiceApp.Entity;
 using YueJia.Ebk.Application.Contracts.OuterServiceApp.Qry;
 using YueJia.Ebk.Application.Contracts.SysApp;
+using YueJia.Ebk.Application.Contracts.SysUserApp;
 using YueJia.Ebk.Application.HotelApp;
+using YueJia.Ebk.Application.SysUserApp;
 using YueJia.Ebk.Domain.Hotel;
 using YueJia.Ebk.Domain.Shared.Const;
 using YueJia.Ebk.Web.ViewModels.Hotel;
@@ -32,6 +34,7 @@ public class HotelController : AbpController
 
     private IHotelApp HotelApp => LazyServiceProvider.LazyGetRequiredService<IHotelApp>();
 
+    private ICurrentUserApp currentUserApp => LazyServiceProvider.LazyGetRequiredService<ICurrentUserApp>();
 
 
 
@@ -44,6 +47,9 @@ public class HotelController : AbpController
 
     private ISqlSugarClient SqlSugarClient => LazyServiceProvider.GetRequiredKeyedService<ISqlSugarClient>(DbConst.YueJiaSysDb);
 
+    private ISysUserApp SysUserApp => LazyServiceProvider.LazyGetRequiredService<ISysUserApp>();
+
+
 
     #region 用户酒店
     /// <summary>
@@ -52,6 +58,8 @@ public class HotelController : AbpController
     /// <returns></returns>
     public async Task<IActionResult> UserHotelMgr()
     {
+        ViewBag.UserId = currentUserApp.Id.ToString();
+        ViewBag.GetManageUserList = SysUserApp.GetManageUserList();
         ViewBag.CountryList = await YueJiaSysServiceApp.GetDropDownCountryListAsync();
         ViewBag.HotelSaleTypeData = JsonConvert.SerializeObject(SysEnumApp.GetEnumDataList(nameof(HotelSaleTypeEnum)), new JsonSerializerSettings { ContractResolver = new CamelCasePropertyNamesContractResolver() });
         return View();

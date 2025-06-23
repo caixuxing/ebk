@@ -19,7 +19,7 @@ namespace YueJia.Ebk.Web.Controllers
 
         public IActionResult Index()
         {
-            ViewBag.MenuList = new MenuManage().UserMenuList(CurrentUserApp.AccountType.Value);
+            ViewBag.MenuList = new MenuManage().UserMenuList(CurrentUserApp.AccountType.Value,CurrentUserApp.IsDeptAdmin);
             return View();
         }
 

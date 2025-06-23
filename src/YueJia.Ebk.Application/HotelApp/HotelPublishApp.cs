@@ -58,11 +58,13 @@ public class HotelPublishApp : ApplicationService, IHotelPublishApp
 
         var query = HotelPublishRepo.AsQueryable().WhereDeptFilter(CurrentUserApp, db)
             .LeftJoin<SysUserDo>((x1, x2) => x1.CreatedbyId == SqlFunc.ToString(x2.Id) && x1.TenantId == x2.TenantId)
-              .WhereIF(!string.IsNullOrWhiteSpace(qry.HotelName), x => SqlFunc.Like(x.HotelName, $"{qry.HotelName}%") || SqlFunc.Like(x.HotelNameEn, $"{qry.HotelName}%"))
-              .WhereIF(!string.IsNullOrWhiteSpace(qry.HotelCode), x => x.HotelCode == qry.HotelCode)
-              .WhereIF(!string.IsNullOrEmpty(CountryIosCode), x => x.CountryIosCode == CountryIosCode)
-              .WhereIF(!string.IsNullOrEmpty(qry.cityName), x => x.CityName.Contains(qry.cityName))
-              .WhereIF(qry.Status.HasValue, x => x.Status == qry.Status)
+              .WhereIF(!string.IsNullOrWhiteSpace(qry.HotelName), (x1, x2) => SqlFunc.Like(x1.HotelName, $"{qry.HotelName}%") || SqlFunc.Like(x1.HotelNameEn, $"{qry.HotelName}%"))
+              .WhereIF(!string.IsNullOrWhiteSpace(qry.HotelCode), (x1, x2) => x1.HotelCode == qry.HotelCode)
+              .WhereIF(!string.IsNullOrEmpty(CountryIosCode), (x1, x2) => x1.CountryIosCode == CountryIosCode)
+              .WhereIF(!string.IsNullOrEmpty(qry.cityName), (x1, x2) => x1.CityName.Contains(qry.cityName))
+              .WhereIF(qry.Status.HasValue, (x1, x2) => x1.Status == qry.Status)
+              .Where((x1,x2)=> x1.CreatedbyId == qry.UserId)
+
          .Select((x1, x2) => new HotelPublishPageListDto()
          {
              Id = x1.Id,
