@@ -39,6 +39,12 @@
                         }
                     </el-select>
                 </el-form-item>
+
+                <el-form-item label="面积">
+                    <el-text>{{ model.roomSize}}</el-text>
+                </el-form-item>
+
+               
             </div>
             
             <div>
@@ -140,6 +146,9 @@
                        var roomObj=  otaRoomList.find(vv=>vv.roomcode == model.roomType);
                        model.bedType =roomObj.bedtype;
                        model.hotelRoomTitle =  `${roomObj.roomname} ${roomObj.roomnameen}`;
+                       model.roomSize = roomObj.sizemeasurement||'无';
+                       console.log( roomObj );
+
                     },
                     onSave:()=>{
                          let reqData = { ...model };

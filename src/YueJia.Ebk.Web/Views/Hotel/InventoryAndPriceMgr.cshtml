@@ -9,6 +9,10 @@
         .el-card__body{
             padding:5px;
         }
+
+        .el-descriptions__cell {
+                padding:3px 0px !important;
+        }
         </style>
 }
 <el-container style="height:100vh;overflow: hidden;">
@@ -44,8 +48,8 @@
                 <el-form-item label="显示天数" style="margin-bottom:5px;">
 
                     <el-select v-model="vmodel.dataNumber" placeholder="Select" style="width: 140px" v-on:change="userEvent.onLoadData ">
-                        <el-option label="5天" :value="5"></el-option>
-                        <el-option label="10天" :value="10" ></el-option>
+                        <el-option label="7天" :value="7"></el-option>
+                        <el-option label="14天" :value="14" ></el-option>
                     </el-select>
                     <el-button-group>
                         <el-button type="primary" style="margin-left:10px;width:80px;" disabled v-show=" vmodel.startDate == '@DateTime.Now.ToString("yyyy-MM-dd")' ">前{{vmodel.dataNumber}}天</el-button>
@@ -181,7 +185,7 @@
                   userHotelId:'@Model.Id.ToString()',
                   userRoomId:'',
                   startDate:'@DateTime.Now.ToString("yyyy-MM-dd")',
-                  dataNumber:10,
+                  dataNumber:14,
                   dataIndex:1,
                   model:{},
              });

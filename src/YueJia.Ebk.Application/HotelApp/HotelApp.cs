@@ -845,8 +845,8 @@ public class HotelApp : ApplicationService, IHotelApp
     /// <returns></returns>
     public async Task<bool> BatchSaveInventoryAndPricesSimple(BatchEditInventoryAndPricesModel qry)
     {
-        var startDate = Convert.ToDateTime(qry.startDate);
-        var endDate = Convert.ToDateTime(qry.endDate);
+        //var startDate = Convert.ToDateTime(qry.startDate);
+        //var endDate = Convert.ToDateTime(qry.endDate);
 
         var LowestPrice = db.Queryable<HotelPublishDo>().Where(vv => vv.Id == SqlFunc.ToInt64(qry.userHotelId) && vv.TenantId == SqlFunc.ToInt64(CurrentUserApp.TenantId)).ToList().First().LowestPrice;
 
@@ -855,84 +855,97 @@ public class HotelApp : ApplicationService, IHotelApp
         //处理库存
         foreach (var userRoomId in qry.userRoomIdList)
         {
-            var dailyInventoryList = await db.Queryable<DailyInventoryDo>().Where(vv => vv.RoomId == SqlFunc.ToInt64(userRoomId) && vv.CurrentDate >= startDate && vv.CurrentDate <= endDate).ToListAsync();
-            foreach (var dailyInventoryObj in dailyInventoryList)
-            {
-                if (qry.weekIndexList.Where(weekIndex => weekIndex == ((int)dailyInventoryObj.CurrentDate.DayOfWeek)).Count() == 0)
-                {
-                    continue;
-                }
+            foreach (var dateRange in qry.dateRangeList) {
+                var startDate = Convert.ToDateTime(dateRange[0]);
+                var endDate = Convert.ToDateTime(dateRange[1]);
 
-                var InventoryNum = dailyInventoryObj.InventoryNum;
-                var IsEnable = dailyInventoryObj.IsEnable;
-
-                if (qry.inventoryNumFlag)
+                var dailyInventoryList = await db.Queryable<DailyInventoryDo>().Where(vv => vv.RoomId == SqlFunc.ToInt64(userRoomId) && vv.CurrentDate >= startDate && vv.CurrentDate <= endDate).ToListAsync();
+                foreach (var dailyInventoryObj in dailyInventoryList)
                 {
-                    var newInventoryNum = qry.inventoryNum;
-                    if (qry.inventoryNumExecType == "2")
+                    if (qry.weekIndexList.Where(weekIndex => weekIndex == ((int)dailyInventoryObj.CurrentDate.DayOfWeek)).Count() == 0)
                     {
-                        newInventoryNum = qry.inventoryNum + dailyInventoryObj.InventoryNum;
+                        continue;
                     }
-                    dailyInventoryObj.SetInventoryNum(newInventoryNum);
-                }
 
-                if (qry.inventoryStateFlag)
-                {
-                    dailyInventoryObj.SetIsEnable(qry.inventoryState ? YesOrNoType.Yes : YesOrNoType.No);
-                }
+                    var InventoryNum = dailyInventoryObj.InventoryNum;
+                    var IsEnable = dailyInventoryObj.IsEnable;
 
+                    if (qry.inventoryNumFlag)
+                    {
+                        var newInventoryNum = qry.inventoryNum;
+                        if (qry.inventoryNumExecType == "2")
+                        {
+                            newInventoryNum = qry.inventoryNum + dailyInventoryObj.InventoryNum;
+                        }
+                        dailyInventoryObj.SetInventoryNum(newInventoryNum);
+                    }
 
-                if (InventoryNum != dailyInventoryObj.InventoryNum || IsEnable != dailyInventoryObj.IsEnable)
-                {
-                    updateDailyInventoryList.Add(dailyInventoryObj);
+                    if (qry.inventoryStateFlag)
+                    {
+                        dailyInventoryObj.SetIsEnable(qry.inventoryState ? YesOrNoType.Yes : YesOrNoType.No);
+                    }
+
+                  
+                    if ( (  InventoryNum != dailyInventoryObj.InventoryNum || IsEnable != dailyInventoryObj.IsEnable) && updateDailyInventoryList.Any(vv=> vv.Id == dailyInventoryObj.Id)==false  )
+                    {
+                        updateDailyInventoryList.Add(dailyInventoryObj);
+                    }
                 }
             }
+ 
         }
 
         //处理价格
         foreach (var userPlanId in qry.userPlanIdList)
         {
-            var dailyPriceList = await db.Queryable<DailyPriceDo>().Where(vv => vv.PricePlanId == SqlFunc.ToInt64(userPlanId) && vv.CurrentDate >= startDate && vv.CurrentDate <= endDate).ToListAsync();
-            foreach (var dailyPriceObj in dailyPriceList)
+            foreach (var dateRange in qry.dateRangeList)
             {
-                if (qry.weekIndexList.Where(weekIndex => weekIndex == ((int)dailyPriceObj.CurrentDate.DayOfWeek)).Count() == 0)
-                {
-                    continue;
-                }
+                var startDate = Convert.ToDateTime(dateRange[0]);
+                var endDate = Convert.ToDateTime(dateRange[1]);
 
-                var Price = dailyPriceObj.Price;
-                var IsEnable = dailyPriceObj.IsEnable;
-
-                if (qry.planPriceFlag)
+                var dailyPriceList = await db.Queryable<DailyPriceDo>().Where(vv => vv.PricePlanId == SqlFunc.ToInt64(userPlanId) && vv.CurrentDate >= startDate && vv.CurrentDate <= endDate).ToListAsync();
+                foreach (var dailyPriceObj in dailyPriceList)
                 {
-                    if (qry.planPriceExecType == "1")
+                    if (qry.weekIndexList.Where(weekIndex => weekIndex == ((int)dailyPriceObj.CurrentDate.DayOfWeek)).Count() == 0)
                     {
-                        dailyPriceObj.SetPrice(qry.planPrice);
+                        continue;
+                    }
 
-                        if (qry.planPrice > 0 && qry.planPrice < LowestPrice)
+                    var Price = dailyPriceObj.Price;
+                    var IsEnable = dailyPriceObj.IsEnable;
+
+                    if (qry.planPriceFlag)
+                    {
+                        if (qry.planPriceExecType == "1")
                         {
-                            throw new InvalidOperationException($@"酒店最低价格为{LowestPrice}！");
+                            dailyPriceObj.SetPrice(qry.planPrice);
+
+                            if (qry.planPrice > 0 && qry.planPrice < LowestPrice)
+                            {
+                                throw new InvalidOperationException($@"酒店最低价格为{LowestPrice}！");
+                            }
+                        }
+                        if (qry.planPriceExecType == "2" && dailyPriceObj.Price > 0)
+                        {
+                            dailyPriceObj.SetPrice(qry.planPrice + dailyPriceObj.Price);
+                        }
+                        if (qry.planPriceExecType == "3")
+                        {
+                            dailyPriceObj.SetPrice(dailyPriceObj.Price + (dailyPriceObj.Price * (qry.planPrice / 100)));
                         }
                     }
-                    if (qry.planPriceExecType == "2" && dailyPriceObj.Price > 0)
+
+                    if (qry.planPriceStateFlag)
                     {
-                        dailyPriceObj.SetPrice(qry.planPrice + dailyPriceObj.Price);
+                        dailyPriceObj.SetIsEnable(qry.planPriceState ? YesOrNoType.Yes : YesOrNoType.No);
                     }
-                    if (qry.planPriceExecType == "3")
+
+                    if (  ( Price != dailyPriceObj.Price || IsEnable != dailyPriceObj.IsEnable) && updateDailyPriceList.Any(vv => vv.Id == dailyPriceObj.Id) == false)
                     {
-                        dailyPriceObj.SetPrice(dailyPriceObj.Price + (dailyPriceObj.Price * (qry.planPrice / 100)));
+                        updateDailyPriceList.Add(dailyPriceObj);
                     }
                 }
 
-                if (qry.planPriceStateFlag)
-                {
-                    dailyPriceObj.SetIsEnable(qry.planPriceState ? YesOrNoType.Yes : YesOrNoType.No);
-                }
-
-                if (Price != dailyPriceObj.Price || IsEnable != dailyPriceObj.IsEnable)
-                {
-                    updateDailyPriceList.Add(dailyPriceObj);
-                }
             }
         }
 
@@ -948,8 +961,8 @@ public class HotelApp : ApplicationService, IHotelApp
     public async Task<bool> BatchSaveInventoryAndPricesSenior([FromBody] BatchEditInventoryAndPricesSeniorModel qry)
     {
 
-        var startDate = Convert.ToDateTime(qry.startDate);
-        var endDate = Convert.ToDateTime(qry.endDate);
+
+
         var LowestPrice = db.Queryable<HotelPublishDo>().Where(vv => vv.Id == SqlFunc.ToInt64(qry.userHotelId) && vv.TenantId == SqlFunc.ToInt64(CurrentUserApp.TenantId)).ToList().First().LowestPrice;
 
 
@@ -959,42 +972,48 @@ public class HotelApp : ApplicationService, IHotelApp
         #region 房间数量
         foreach (var ele in qry.userRoomList)
         {
-            var dailyInventoryList = await db.Queryable<DailyInventoryDo>().Where(vv => vv.RoomId == SqlFunc.ToInt64(ele.Id) &&
+            foreach (var dateRange in qry.dateRangeList)
+            {
+                var startDate = Convert.ToDateTime(dateRange[0]);
+                var endDate = Convert.ToDateTime(dateRange[1]);
+
+                var dailyInventoryList = await db.Queryable<DailyInventoryDo>().Where(vv => vv.RoomId == SqlFunc.ToInt64(ele.Id) &&
                                                                                         vv.CurrentDate >= startDate &&
                                                                                         vv.CurrentDate <= endDate &&
                                                                                         vv.TenantId == SqlFunc.ToInt64(CurrentUserApp.TenantId)).ToListAsync();
 
-            foreach (var dailyInventoryObj in dailyInventoryList)
-            {
-                if (qry.weekIndexList.Where(weekIndex => weekIndex == ((int)dailyInventoryObj.CurrentDate.DayOfWeek)).Count() == 0)
+                foreach (var dailyInventoryObj in dailyInventoryList)
                 {
-                    continue;
-                }
-                var InventoryNum = dailyInventoryObj.InventoryNum;
-                var IsEnable = dailyInventoryObj.IsEnable;
+                    if (qry.weekIndexList.Where(weekIndex => weekIndex == ((int)dailyInventoryObj.CurrentDate.DayOfWeek)).Count() == 0)
+                    {
+                        continue;
+                    }
+                    var InventoryNum = dailyInventoryObj.InventoryNum;
+                    var IsEnable = dailyInventoryObj.IsEnable;
 
-                if (ele.inventoryNumExecType == "1")
-                {
-                    dailyInventoryObj.SetInventoryNum(ele.inventoryNum);
-                }
-                else if (ele.inventoryNumExecType == "2")
-                {
-                    dailyInventoryObj.SetInventoryNum(ele.inventoryNum + dailyInventoryObj.InventoryNum);
-                }
+                    if (ele.inventoryNumExecType == "1")
+                    {
+                        dailyInventoryObj.SetInventoryNum(ele.inventoryNum);
+                    }
+                    else if (ele.inventoryNumExecType == "2")
+                    {
+                        dailyInventoryObj.SetInventoryNum(ele.inventoryNum + dailyInventoryObj.InventoryNum);
+                    }
 
 
-                if (ele.inventoryStateType == "1")
-                {
-                    dailyInventoryObj.SetIsEnable(YesOrNoType.Yes);
-                }
-                else if (ele.inventoryStateType == "2")
-                {
-                    dailyInventoryObj.SetIsEnable(YesOrNoType.No);
-                }
+                    if (ele.inventoryStateType == "1")
+                    {
+                        dailyInventoryObj.SetIsEnable(YesOrNoType.Yes);
+                    }
+                    else if (ele.inventoryStateType == "2")
+                    {
+                        dailyInventoryObj.SetIsEnable(YesOrNoType.No);
+                    }
 
-                if (InventoryNum != dailyInventoryObj.InventoryNum || IsEnable != dailyInventoryObj.IsEnable)
-                {
-                    updateDailyInventoryList.Add(dailyInventoryObj);
+                    if ( ( InventoryNum != dailyInventoryObj.InventoryNum || IsEnable != dailyInventoryObj.IsEnable  ) && updateDailyInventoryList.Any(vv=> vv.Id == dailyInventoryObj.Id)==false)
+                    {
+                        updateDailyInventoryList.Add(dailyInventoryObj);
+                    }
                 }
             }
         }
@@ -1004,7 +1023,11 @@ public class HotelApp : ApplicationService, IHotelApp
         //处理价格
         foreach (var ele in qry.userPlanList)
         {
-            var dailyPriceList = await db.Queryable<DailyPriceDo>().Where(vv => vv.PricePlanId == SqlFunc.ToInt64(ele.Id) &&
+            foreach (var dateRange in qry.dateRangeList) {
+
+                var startDate = Convert.ToDateTime(dateRange[0]);
+                var endDate = Convert.ToDateTime(dateRange[1]);
+                var dailyPriceList = await db.Queryable<DailyPriceDo>().Where(vv => vv.PricePlanId == SqlFunc.ToInt64(ele.Id) &&
                                                                                 vv.CurrentDate >= startDate &&
                                                                                 vv.CurrentDate <= endDate &&
                                                                                 vv.TenantId == SqlFunc.ToInt64(CurrentUserApp.TenantId)).ToArrayAsync();
@@ -1044,10 +1067,12 @@ public class HotelApp : ApplicationService, IHotelApp
                 }
 
 
-                if (Price != dailyPriceObj.Price || IsEnable != dailyPriceObj.IsEnable)
+                if ( (Price != dailyPriceObj.Price || IsEnable != dailyPriceObj.IsEnable )  && updateDailyPriceList.Any(vv=> vv.Id == dailyPriceObj.Id)== false)
                 {
                     updateDailyPriceList.Add(dailyPriceObj);
                 }
+            }
+
             }
         }
 

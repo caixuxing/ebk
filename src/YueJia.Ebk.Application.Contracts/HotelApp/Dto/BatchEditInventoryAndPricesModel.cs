@@ -6,8 +6,12 @@
 
         public List<int> weekIndexList { get; set; }
 
-        public string startDate { get; set; }
-        public string endDate { get; set; }
+        /// <summary>
+        /// 日期范围
+        /// </summary>
+        public List<List<string>> dateRangeList { get; set; }
+        //public string startDate { get; set; }
+        //public string endDate { get; set; }
 
         public List<string> userRoomIdList { get; set; }
         public List<string> userPlanIdList { get; set; }

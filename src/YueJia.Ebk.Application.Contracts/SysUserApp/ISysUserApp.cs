@@ -24,4 +24,6 @@ public interface ISysUserApp
 
     Task<PageData<IEnumerable<SysUserPageListDto>>> GetPageListAsync(SysUserPageFilterQry qry);
 
+    List<SysUserDetailsDto> GetManageUserList();
+
 }

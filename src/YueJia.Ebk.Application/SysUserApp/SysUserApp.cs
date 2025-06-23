@@ -183,4 +183,22 @@ public class SysUserApp : ApplicationService, ISysUserApp
         await SysUserRepo.AsUpdateable(entity).ExecuteCommandWithOptLockAsync();
         return true;
     }
+
+    /// <summary>
+    /// 获取当前用户下的用户
+    /// 系统管理员
+    /// 普通用户（部门管理员）
+    /// </summary>
+    public List<SysUserDetailsDto> GetManageUserList() {
+        return SysUserRepo.AsQueryable()
+                           .WhereIF(CurrentUserApp.AccountType == AccountTypeEnum.NormalUser && CurrentUserApp.IsDeptAdmin, x1 => x1.DeptId == CurrentUserApp.Dept.DeptId)
+                           .WhereIF(CurrentUserApp.AccountType == AccountTypeEnum.NormalUser && CurrentUserApp.IsDeptAdmin==false, x1 => x1.Id == SqlFunc.ToInt64(CurrentUserApp.Id))
+                           .Select(x => new SysUserDetailsDto
+                           {
+                                Id = x.Id,
+                                RealName = x.RealName,
+                           })
+                          .ToList();
+
+    }
 }

@@ -33,6 +33,16 @@
                 <el-form-item label="城市名称" style="margin-bottom:5px;">
                     <el-input v-model="state.qry.cityName" clearable style="width:200px"></el-input>
                 </el-form-item>
+
+                <el-form-item label="用户" style="margin-bottom:5px;" >
+                    <el-select v-model="state.qry.userId"  style="width:200px;" filterable v-on:change="pageIndex=1;userEvent.loadData()">
+                        @foreach (YueJia.Ebk.Application.Contracts.SysUserApp.Dto.SysUserDetailsDto ele in ViewBag.GetManageUserList)
+                        {
+                            <el-option label="@ele.RealName" value="@ele.Id.ToString()"></el-option>
+                        }
+                    </el-select>
+                </el-form-item>
+
             </div>
         </el-form>
         <el-form label-width="100px" :inline="true" style="margin-top:30px;">
@@ -134,7 +144,7 @@
         const app = Vue.createApp({
         setup() {
 
-           let qry = {  hotelCode: '',hotelName: '',countryId:null,cityName:'', status: null,pageIndex: 1,pageSize: 50,totalCount: 0 }
+           let qry = {  hotelCode: '',hotelName: '',countryId:null,cityName:'', status: null,pageIndex: 1,pageSize: 50,totalCount: 0 , userId:'@ViewBag.UserId' }
            let selectUserHotelIds = [];
            const state = Vue.reactive({
                 qry:  JSON.parse(JSON.stringify( qry)),
