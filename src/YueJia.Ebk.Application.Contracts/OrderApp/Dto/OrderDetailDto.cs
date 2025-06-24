@@ -109,6 +109,11 @@ public record OrderDetailDto
     public string Contact { get; set; } = default!;
 
     /// <summary>
+    /// 酒店确认号
+    /// </summary>
+    public string HotelConfirmNum { get; set; } = default!;
+
+    /// <summary>
     /// 房间入住明细
     /// </summary>
     public List<HotelRoomInfoOB> HotelRoomInfo { get; set; } = new();

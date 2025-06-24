@@ -108,7 +108,7 @@ public class SysUserApp : ApplicationService, ISysUserApp
                                .WhereIF(!string.IsNullOrWhiteSpace(qry.AccountName), (t, t1) => SqlFunc.Like(t.AccountName, $"{qry.AccountName}%"))
                                .WhereIF(!string.IsNullOrWhiteSpace(qry.RealName), (t, t1) => SqlFunc.Like(t.RealName, $"{qry.RealName}%"))
                                .WhereIF(qry.IsEnabled.HasValue, (t, t1) => t.IsEnabled.Equals(qry.IsEnabled))
-                               .WhereIF( CurrentUserApp.AccountType == AccountTypeEnum.NormalUser && CurrentUserApp.IsDeptAdmin, (t, t1) => t.DeptId == CurrentUserApp.Dept.DeptId )
+                               .WhereIF(CurrentUserApp.AccountType == AccountTypeEnum.NormalUser && CurrentUserApp.IsDeptAdmin, (t, t1) => t.DeptId == CurrentUserApp.Dept.DeptId)
                .Select((t, t1) => new SysUserPageListDto()
                {
                    Id = t.Id,
@@ -160,6 +160,8 @@ public class SysUserApp : ApplicationService, ISysUserApp
 
     public async Task<bool> UpdatePasswordAsync(UpdatePasswordSysUserCmd requestCmd)
     {
+        await LazyServiceProvider.LazyGetRequiredService<FluentValidation.IValidator<UpdatePasswordSysUserCmd>>().ValidateAndThrowAsync(requestCmd);
+
         var entity = await SysUserRepo.GetByIdAsync(CurrentUserApp.Id);
         if (entity == null)
         {
@@ -189,14 +191,15 @@ public class SysUserApp : ApplicationService, ISysUserApp
     /// 系统管理员
     /// 普通用户（部门管理员）
     /// </summary>
-    public List<SysUserDetailsDto> GetManageUserList() {
+    public List<SysUserDetailsDto> GetManageUserList()
+    {
         return SysUserRepo.AsQueryable()
                            .WhereIF(CurrentUserApp.AccountType == AccountTypeEnum.NormalUser && CurrentUserApp.IsDeptAdmin, x1 => x1.DeptId == CurrentUserApp.Dept.DeptId)
-                           .WhereIF(CurrentUserApp.AccountType == AccountTypeEnum.NormalUser && CurrentUserApp.IsDeptAdmin==false, x1 => x1.Id == SqlFunc.ToInt64(CurrentUserApp.Id))
+                           .WhereIF(CurrentUserApp.AccountType == AccountTypeEnum.NormalUser && CurrentUserApp.IsDeptAdmin == false, x1 => x1.Id == SqlFunc.ToInt64(CurrentUserApp.Id))
                            .Select(x => new SysUserDetailsDto
                            {
-                                Id = x.Id,
-                                RealName = x.RealName,
+                               Id = x.Id,
+                               RealName = x.RealName,
                            })
                           .ToList();
 

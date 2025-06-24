@@ -1,5 +1,6 @@
 ﻿using YueJia.Ebk.Application.Contracts.OrderApp;
 using YueJia.Ebk.Application.Contracts.OrderApp.Qry;
+using YueJia.Ebk.Application.Contracts.SysApp;
 
 namespace YueJia.Ebk.Web.Controllers
 {
@@ -13,12 +14,17 @@ namespace YueJia.Ebk.Web.Controllers
 
         private IOrderApp OrderApp => LazyServiceProvider.LazyGetRequiredService<IOrderApp>();
 
+        private ISysEnumApp SysEnumApp => LazyServiceProvider.LazyGetRequiredService<ISysEnumApp>();
 
         /// <summary>
         /// 用户订单管理（View）
         /// </summary>
         /// <returns></returns>
-        public IActionResult UserOrderMgr() => View();
+        public IActionResult UserOrderMgr()
+        {
+            ViewBag.OrderStateData = JsonConvert.SerializeObject(SysEnumApp.GetEnumDataList(nameof(BookingStateTypeEnum)), new JsonSerializerSettings { ContractResolver = new CamelCasePropertyNamesContractResolver() });
+            return View();
+        }
 
 
 
@@ -36,9 +42,22 @@ namespace YueJia.Ebk.Web.Controllers
         /// 订单详情
         /// </summary>
         /// <returns></returns>
-        public async Task<IActionResult> OrderDetail(string id)
+        public async Task<IActionResult> OrderDetail(string id) => View(await OrderApp.OrderDetailByIdAsync(id.ToLong()));
+
+
+
+
+        /// <summary>
+        /// 酒店确认号
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="confirmNum"></param>
+        /// <returns></returns>
+        [HttpPut, Route("[controller]/HotelConfirmNum/{id}")]
+
+        public async Task<IResult> HotelConfirmNum([FromRoute] string id, string confirmNum)
         {
-            return View(await OrderApp.OrderDetailByIdAsync(id.ToLong()));
+            return ApiResult.HandleBoolResult(await OrderApp.SaveOrderConfirmNumAsync(id.ToLong(), confirmNum));
         }
 
     }

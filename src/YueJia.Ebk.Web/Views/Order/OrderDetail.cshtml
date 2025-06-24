@@ -30,6 +30,9 @@
                      <el-form-item label="总价" >
                       @Model.TotalAmount
                     </el-form-item>
+                    <el-form-item label="订单确认号">
+                        <el-input v-model="state.hotelConfirmNum" style="width: 240px" placeholder="订单确认号"></el-input>  <el-button type="primary" v-on:click="save">保存</el-button>
+                    </el-form-item>
                 </el-form>
           
           </el-card>
@@ -123,6 +126,8 @@
                     </el-form>
         
           </el-card>
+
+
  </el-scrollbar>
     </el-main>
 </el-container>
@@ -131,13 +136,17 @@
     <script type="text/javascript">
         const app = Vue.createApp({
         setup() {
-           const state = Vue.reactive({ 
-           
-               Id:1
-           
+           const state = Vue.reactive({
+                    hotelConfirmNum:`@Html.Raw(Model.HotelConfirmNum)`
            });
+           const save = () => {
+                  axios['put'](`/Order/HotelConfirmNum/@Model.Id`,null,{ params:{  confirmNum:state.hotelConfirmNum}})
+                  .then(res=>{
+               top.window.vueElMessage({ message: res.data. message , type:  res.data.isSuccess?'success':'info' })
+             });
+           };
            Vue.onMounted(() => {   });
-            return { state };
+            return { state,save };
                }
             });
             app.use(ElementPlus,{ locale: ElementPlusLocaleZhCn });

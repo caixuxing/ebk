@@ -315,7 +315,8 @@ public class OrderApp : ApplicationService, IOrderApp
                 OrderNum = t.OrderNum,
                 Contact = p.TelPhone,
                 Id = t.Id,
-                Area = $"[{p.CountryIosCode}]{p.CountryName}/{p.CityName}"
+                Area = $"[{p.CountryIosCode}]{p.CountryName}/{p.CityName}",
+                HotelConfirmNum = t.HotelConfirmNum
 
             }).SingleAsync() ?? throw new InvalidOperationException("订单不存在！");
 
@@ -349,6 +350,16 @@ public class OrderApp : ApplicationService, IOrderApp
 
              }).ToList();
         return order;
+    }
+
+    public async Task<bool> SaveOrderConfirmNumAsync(long id, string confirmNum)
+    {
+        var entity = await OrderRepo.GetByIdAsync(id) ?? throw new InvalidOperationException("订单不存在！");
+        entity.HotelConfirmNum = confirmNum;
+        await OrderRepo.AsUpdateable(entity).UpdateColumns(it => new { it.HotelConfirmNum, it.LastModifiedbyId, it.LastModifiedbyName, it.LastModifiedTime, it.Version })
+                .ExecuteCommandWithOptLockAsync();
+        return true;
+
     }
 }
 

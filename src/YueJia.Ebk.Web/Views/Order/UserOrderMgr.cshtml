@@ -2,17 +2,16 @@
     <el-main>
         <el-form label-width="100px" :inline="true">
             <div>
-                <el-form-item label="登录账户" prop="desc" style="margin-bottom:5px;">
+                <el-form-item label="订单号" prop="desc" style="margin-bottom:5px;">
                     <el-input v-model="state.qry.accountName" clearable style="width:200px"></el-input>
                 </el-form-item>
 
                 <el-form-item label="状态" prop="desc" style="margin-bottom:5px;">
-                    <el-select v-model="state.qry.isEnabled" placeholder="不限" clearable style="width:200px">
-                      @*   @foreach (YueJia.Ebk.Application.Contracts.SysApp.Dto.EnumDto ele in ViewBag.YesOrNoTypeList)
-                        {
-                            <el-option label="@ele.Describe" value="@ele.Value"></el-option>
-                        } *@
+                 
+                     <el-select v-model="state.qry.status" placeholder="不限" style="width:220px;" clearable filterable>
+                       <el-option v-for="item in state.orderSateList" :key="item.value" :label="item.describe" :value="item.value"/>
                     </el-select>
+
                 </el-form-item>
                 <el-form-item prop="desc" style="margin-bottom:5px;">
                     <el-button type="primary" v-on:click="pageIndex=1;loadData()" id="query">查询</el-button>
@@ -84,7 +83,10 @@
             <el-table-column label="订单状态" width="120px" align="center">
                 <template #default="scope">
                     <div style="text-align:center">
-                        <span>{{  scope.row.stateName }}</span>
+
+                        <el-tag v-show="scope.row.state==1 "  type="primary">{{  scope.row.stateName }}</el-tag>
+                        <el-tag v-show="scope.row.state==0 "  type="danger">{{  scope.row.stateName }}</el-tag>
+
                     </div>
                 </template>
             </el-table-column>
@@ -143,7 +145,8 @@
 
            const state = Vue.reactive({
                 qry:  qry,
-                dataList: []
+                dataList: [],
+                orderSateList:@(Html.Raw(ViewBag.OrderStateData)),
             });
            Vue.onMounted(() => { loadData()  });
             const loadData = () => {
