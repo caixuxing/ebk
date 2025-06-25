@@ -1,37 +1,83 @@
 ﻿<el-container style="height:100vh;overflow: hidden;">
     <el-main>
-        <el-form label-width="100px" :inline="true">
+        <el-form label-width="150px" :inline="true" style="margin-bottom:5px;" >
+
+            <div>
+                <el-form-item label="日期类型" prop="desc" style="margin-bottom:5px;">
+                    <el-select v-model="state.qry.dateType" placeholder="不限" style="width:100px;"  >
+                        <el-option label="下单日期" value="A" ></el-option>
+                        <el-option  label="入住日期" value="B" ></el-option>
+                        <el-option  label="离店日期" value="C" ></el-option>
+                    </el-select>
+
+                    <el-date-picker v-model="state.qry.startDate"
+                                    type="date"
+                                    style="width:130px"
+                                    :clearable="false"
+                                    value-format="YYYY-MM-DD"> </el-date-picker>
+
+
+                     <el-date-picker v-model="state.qry.endDate"
+                                   type="date"
+                                   style="width:130px"
+                                   :clearable="false"
+                                   value-format="YYYY-MM-DD"> </el-date-picker>
+
+                </el-form-item>
+
+                <el-form-item label="开始日期" style="margin-bottom:5px;">
+                  
+                                 
+                </el-form-item>
+                <el-form-item label="结束日期" style="margin-bottom:5px;">
+                    
+                </el-form-item>
+            </div>
+
             <div>
                 <el-form-item label="订单号" prop="desc" style="margin-bottom:5px;">
                     <el-input v-model="state.qry.accountName" clearable style="width:200px"></el-input>
                 </el-form-item>
 
                 <el-form-item label="状态" prop="desc" style="margin-bottom:5px;">
-                 
-                     <el-select v-model="state.qry.status" placeholder="不限" style="width:220px;" clearable filterable>
+
+                    <el-select v-model="state.qry.status" placeholder="不限" style="width:200px;" clearable filterable>
                        <el-option v-for="item in state.orderSateList" :key="item.value" :label="item.describe" :value="item.value"/>
                     </el-select>
-
                 </el-form-item>
+            </div>
+
+            <div>
+                <el-form-item label="国家" style="margin-bottom:5px;">
+                    <el-select v-model="state.qry.countryId" placeholder="不限" style="width:200px;" clearable filterable>
+                        <el-option label="--不限--" :value="0"></el-option>
+                        @foreach (YueJia.Ebk.Application.Contracts.Comm.BaseObj.SelectDataDto<int> ele in ViewBag.CountryList)
+                        {
+                            <el-option label="@ele.Label" :value="@ele.Value"></el-option>
+                        }
+                    </el-select>
+                </el-form-item>
+                <el-form-item label="城市名称" style="margin-bottom:5px;">
+                    <el-input v-model="state.qry.cityName" clearable style="width:200px"></el-input>
+                </el-form-item>
+
                 <el-form-item label="用户" style="margin-bottom:5px;">
-                    <el-select v-model="state.qry.userId" style="width:200px;" filterable v-on:change="pageIndex=1;userEvent.loadData()">
+                    <el-select v-model="state.qry.userId" style="width:200px;" filterable v-on:change="pageIndex=1;loadData()">
                         @foreach (YueJia.Ebk.Application.Contracts.SysUserApp.Dto.SysUserDetailsDto ele in ViewBag.GetManageUserList)
                         {
                             <el-option label="@ele.RealName" value="@ele.Id.ToString()"></el-option>
                         }
                     </el-select>
                 </el-form-item>
+
                 <el-form-item prop="desc" style="margin-bottom:5px;">
                     <el-button type="primary" v-on:click="pageIndex=1;loadData()" id="query">查询</el-button>
                     <el-button v-on:click="resetQueryForm">重置</el-button>
                 </el-form-item>
+
             </div>
         </el-form>
-        <el-form label-width="100px" :inline="true" style="margin-top:30px;">
-            <el-form-item prop="desc" style="margin-bottom:5px;">
-               
-            </el-form-item>
-        </el-form>
+  
         <el-table :data="state.dataList"
                   border
                   height="100%" width="100%">
@@ -42,20 +88,23 @@
                     </div>
                 </template>
             </el-table-column>
-            <el-table-column label="订单号" width="160px" align="center" fixed>
+            <el-table-column label="订单号" width="180px" align="center" fixed>
                    <template #default="scope">
                      <el-link :underline="false" type="primary" v-on:click="ViewDetail(scope.row)">{{ scope.row.orderNum }}</el-link>
                 </template>
             </el-table-column>
 
-            <el-table-column label="国家" width="120px" align="center" >
+            <el-table-column label="国家/城市" width="160px" align="center" >
                 <template #default="scope">
                    <div style="text-align:left" >
                         <el-text>{{ scope.row.countryName }}</el-text>
                    </div>
+                    <div style="text-align:left">
+                        <el-text>{{ scope.row.cityName }}</el-text>
+                    </div>
                 </template>
             </el-table-column>
-            <el-table-column label="酒店名称" width="220px" align="center" show-overflow-tooltip>
+            <el-table-column label="酒店名称" min-width="220px" width="auto" align="center" show-overflow-tooltip>
                 <template #default="scope">
                     <div style="text-align:left">
                         <el-text>{{ scope.row.hotelName }}</el-text>
@@ -66,83 +115,35 @@
                 </template>
             </el-table-column>
 
-            <el-table-column label="入店/离店" width="120" align="center">
+            <el-table-column label="入店/离店" width="100" align="center">
                 <template #default="scope">
                     <p>  {{ scope.row.checkInDateString }}</p>
                     <p>  {{ scope.row.checkOutDateString }}</p>
                 </template>
             </el-table-column>
 
-            <el-table-column label="订单时间" width="160px" align="center">
-                <template #default="scope" >
-                    {{ scope.row.createTimeString }}
+            <el-table-column label="间夜数" width="100"  align="center">
+                <template #default="scope">
+                        <el-text>{{ scope.row.roomNumber }}/{{ scope.row.howManyNights }}</el-text>
                 </template>
             </el-table-column>
-            <el-table-column label="酒店名称/间夜数" width="auto" min-width="280px" align="center" show-overflow-tooltip>
-                <template #default="scope">
-                    <div style="text-align:left">
-                      <p>  {{ scope.row.hotelName }}</p>
-                      <p>  {{ scope.row.hotelNameEn }}</p>
-                       <p>  {{ scope.row.numberOfRoomsBooked }} x {{scope.row.howManyNights}}</p>
-                    </div>
-                </template>
-            </el-table-column>
-              <el-table-column label="房型/床型/餐食" width="280" mim-width="260" align="center" show-overflow-tooltip>
-                <template #default="scope">
-                    <div style="text-align:left">
-                      <p>  {{ scope.row.roomName }}</p>
-                      <p>  {{ scope.row.bedName }}</p>
-                       <p>  {{ scope.row.breakfastTypeName }}</p>
-                    </div>
-                </template>
-            </el-table-column>
-            
 
-
-
-            <el-table-column label="价格" width="auto" max-width="80px" align="center">
+            <el-table-column label="金额" width="100" align="center">
                 <template #default="scope">
-                    <div style="text-align:right">
-                        {{ scope.row.totalAmount }}
+                    <div style="text-align:right" >
+                        <el-text>{{ scope.row.costAmount }}</el-text>
                     </div>
                 </template>
             </el-table-column>
 
-            <el-table-column label="订单状态" width="120px" align="center">
+            <el-table-column label="订单状态" width="100px" align="center">
                 <template #default="scope">
                     <div style="text-align:center">
-
-                        <el-tag v-show="scope.row.state==1 "  type="primary">{{  scope.row.stateName }}</el-tag>
-                        <el-tag v-show="scope.row.state==0 "  type="danger">{{  scope.row.stateName }}</el-tag>
-
+                        <el-tag  type="primary">{{  scope.row.stateName }}</el-tag>
                     </div>
                 </template>
             </el-table-column>
-            <el-table-column label="客户姓名" width="120px" align="center">
-                <template #default="scope">
-                    <div style="text-align:center">
-                        <span>{{  scope.row.customerName }}</span>
-                    </div>
-                </template>
-            </el-table-column>
-
-            <el-table-column label="酒店确认号" width="180px" align="center">
-                <template #default="scope">
-                    <div style="text-align:center">
-                        <span>{{  scope.row.hotelConfirmNum }}</span>
-                    </div>
-                </template>
-            </el-table-column>
-
-            <el-table-column label="备注" width="160px" align="center">
-                <template #default="scope">
-                    <div style="text-align:right">
-                        <p style="margin:0px;text-align:center"></p>
-                    </div>
-                </template>
-            </el-table-column>
-
-            <el-table-column label="操作" prop="opt" align="center" fixed="right" min-width="80" width="80">
+            <el-table-column  align="center"  width="80">
                 <template #default="scope">
                     <div style="text-align:center">
                         <el-button size="small" v-on:click="ViewDetail(scope.row)">详情</el-button>
@@ -169,10 +170,10 @@
         const app = Vue.createApp({
         setup() {
 
-           let qry = {  accountName: '',isEnabled: null,pageIndex: 1,pageSize: 50,totalCount: 0 , userId:'@ViewBag.UserId'}
+           let qry = {  dateType:'A',  accountName: '',isEnabled: null,pageIndex: 1,pageSize: 50,totalCount: 0 ,countryId:null,cityName:'', userId:'@ViewBag.UserId'}
 
            const state = Vue.reactive({
-                qry:  qry,
+                qry: JSON.parse(JSON.stringify( qry)),
                 dataList: [],
                 orderSateList:@(Html.Raw(ViewBag.OrderStateData)),
             });
@@ -197,6 +198,7 @@
            };
             //重置查询表单
             const resetQueryForm=()=>{
+                console.log('dd');
                 state.qry  = JSON.parse(JSON.stringify( qry))
              };
 

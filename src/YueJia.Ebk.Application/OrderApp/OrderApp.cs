@@ -150,7 +150,7 @@ public class OrderApp : ApplicationService, IOrderApp
                              .With(SqlWith.NoLock)
                              .Where((x1, x2) => x1.CreatedbyId == qry.UserId)
                              .WhereIF(!string.IsNullOrWhiteSpace(qry.HotelCode), (x1, x2) => x2.HotelCode == qry.HotelCode)
-                             .WhereIF(!string.IsNullOrWhiteSpace(qry.HotelName), (x1, x2) => x2.HotelName.Contains(qry.HotelName) || x2.HotelNameEn.Contains(qry.HotelName))
+                             .WhereIF(!string.IsNullOrWhiteSpace(qry.HotelName), (x1, x2) => x2.HotelName.Contains(qry.HotelName)  || x2.HotelNameEn.Contains(qry.HotelName))
                              .Select((x1, x2) => new OrderPageListDto()
                              {
 
