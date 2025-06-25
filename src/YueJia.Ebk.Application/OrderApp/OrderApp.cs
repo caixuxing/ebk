@@ -1,6 +1,4 @@
-﻿using Dm.util;
-using LiteDB;
-using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
+﻿using LiteDB;
 using MongoDB.Driver;
 using YueJia.Ebk.Application.Contracts.OrderApp;
 using YueJia.Ebk.Application.Contracts.OrderApp.Commands;
@@ -8,12 +6,8 @@ using YueJia.Ebk.Application.Contracts.OrderApp.Dto;
 using YueJia.Ebk.Application.Contracts.OrderApp.Qry;
 using YueJia.Ebk.Application.Contracts.SysUserApp;
 using YueJia.Ebk.Domain.AggRoot;
-using YueJia.Ebk.Domain.Company;
 using YueJia.Ebk.Domain.Hotel;
-using YueJia.Ebk.Domain.MongdbModel;
 using YueJia.Ebk.Domain.Order;
-using YueJia.Ebk.Domain.Shared.Const;
-using YueJia.Ebk.Domain.Shared.Dto;
 using YueJia.Ebk.Domain.SysUser;
 using YueJia.Ebk.Infrastructure.DistributedLock;
 
@@ -41,7 +35,8 @@ public class OrderApp : ApplicationService, IOrderApp
     {
         var Ids = Common.AnalysisSearchCode(cmd.SearchCode);
         var hotelQuoteObj = db.Queryable<HotelQuoteDo>().Where(vv => vv.Id == Ids.First()).ToList().First();
-        if (Ids.Count != cmd.NightNumber) {
+        if (Ids.Count != cmd.NightNumber)
+        {
             throw new InvalidOperationException("参数错误");
         }
         await DbTransaction.ExecuteInTransactionAsync(db, async () =>
@@ -55,7 +50,7 @@ public class OrderApp : ApplicationService, IOrderApp
                                                  .InnerJoin<DailyInventoryDo>((x1, x2) => x1.DailyInventoryId == x2.Id &&
                                                                                           x2.InventoryNum >= cmd.RoomList.Count &&
                                                                                           x2.IsEnabled == YesOrNoType.Yes)
-                                                 .Where((x1,x2)=> x1.Id == Id)
+                                                 .Where((x1, x2) => x1.Id == Id)
                                                 .Select((x1, x2) => x2).ToListAsync();
                 if (_dailyInventoryList.Count != 1)
                 {
@@ -80,7 +75,7 @@ public class OrderApp : ApplicationService, IOrderApp
 
             //1):订单主表
             var orderDo = OrderDo.Create(orderNum: cmd.OrderCode,
-                                            state: BookingStateTypeEnum.Confirmed,
+                                            state: BookingStateTypeEnum.ToBeConfirmed,
                                       userHotelId: hotelQuoteObj.UserHotelId,
                                          roomCode: hotelQuoteObj.RoomCode,
                                     breakfastType: hotelQuoteObj.BreakfastType,
@@ -128,14 +123,15 @@ public class OrderApp : ApplicationService, IOrderApp
             foreach (var item in DailyInventoryList)
             {
                 var NewInventoryNum = item.InventoryNum - cmd.RoomList.Count;
-                var NewIsEnabled = NewInventoryNum> 0 ?  YesOrNoType.Yes: YesOrNoType.No;
+                var NewIsEnabled = NewInventoryNum > 0 ? YesOrNoType.Yes : YesOrNoType.No;
 
                 await db.Updateable<DailyInventoryDo>()
-                         .SetColumns(it => new DailyInventoryDo() {
-                                    Version = it.Version + 1,
-                                    LastModifiedTime = DateTime.Now,
-                                    InventoryNum = NewInventoryNum,
-                                    IsEnabled = NewIsEnabled,
+                         .SetColumns(it => new DailyInventoryDo()
+                         {
+                             Version = it.Version + 1,
+                             LastModifiedTime = DateTime.Now,
+                             InventoryNum = NewInventoryNum,
+                             IsEnabled = NewIsEnabled,
                          })
                          .Where(it => it.Id == item.Id)
                          .ExecuteCommandAsync();
@@ -148,33 +144,34 @@ public class OrderApp : ApplicationService, IOrderApp
 
     public async Task<PageData<IEnumerable<OrderPageListDto>>> QueryOrderPageAsync(OrderPageListFilterQry qry)
     {
-        //RefAsync<int> total = 0;
-        //var query = OrderRepo.AsQueryable().WhereDeptFilter(CurrentUserApp, db)
-        //    .LeftJoin<HotelPublishDo>((t, h) => t.HotelCode == h.HotelCode && t.UserHotelId == h.Id)
-        //    .With(SqlWith.NoLock)
-        //    .WhereIF(!string.IsNullOrWhiteSpace(qry.HotelCode), t => t.HotelCode == qry.HotelCode)
-        //    .Select((t, h) => new OrderPageListDto()
-        //    {
-        //        BedName = t.BedName,
-        //        BookingDate = t.BookingDate,
-        //        CheckInDate = t.CheckInDate,
-        //        CheckOutDate = t.CheckOutDate,
-        //        CustomerName = t.CustomerName,
-        //        HotelConfirmNum = t.HotelConfirmNum,
-        //        HotelName = h.HotelName,
-        //        HotelNameEn = h.HotelNameEn,
-        //        HowManyNights = t.HowManyNights,
-        //        NumberOfRoomsBooked = t.NumberOfRoomsBooked,
-        //        OrderNum = t.OrderNum,
-        //        RoomName = t.RoomName,
-        //        State = t.State,
-        //        TotalAmount = t.TotalAmount,
-        //        Id = t.Id,
-        //        BreakfastType = t.BreakfastType
-        //    });
-        //var data = await query.ToPageListAsync(qry.PageIndex, qry.PageSize, total);
-        //return new PageData<IEnumerable<OrderPageListDto>>(total, qry.PageSize, qry.PageIndex, data);
-        return null;
+        RefAsync<int> total = 0;
+        var query = OrderRepo.AsQueryable().WhereDeptFilter(CurrentUserApp, db)
+            .LeftJoin<HotelPublishDo>((t, h) => t.UserHotelId == h.Id && t.UserHotelId == h.Id)
+            .LeftJoin<HotelRoomDo>((t, h, r) => t.UserHotelId == r.HotelId)
+            .With(SqlWith.NoLock)
+            .WhereIF(!string.IsNullOrWhiteSpace(qry.HotelCode), (t, h) => h.HotelCode == qry.HotelCode)
+            .Select((t, h, r) => new OrderPageListDto()
+            {
+                BedName = r.BedType,
+                BookingDate = t.CreateTime,
+                CheckInDate = t.CheckInDate,
+                CheckOutDate = t.CheckOutDate,
+                CustomerName = t.CustomerName,
+                HotelConfirmNum = t.HotelConfirmNum,
+                HotelName = h.HotelName,
+                HotelNameEn = h.HotelNameEn,
+                HowManyNights = t.HowManyNights,
+                NumberOfRoomsBooked = t.RoomNumber,
+                OrderNum = t.OrderNum,
+                RoomName = r.HotelRoomTitle ?? string.Empty,
+                State = t.State,
+                TotalAmount = t.CostAmount,
+                Id = t.Id,
+                BreakfastType = t.BreakfastType
+            });
+        var data = await query.ToPageListAsync(qry.PageIndex, qry.PageSize, total);
+        return new PageData<IEnumerable<OrderPageListDto>>(total, qry.PageSize, qry.PageIndex, data);
+
     }
 
 

@@ -2,7 +2,6 @@
 using SqlSugar;
 using System.Diagnostics;
 using Volo.Abp.DependencyInjection;
-using YueJia.Ebk.Domain.Other;
 using YueJia.Ebk.Infrastructure.Service;
 
 namespace YueJia.Ebk.Infrastructure.JobWork
@@ -30,15 +29,15 @@ namespace YueJia.Ebk.Infrastructure.JobWork
                 //打印任务执行耗时
                 Console.WriteLine($"-----------------------------开始执行发布服务任务！-----------------------------");
 
-                if (await Db.Queryable<TracingDo>().AnyAsync(t => !t.IsDelete, stoppingToken))
-                {
-                    await EmailService.DoSendAsync();
+                //if (await Db.Queryable<TracingDo>().AnyAsync(, stoppingToken))
+                //{
+                //    // await EmailService.DoSendAsync();
 
 
-                    //回写sqlserver数据同步状态
-                    // await Db.Fastest<TracingDo>().BulkMergeAsync(data.Select(t => { t.State = 1; return t; }).ToList());
+                //    //回写sqlserver数据同步状态
+                //    // await Db.Fastest<TracingDo>().BulkMergeAsync(data.Select(t => { t.State = 1; return t; }).ToList());
 
-                }
+                //}
                 stopwatch.Stop();
                 Console.WriteLine($"-----------------------------发布服务任务执行完毕,总耗时：{stopwatch.ElapsedMilliseconds}毫秒！-----------------------------");
                 stopwatch.Restart();

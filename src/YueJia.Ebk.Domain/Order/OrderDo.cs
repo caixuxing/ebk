@@ -1,6 +1,4 @@
-﻿using Volo.Abp.Domain.Entities;
-
-namespace YueJia.Ebk.Domain.Order;
+﻿namespace YueJia.Ebk.Domain.Order;
 
 
 /// <summary>
@@ -8,7 +6,7 @@ namespace YueJia.Ebk.Domain.Order;
 /// </summary>
 [SugarTable("Order", "订单表")]
 [SugarIndex("index_{table}_OrderNum", nameof(OrderNum), OrderByType.Asc, true)]
-public partial record OrderDo : EntityTenant, IEntity<long>
+public partial record OrderDo : EntityTenant
 {
     public OrderDo() { }
     /// <summary>
@@ -58,19 +56,19 @@ public partial record OrderDo : EntityTenant, IEntity<long>
     /// 订单总金额
     /// </summary>
     [SugarColumn(ColumnDescription = "订单总金额", ColumnDataType = "decimal(10,2)")]
-    public decimal SaleAmount { get; set; } 
+    public decimal SaleAmount { get; set; }
 
     /// <summary>
     /// 成本金额
     /// </summary>
     [SugarColumn(ColumnDescription = "成本金额", ColumnDataType = "decimal(10,2)")]
-    public decimal CostAmount { get; set; } 
+    public decimal CostAmount { get; set; }
 
     /// <summary>
     /// 酒店确认号
     /// </summary>
     [SugarColumn(ColumnDescription = "酒店确认号", IsNullable = true, Length = 50)]
-    public string HotelConfirmNum { get; set; } 
+    public string HotelConfirmNum { get; set; }
 
     /// <summary>
     /// 订房间数
@@ -95,10 +93,10 @@ public partial record OrderDo : EntityTenant, IEntity<long>
 
 public partial record OrderDo
 {
-    private OrderDo(string orderNum,  BookingStateTypeEnum state, 
-        long userHotelId, string roomCode,  BreakfastTypeEnum breakfastType, DateTime checkInDate,
-        DateTime checkOutDate, decimal saleAmount,decimal costAmount, string hotelConfirmNum, int roomNumber,
-        int howManyNights,  string remark, string createdbyId,  long tenantId)
+    private OrderDo(string orderNum, BookingStateTypeEnum state,
+        long userHotelId, string roomCode, BreakfastTypeEnum breakfastType, DateTime checkInDate,
+        DateTime checkOutDate, decimal saleAmount, decimal costAmount, string hotelConfirmNum, int roomNumber,
+        int howManyNights, string remark, string createdbyId, long tenantId)
     {
         OrderNum = orderNum;
         State = state;
@@ -118,8 +116,8 @@ public partial record OrderDo
         this.TenantId = tenantId;
     }
 
-    public static OrderDo Create(string orderNum, BookingStateTypeEnum state,  long userHotelId, string roomCode,  BreakfastTypeEnum breakfastType, DateTime checkInDate, DateTime checkOutDate, decimal saleAmount, decimal costAmount, string hotelConfirmNum, int roomNumber, int howManyNights,  string remark, string createdbyId,  long tenantId)
+    public static OrderDo Create(string orderNum, BookingStateTypeEnum state, long userHotelId, string roomCode, BreakfastTypeEnum breakfastType, DateTime checkInDate, DateTime checkOutDate, decimal saleAmount, decimal costAmount, string hotelConfirmNum, int roomNumber, int howManyNights, string remark, string createdbyId, long tenantId)
     {
-        return new OrderDo(orderNum, state,  userHotelId, roomCode,  breakfastType, checkInDate, checkOutDate, saleAmount, costAmount, hotelConfirmNum, roomNumber, howManyNights,  remark, createdbyId,  tenantId);
+        return new OrderDo(orderNum, state, userHotelId, roomCode, breakfastType, checkInDate, checkOutDate, saleAmount, costAmount, hotelConfirmNum, roomNumber, howManyNights, remark, createdbyId, tenantId);
     }
 }
