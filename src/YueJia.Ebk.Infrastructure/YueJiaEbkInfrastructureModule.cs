@@ -8,7 +8,6 @@ using SqlSugar.DistributedSystem.Snowflake;
 using SqlSugar.IOC;
 using StackExchange.Redis;
 using System.Reflection;
-using Volo.Abp.Auditing;
 using Volo.Abp.DistributedLocking;
 using YueJia.Ebk.Domain.AggRoot;
 using YueJia.Ebk.Domain.Shared.Config;
@@ -21,8 +20,7 @@ namespace YueJia.Ebk.Infrastructure;
 
 
 [DependsOn(
-    typeof(AbpDistributedLockingModule),
-    typeof(AbpAuditingModule)
+    typeof(AbpDistributedLockingModule)
     )]
 public class YueJiaEbkInfrastructureModule : AbpModule
 {
@@ -41,6 +39,8 @@ public class YueJiaEbkInfrastructureModule : AbpModule
 
         context.Services.AddSingleton<ISqlSugarClient>(s =>
         {
+
+
             SqlSugarScope sqlSugar = new SqlSugarScope(new ConnectionConfig()
             {
                 DbType = DbType.SqlServer,
@@ -77,151 +77,187 @@ public class YueJiaEbkInfrastructureModule : AbpModule
                     }
                 }
             },
-           db =>
-           {
-
-               db.QueryFilter.AddTableFilter<IDeletedFilter>(it => !it.IsDelete);
-
-               if (_accesssor.Value?.HttpContext?.User?.FindFirst(ClaimAttributes.AccountType)?.Value != ((int)AccountTypeEnum.SuperAdmin).ToString())
-               {
-                   var tenantId = _accesssor.Value?.HttpContext?.User?.FindFirst(ClaimAttributes.TenantId)?.Value;
-                   if (!string.IsNullOrWhiteSpace(tenantId))
-                       db.QueryFilter.AddTableFilter<ITenantIdFilter>(u => u.TenantId == long.Parse(tenantId));
-               }
-
-
-               if (true)
-               {
-                   db.Aop.OnLogExecuting = (sql, pars) =>
+                   db =>
                    {
-                       var Strsql = new KeyValuePair<string, SugarParameter[]>(sql, pars);
-                   };
-                   db.Aop.OnLogExecuting = (sql, pars) =>
-                   {
-                       //// 若参数值超过100个字符则进行截取
-                       //foreach (var par in pars)
-                       //{
-                       //    if (par.DbType != System.Data.DbType.String || par.Value == null) continue;
-                       //    if (par.Value.ToString().Length > 100)
-                       //        par.Value = string.Concat(par.Value.ToString()[..100], "......");
-                       //}
 
-                       var log = $"【{DateTime.Now}——执行SQL】\r\n{UtilMethods.GetNativeSql(sql, pars)}\r\n";
-                       var originColor = Console.ForegroundColor;
-                       if (sql.StartsWith("SELECT", StringComparison.OrdinalIgnoreCase))
-                           Console.ForegroundColor = ConsoleColor.Green;
-                       if (sql.StartsWith("UPDATE", StringComparison.OrdinalIgnoreCase) || sql.StartsWith("INSERT", StringComparison.OrdinalIgnoreCase))
-                           Console.ForegroundColor = ConsoleColor.Yellow;
-                       if (sql.StartsWith("DELETE", StringComparison.OrdinalIgnoreCase))
-                           Console.ForegroundColor = ConsoleColor.Red;
-                       Console.WriteLine(log);
-                       Console.ForegroundColor = originColor;
-                       Console.Write(log);
-                       //App.PrintToMiniProfiler("SqlSugar", "Info", log);
-                   };
-                   db.Aop.OnError = ex =>
-                   {
-                       if (ex.Parametres == null) return;
-                       var log = $"【{DateTime.Now}——错误SQL】\r\n{UtilMethods.GetNativeSql(ex.Sql, (SugarParameter[])ex.Parametres)}\r\n";
+                       db.QueryFilter.AddTableFilter<IDeletedFilter>(it => !it.IsDelete);
 
-                       Console.ForegroundColor = ConsoleColor.Red;
-                       Console.Write(log);
-                       // Log.Error(log, ex);
-                       //App.PrintToMiniProfiler("SqlSugar", "Error", log);
-                   };
-                   db.Aop.OnLogExecuted = (sql, pars) =>
-                   {
-                       //// 若参数值超过100个字符则进行截取
-                       //foreach (var par in pars)
-                       //{
-                       //    if (par.DbType != System.Data.DbType.String || par.Value == null) continue;
-                       //    if (par.Value.ToString().Length > 100)
-                       //        par.Value = string.Concat(par.Value.ToString()[..100], "......");
-                       //}
-                       // 执行时间超过5秒时
-                       if (db.Ado.SqlExecutionTime.TotalSeconds > 5)
+                       if (_accesssor.Value?.HttpContext?.User?.FindFirst(ClaimAttributes.AccountType)?.Value != ((int)AccountTypeEnum.SuperAdmin).ToString())
                        {
-                           var fileName = db.Ado.SqlStackTrace.FirstFileName; // 文件名
-                           var fileLine = db.Ado.SqlStackTrace.FirstLine; // 行号
-                           var firstMethodName = db.Ado.SqlStackTrace.FirstMethodName; // 方法名
-                           var log = $"【{DateTime.Now}——超时SQL】\r\n【所在文件名】：{fileName}\r\n【代码行数】：{fileLine}\r\n【方法名】：{firstMethodName}\r\n" + $"【SQL语句】：{UtilMethods.GetNativeSql(sql, pars)}";
-                           Console.ForegroundColor = ConsoleColor.Yellow;
-                           Console.Write(log);
-                           //Log.Warning(log);
-                           //App.PrintToMiniProfiler("SqlSugar", "Slow", log);
+                           var tenantId = _accesssor.Value?.HttpContext?.User?.FindFirst(ClaimAttributes.TenantId)?.Value;
+                           if (!string.IsNullOrWhiteSpace(tenantId))
+                               db.QueryFilter.AddTableFilter<ITenantIdFilter>(u => u.TenantId == long.Parse(tenantId));
                        }
-                   };
-               }
-               // 数据审计
-               db.Aop.DataExecuting = (oldValue, entityInfo) =>
-               {
-                   // 新增/插入
-                   if (entityInfo.OperationType == DataFilterType.InsertByObject)
-                   {
-                       // 若主键是长整型且空则赋值雪花Id
-                       if (entityInfo.EntityColumnInfo.IsPrimarykey && !entityInfo.EntityColumnInfo.IsIdentity && entityInfo.EntityColumnInfo.PropertyInfo.PropertyType == typeof(long))
-                       {
-                           var id = entityInfo.EntityColumnInfo.PropertyInfo.GetValue(entityInfo.EntityValue);
-                           if (id == null || (long)id == 0)
-                               entityInfo.SetValue(SnowFlakeSingle.instance.getID());
-                       }
-                       // 若创建时间为空则赋值当前时间
-                       else if (entityInfo.PropertyName == nameof(EntityBase.CreateTime) && entityInfo.EntityColumnInfo.PropertyInfo.GetValue(entityInfo.EntityValue) == null)
-                       {
-                           entityInfo.SetValue(DateTime.Now);
-                       }
-                       // 若当前用户非空（web线程时）
-                       if (_accesssor.Value?.HttpContext?.User != null)
-                       {
-                           dynamic entityValue = entityInfo.EntityValue;
 
-                           if (entityInfo.PropertyName == nameof(EntityTenant.TenantId))
+
+
+                       if (true)
+                       {
+                           db.Aop.OnLogExecuting = (sql, pars) =>
                            {
-                               var tenantId = entityValue.TenantId;
-                               if (tenantId == null || tenantId == 0)
-                                   entityInfo.SetValue(_accesssor.Value?.HttpContext?.User?.FindFirst(ClaimAttributes.TenantId)?.Value);
+                               var Strsql = new KeyValuePair<string, SugarParameter[]>(sql, pars);
+                           };
+                           db.Aop.OnLogExecuting = (sql, pars) =>
+                           {
+                               //// 若参数值超过100个字符则进行截取
+                               //foreach (var par in pars)
+                               //{
+                               //    if (par.DbType != System.Data.DbType.String || par.Value == null) continue;
+                               //    if (par.Value.ToString().Length > 100)
+                               //        par.Value = string.Concat(par.Value.ToString()[..100], "......");
+                               //}
+
+                               var log = $"【{DateTime.Now}——执行SQL】\r\n{UtilMethods.GetNativeSql(sql, pars)}\r\n";
+                               var originColor = Console.ForegroundColor;
+                               if (sql.StartsWith("SELECT", StringComparison.OrdinalIgnoreCase))
+                                   Console.ForegroundColor = ConsoleColor.Green;
+                               if (sql.StartsWith("UPDATE", StringComparison.OrdinalIgnoreCase) || sql.StartsWith("INSERT", StringComparison.OrdinalIgnoreCase))
+                                   Console.ForegroundColor = ConsoleColor.Yellow;
+                               if (sql.StartsWith("DELETE", StringComparison.OrdinalIgnoreCase))
+                                   Console.ForegroundColor = ConsoleColor.Red;
+                               Console.WriteLine(log);
+                               Console.ForegroundColor = originColor;
+                               Console.Write(log);
+                               //App.PrintToMiniProfiler("SqlSugar", "Info", log);
+                           };
+                           db.Aop.OnError = ex =>
+                           {
+                               if (ex.Parametres == null) return;
+                               var log = $"【{DateTime.Now}——错误SQL】\r\n{UtilMethods.GetNativeSql(ex.Sql, (SugarParameter[])ex.Parametres)}\r\n";
+
+                               Console.ForegroundColor = ConsoleColor.Red;
+                               Console.Write(log);
+                               // Log.Error(log, ex);
+                               //App.PrintToMiniProfiler("SqlSugar", "Error", log);
+                           };
+                           db.Aop.OnLogExecuted = (sql, pars) =>
+                           {
+                               //// 若参数值超过100个字符则进行截取
+                               //foreach (var par in pars)
+                               //{
+                               //    if (par.DbType != System.Data.DbType.String || par.Value == null) continue;
+                               //    if (par.Value.ToString().Length > 100)
+                               //        par.Value = string.Concat(par.Value.ToString()[..100], "......");
+                               //}
+                               // 执行时间超过5秒时
+                               if (db.Ado.SqlExecutionTime.TotalSeconds > 5)
+                               {
+                                   var fileName = db.Ado.SqlStackTrace.FirstFileName; // 文件名
+                                   var fileLine = db.Ado.SqlStackTrace.FirstLine; // 行号
+                                   var firstMethodName = db.Ado.SqlStackTrace.FirstMethodName; // 方法名
+                                   var log = $"【{DateTime.Now}——超时SQL】\r\n【所在文件名】：{fileName}\r\n【代码行数】：{fileLine}\r\n【方法名】：{firstMethodName}\r\n" + $"【SQL语句】：{UtilMethods.GetNativeSql(sql, pars)}";
+                                   Console.ForegroundColor = ConsoleColor.Yellow;
+                                   Console.Write(log);
+                                   //Log.Warning(log);
+                                   //App.PrintToMiniProfiler("SqlSugar", "Slow", log);
+                               }
+                           };
+                       }
+                       // 数据审计
+                       db.Aop.DataExecuting = async (oldValue, entityInfo) =>
+                       {
+
+
+                           // 新增/插入
+                           if (entityInfo.OperationType == DataFilterType.InsertByObject)
+                           {
+                               // 若主键是长整型且空则赋值雪花Id
+                               if (entityInfo.EntityColumnInfo.IsPrimarykey && !entityInfo.EntityColumnInfo.IsIdentity && entityInfo.EntityColumnInfo.PropertyInfo.PropertyType == typeof(long))
+                               {
+                                   var id = entityInfo.EntityColumnInfo.PropertyInfo.GetValue(entityInfo.EntityValue);
+                                   if (id == null || (long)id == 0)
+                                       entityInfo.SetValue(SnowFlakeSingle.instance.getID());
+                               }
+                               // 若创建时间为空则赋值当前时间
+                               else if (entityInfo.PropertyName == nameof(EntityBase.CreateTime) && entityInfo.EntityColumnInfo.PropertyInfo.GetValue(entityInfo.EntityValue) == null)
+                               {
+                                   entityInfo.SetValue(DateTime.Now);
+                               }
+                               // 若当前用户非空（web线程时）
+                               if (_accesssor.Value?.HttpContext?.User != null)
+                               {
+                                   dynamic entityValue = entityInfo.EntityValue;
+
+                                   if (entityInfo.PropertyName == nameof(EntityTenant.TenantId))
+                                   {
+                                       var tenantId = entityValue.TenantId;
+                                       if (tenantId == null || tenantId == 0)
+                                           entityInfo.SetValue(_accesssor.Value?.HttpContext?.User?.FindFirst(ClaimAttributes.TenantId)?.Value);
+                                   }
+
+                                   if (entityInfo.PropertyName == nameof(EntityBase.CreatedbyId))
+                                   {
+                                       var createUserId = entityValue.CreatedbyId;
+                                       //if (createUserId == 0 || createUserId == null)
+                                       if (string.IsNullOrWhiteSpace(createUserId))
+                                           entityInfo.SetValue(_accesssor.Value?.HttpContext?.User?.FindFirst(ClaimAttributes.UserId)?.Value);
+                                   }
+                                   else if (entityInfo.PropertyName == nameof(EntityBase.CreatedbyName))
+                                   {
+                                       var createUserName = entityValue.CreatedbyName;
+                                       if (string.IsNullOrWhiteSpace(createUserName))
+                                           entityInfo.SetValue(_accesssor.Value?.HttpContext?.User?.FindFirst(ClaimAttributes.UserName)?.Value);
+                                   }
+                               }
+
+                           }
+                           // 编辑/更新
+                           else if (entityInfo.OperationType == DataFilterType.UpdateByObject)
+                           {
+                               if (entityInfo.PropertyName == nameof(EntityBase.LastModifiedTime))
+                                   entityInfo.SetValue(DateTime.Now);
+                               else if (entityInfo.PropertyName == nameof(EntityBase.LastModifiedbyId))
+                               {
+                                   var _lastModifiedbyId = _accesssor.Value?.HttpContext?.User?.FindFirst(ClaimAttributes.UserId);
+                                   if (_lastModifiedbyId is not null)
+                                   {
+                                       entityInfo.SetValue(_lastModifiedbyId.Value);
+                                   }
+                               }
+                               else if (entityInfo.PropertyName == nameof(EntityBase.LastModifiedbyName))
+                               {
+                                   var _lastModifiedbyName = _accesssor.Value?.HttpContext?.User?.FindFirst(ClaimAttributes.UserName);
+                                   if (_lastModifiedbyName is not null)
+                                       entityInfo.SetValue(_lastModifiedbyName.Value);
+                               }
                            }
 
-                           if (entityInfo.PropertyName == nameof(EntityBase.CreatedbyId))
-                           {
-                               var createUserId = entityValue.CreatedbyId;
-                               //if (createUserId == 0 || createUserId == null)
-                               if (string.IsNullOrWhiteSpace(createUserId))
-                                   entityInfo.SetValue(_accesssor.Value?.HttpContext?.User?.FindFirst(ClaimAttributes.UserId)?.Value);
-                           }
-                           else if (entityInfo.PropertyName == nameof(EntityBase.CreatedbyName))
-                           {
-                               var createUserName = entityValue.CreatedbyName;
-                               if (string.IsNullOrWhiteSpace(createUserName))
-                                   entityInfo.SetValue(_accesssor.Value?.HttpContext?.User?.FindFirst(ClaimAttributes.UserName)?.Value);
-                           }
-                       }
-                   }
-                   // 编辑/更新
-                   else if (entityInfo.OperationType == DataFilterType.UpdateByObject)
-                   {
-                       if (entityInfo.PropertyName == nameof(EntityBase.LastModifiedTime))
-                           entityInfo.SetValue(DateTime.Now);
-                       else if (entityInfo.PropertyName == nameof(EntityBase.LastModifiedbyId))
+
+
+                           //if (entityInfo.EntityColumnInfo.IsPrimarykey && new List<DataFilterType>(){
+                           //DataFilterType.InsertByObject,
+                           //DataFilterType.DeleteByObject,
+                           //DataFilterType.UpdateByObject }.Contains(entityInfo.OperationType))
+                           //{
+                           //    var entityType = entityInfo.EntityValue.GetType();
+                           //    if (entityType.IsDefined(typeof(AuditedAttribute), false))
+                           //    {
+                           //        //// 获取主键值
+                           //        //var primaryKeyValue = entityInfo.EntityValue.GetType().GetProperty("Id")?.GetValue(entityInfo.EntityValue)?.ToString();
+                           //        //if (string.IsNullOrEmpty(primaryKeyValue))
+                           //        //    return;
+                           //    }
+                           //}
+
+                       };
+
+
+                       db.Aop.OnDiffLogEvent = (it) =>
                        {
-                           var _lastModifiedbyId = _accesssor.Value?.HttpContext?.User?.FindFirst(ClaimAttributes.UserId);
-                           if (_lastModifiedbyId is not null)
-                           {
-                               entityInfo.SetValue(_lastModifiedbyId.Value);
-                           }
-                       }
-                       else if (entityInfo.PropertyName == nameof(EntityBase.LastModifiedbyName))
-                       {
-                           var _lastModifiedbyName = _accesssor.Value?.HttpContext?.User?.FindFirst(ClaimAttributes.UserName);
-                           if (_lastModifiedbyName is not null)
-                               entityInfo.SetValue(_lastModifiedbyName.Value);
-                       }
-                   }
-               };
+                           //操作前记录  包含： 字段描述 列名 值 表名 表描述
+                           var editBeforeData = it.BeforeData;//插入Before为null，之前还没进库
+                                                              //操作后记录   包含： 字段描述 列名 值  表名 表描述
+                           var editAfterData = it.AfterData;
+                           var sql = it.Sql;
+                           var parameter = it.Parameters;
+                           var data = it.BusinessData;//这边会显示你传进来的对象
+                           var time = it.Time;
+                           var diffType = it.DiffType;//enum insert 、update and delete  
 
+                           //Write logic
+                       };
 
-
-           });
+                   });
             return sqlSugar;
         });
 

@@ -1,18 +1,12 @@
-﻿using Castle.Components.DictionaryAdapter.Xml;
-using SqlSugar;
-using Volo.Abp.Threading;
-using YueJia.Ebk.Application.Contracts.Comm.BaseObj;
+﻿using SqlSugar;
 using YueJia.Ebk.Application.Contracts.HotelApp;
 using YueJia.Ebk.Application.Contracts.HotelApp.Commands;
 using YueJia.Ebk.Application.Contracts.HotelApp.Dto;
 using YueJia.Ebk.Application.Contracts.HotelApp.Query;
 using YueJia.Ebk.Application.Contracts.OuterServiceApp;
-using YueJia.Ebk.Application.Contracts.OuterServiceApp.Entity;
 using YueJia.Ebk.Application.Contracts.OuterServiceApp.Qry;
 using YueJia.Ebk.Application.Contracts.SysApp;
 using YueJia.Ebk.Application.Contracts.SysUserApp;
-using YueJia.Ebk.Application.HotelApp;
-using YueJia.Ebk.Application.SysUserApp;
 using YueJia.Ebk.Domain.Hotel;
 using YueJia.Ebk.Domain.Shared.Const;
 using YueJia.Ebk.Web.ViewModels.Hotel;
@@ -25,6 +19,7 @@ namespace YueJia.Ebk.Web.Controllers;
 [Authorize]
 public class HotelController : AbpController
 {
+
 
     private IHotelPublishApp HotelPublishApp => LazyServiceProvider.LazyGetRequiredService<IHotelPublishApp>();
 
@@ -90,6 +85,7 @@ public class HotelController : AbpController
     /// <param name="userHotelIds"></param>
     /// <returns></returns>
     [HttpPost, Route("[controller]/UserHotelBatchDown")]
+
     public async Task<IResult> UserHotelBatchDown([FromBody] List<string> userHotelIds)
     {
         return ApiResult.HandleBoolResult(await HotelApp.BatchUpdateHotelState(userHotelIds, HotelSaleTypeEnum.Down));
@@ -347,9 +343,10 @@ public class HotelController : AbpController
     /// </summary>
     /// <param name="userPlanId"></param>
     /// <returns></returns>
-    public async Task<IActionResult> CopeUserPlanMgr(string userHotelId ,  string userPlanId) {
-        var userPlan = await HotelApp.GetPricePlanDetailsByIdAsync( Convert.ToInt64(userPlanId) );
-        var userHotel = await HotelPublishApp.GetHotelPublishDetailAsync( Convert.ToInt64(userHotelId));
+    public async Task<IActionResult> CopeUserPlanMgr(string userHotelId, string userPlanId)
+    {
+        var userPlan = await HotelApp.GetPricePlanDetailsByIdAsync(Convert.ToInt64(userPlanId));
+        var userHotel = await HotelPublishApp.GetHotelPublishDetailAsync(Convert.ToInt64(userHotelId));
 
         ViewBag.HotelName = $"{userHotel.HotelName}({userHotel.HotelNameEn})";
         ViewBag.LowestPrice = $"{userHotel.LowestPrice}";
@@ -391,7 +388,7 @@ public class HotelController : AbpController
     /// <returns></returns>
     public async Task<IActionResult> InventoryAndPriceMgr(string userHotelId)
     {
-        var userHotel = await HotelPublishApp.GetHotelPublishDetailAsync(Convert.ToInt64(userHotelId));  
+        var userHotel = await HotelPublishApp.GetHotelPublishDetailAsync(Convert.ToInt64(userHotelId));
         ViewBag.userRoomList = await HotelApp.GetHotelRoomListByIdAsync(userHotelId.ToLong());
         return View(userHotel);
     }

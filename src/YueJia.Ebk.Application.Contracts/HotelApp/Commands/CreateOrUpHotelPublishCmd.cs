@@ -5,7 +5,7 @@
 /// <summary>
 /// 创建Or更新酒店发布命令模型
 /// </summary>
-public class CreateOrUpHotelPublishCmd
+public record CreateOrUpHotelPublishCmd
 {
 
     /// <summary>

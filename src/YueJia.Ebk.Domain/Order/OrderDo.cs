@@ -1,4 +1,6 @@
-﻿namespace YueJia.Ebk.Domain.Order;
+﻿using Volo.Abp.Domain.Entities;
+
+namespace YueJia.Ebk.Domain.Order;
 
 
 /// <summary>
@@ -6,7 +8,7 @@
 /// </summary>
 [SugarTable("Order", "订单表")]
 [SugarIndex("index_{table}_OrderNum", nameof(OrderNum), OrderByType.Asc, true)]
-public partial record OrderDo : EntityTenant
+public partial record OrderDo : EntityTenant, IEntity<long>
 {
     public OrderDo() { }
     /// <summary>

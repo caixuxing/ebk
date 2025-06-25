@@ -357,7 +357,8 @@ public class OrderApp : ApplicationService, IOrderApp
         var entity = await OrderRepo.GetByIdAsync(id) ?? throw new InvalidOperationException("订单不存在！");
         entity.HotelConfirmNum = confirmNum;
         await OrderRepo.AsUpdateable(entity).UpdateColumns(it => new { it.HotelConfirmNum, it.LastModifiedbyId, it.LastModifiedbyName, it.LastModifiedTime, it.Version })
-                .ExecuteCommandWithOptLockAsync();
+            .EnableDiffLogEvent()
+            .ExecuteCommandWithOptLockAsync();
         return true;
 
     }
