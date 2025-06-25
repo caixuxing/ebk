@@ -42,5 +42,13 @@ namespace YueJia.Ebk.Application.Contracts.OrderApp
         /// <param name="confirmNum"></param>
         /// <returns></returns>
         Task<bool> SaveOrderConfirmNumAsync(long id, string confirmNum);
+
+        Task<bool> SetInputRemark(string orderNum, string inputRemark);
+
+        Task<List<OrderPersonDto>> GetOrderPersonList(string orderNum);
+
+        Task<List<OrderDailyPriceDto>> GetOrderDailyPriceList(string orderNum);
+
+        Task<List<OrderLogDto>> GetOrderLogList(string orderNum);
     }
 }

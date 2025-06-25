@@ -15,7 +15,7 @@ public partial record OrderDailyPriceDo : EntityBaseId
     /// <summary>
     /// 当前日期
     /// </summary>
-    [SugarColumn(ColumnDescription = "预订号", ColumnDataType = "date")]
+    [SugarColumn(ColumnDescription = "当前日期", ColumnDataType = "date")]
     public DateTime CurrentDate { get; set; }
 
     /// <summary>

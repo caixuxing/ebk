@@ -1,6 +1,6 @@
 ﻿<el-container style="height:100vh;overflow: hidden;">
     <el-main>
-        <el-form label-width="150px" :inline="true" style="margin-bottom:5px;" >
+        <el-form label-width="120px" :inline="true" style="margin-bottom:5px;" >
 
             <div>
                 <el-form-item label="日期类型" prop="desc" style="margin-bottom:5px;">
@@ -9,41 +9,47 @@
                         <el-option  label="入住日期" value="B" ></el-option>
                         <el-option  label="离店日期" value="C" ></el-option>
                     </el-select>
-
+                    &nbsp;
+                    &nbsp;
                     <el-date-picker v-model="state.qry.startDate"
                                     type="date"
                                     style="width:130px"
                                     :clearable="false"
                                     value-format="YYYY-MM-DD"> </el-date-picker>
 
+                    &nbsp;
+                    &nbsp;
+                    <el-text>至</el-text>
+                    &nbsp;
+                    &nbsp;
 
                      <el-date-picker v-model="state.qry.endDate"
                                    type="date"
                                    style="width:130px"
                                    :clearable="false"
                                    value-format="YYYY-MM-DD"> </el-date-picker>
-
-                </el-form-item>
-
-                <el-form-item label="开始日期" style="margin-bottom:5px;">
-                  
-                                 
-                </el-form-item>
-                <el-form-item label="结束日期" style="margin-bottom:5px;">
-                    
                 </el-form-item>
             </div>
 
             <div>
-                <el-form-item label="订单号" prop="desc" style="margin-bottom:5px;">
-                    <el-input v-model="state.qry.accountName" clearable style="width:200px"></el-input>
+                <el-form-item label="订单单号" prop="desc" style="margin-bottom:5px;">
+                    <el-input v-model="state.qry.orderNum" clearable style="width:200px"></el-input>
                 </el-form-item>
 
-                <el-form-item label="状态" prop="desc" style="margin-bottom:5px;">
-
+                <el-form-item label="订单状态" prop="desc" style="margin-bottom:5px;">
                     <el-select v-model="state.qry.status" placeholder="不限" style="width:200px;" clearable filterable>
                        <el-option v-for="item in state.orderSateList" :key="item.value" :label="item.describe" :value="item.value"/>
                     </el-select>
+                </el-form-item>
+
+            </div>
+            <div>
+                <el-form-item label="酒店编码" prop="desc" style="margin-bottom:5px;">
+                    <el-input v-model="state.qry.hotelCode" clearable style="width:200px"></el-input>
+                </el-form-item>
+
+                <el-form-item label="酒店名称" prop="desc" style="margin-bottom:5px;">
+                    <el-input v-model="state.qry.hotelName" clearable style="width:200px"></el-input>
                 </el-form-item>
             </div>
 
@@ -102,6 +108,12 @@
                     <div style="text-align:left">
                         <el-text>{{ scope.row.cityName }}</el-text>
                     </div>
+                </template>
+            </el-table-column>
+
+            <el-table-column label="酒店编码" width="120" align="center">
+                <template #default="scope">
+                    <el-text>{{ scope.row.hotelCode }}</el-text>
                 </template>
             </el-table-column>
             <el-table-column label="酒店名称" min-width="220px" width="auto" align="center" show-overflow-tooltip>
@@ -170,7 +182,20 @@
         const app = Vue.createApp({
         setup() {
 
-           let qry = {  dateType:'A',  accountName: '',isEnabled: null,pageIndex: 1,pageSize: 50,totalCount: 0 ,countryId:null,cityName:'', userId:'@ViewBag.UserId'}
+           let qry = {  
+                        dateType:'A',
+                        startDate:'@DateTime.Now.ToString("yyyy-MM-dd")',
+                        endDate:'@DateTime.Now.ToString("yyyy-MM-dd")',
+                        orderNum: '',
+                        hotelCode:'',
+                        hotelName:'',
+                        isEnabled: null,
+                        pageIndex: 1,
+                        pageSize: 50,
+                        totalCount: 0 ,
+                        countryId:null,
+                        cityName:'', 
+                        userId:'@ViewBag.UserId'}
 
            const state = Vue.reactive({
                 qry: JSON.parse(JSON.stringify( qry)),
@@ -210,7 +235,7 @@
                              area: ['90%', '80%'],
                              fix: false,
                              maxmin: true,
-                             content:  `/Order/OrderDetail/${row.id}`,
+                             content:  `/Order/OrderDetail?orderId=${row.id}`,
                              end: function () {
                                 loadData();
                              }
