@@ -1,4 +1,7 @@
-﻿using LiteDB;
+﻿using Dm.util;
+using LiteDB;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
+using MongoDB.Driver;
 using YueJia.Ebk.Application.Contracts.OrderApp;
 using YueJia.Ebk.Application.Contracts.OrderApp.Commands;
 using YueJia.Ebk.Application.Contracts.OrderApp.Dto;
@@ -7,8 +10,10 @@ using YueJia.Ebk.Application.Contracts.SysUserApp;
 using YueJia.Ebk.Domain.AggRoot;
 using YueJia.Ebk.Domain.Company;
 using YueJia.Ebk.Domain.Hotel;
+using YueJia.Ebk.Domain.MongdbModel;
 using YueJia.Ebk.Domain.Order;
 using YueJia.Ebk.Domain.Shared.Const;
+using YueJia.Ebk.Domain.Shared.Dto;
 using YueJia.Ebk.Domain.SysUser;
 using YueJia.Ebk.Infrastructure.DistributedLock;
 
@@ -29,265 +34,147 @@ public class OrderApp : ApplicationService, IOrderApp
 
     private IDistributedLockService DistributedLockService => LazyServiceProvider.LazyGetRequiredService<IDistributedLockService>();
 
+    private IMongoDatabase MongoDb => LazyServiceProvider.LazyGetRequiredService<IMongoDatabase>();
+
 
     public async Task<bool> CreateOrderAsync(CreateOrderCmd cmd)
     {
-        //验证
-        await LazyServiceProvider.LazyGetRequiredService<FluentValidation.IValidator<CreateOrderCmd>>().ValidateAndThrowAsync(cmd);
-
-        //连住天数
-        int continuousStayDays = (cmd.CheckOutDate.Date - cmd.CheckInDate.Date).Days;
-        //提前天数
-        int advanceDays = (cmd.CheckOutDate.Date - DateTime.Now.Date).Days;
-
-        //解密查价唯一值
-        var (isSuccess, searchCodeStr) = CompressedEncryptor.Decrypt(cmd.SearchCode, SecretKeyConst.key, SecretKeyConst.iv);
-        if (!isSuccess || string.IsNullOrWhiteSpace(searchCodeStr)) throw new InvalidOperationException("请勿篡改查价唯一码!");
-        //解析查价唯一码
-        var searchCode = JsonUtils.AnalysisSearchCode(searchCodeStr);
-        if (searchCode is null || searchCode.DailyInventoryIds.Count == 0 || searchCode.DailyPriceIds.Count == 0) throw new InvalidOperationException("查价唯一码无效!");
-
-        //查询公司价格调整规则
-        var priceAdjustData = await db.Queryable<CompanyDO>()
-            .ClearFilter<ITenantIdFilter>()
-            .Where(t => t.Status == YesOrNoType.Yes)
-            .Select(t => new { t.TenantId, t.AdjustmentPriceType, t.AdjustmentPriceValue })
-            .ToListAsync();
-
-
-        var LockKey = await db.Queryable<DailyInventoryDo>()
-            .InnerJoin<HotelRoomDo>((t, r) => t.RoomId == r.Id)
-            .ClearFilter<ITenantIdFilter>()
-            .With(SqlWith.NoLock)
-            .Where((t, r) => t.Id == searchCode.DailyInventoryIds.FirstOrDefault())
-            .Select((t, r) => $"{r.HotelId}_{r.HotelCode}_{r.RoomType}").SingleAsync() ?? throw new InvalidOperationException("生成锁Key失败！");
-
-        await DistributedLockService.LockAsync(LockKey, async () =>
+        var Ids = Common.AnalysisSearchCode(cmd.SearchCode);
+        var hotelQuoteObj = db.Queryable<HotelQuoteDo>().Where(vv => vv.Id == Ids.First()).ToList().First();
+        if (Ids.Count != cmd.NightNumber) {
+            throw new InvalidOperationException("参数错误");
+        }
+        await DbTransaction.ExecuteInTransactionAsync(db, async () =>
         {
+            List<DailyInventoryDo> DailyInventoryList = new List<DailyInventoryDo>();
+            List<DailyPriceDo> DailyPriceList = new List<DailyPriceDo>();
 
-            //按库存ID擦查询库存集合
-            var dailyInventoryDos = await db.Queryable<DailyInventoryDo>().ClearFilter<ITenantIdFilter>().Where(t => searchCode.DailyInventoryIds.Contains(t.Id) && t.IsEnable == YesOrNoType.Yes).ToListAsync();
-            if (!dailyInventoryDos.Any()) throw new InvalidOperationException("暂无库存数据！");
-            if (dailyInventoryDos.GroupBy(t => t.CreatedbyId).Count() > 1) throw new InvalidOperationException("当前查价唯一码非同一用户库存！");
-
-            //按条件筛选：库存数、日期范围
-            var FilterData = dailyInventoryDos.Where(t => t.InventoryNum >= cmd.RoomNum && t.CurrentDate >= cmd.CheckInDate.Date && t.CurrentDate < cmd.CheckOutDate.Date).ToList();
-            //验证库存数是否足够
-            bool areEqual = searchCode.DailyInventoryIds.Count == FilterData.Count && searchCode.DailyInventoryIds.All(id => dailyInventoryDos.Any(e => e.Id == id));
-            if (!areEqual) throw new InvalidOperationException("库存数不足！");
-
-            var dailyPriceDos = await db.Queryable<DailyPriceDo>().ClearFilter<ITenantIdFilter>().Where(t => searchCode.DailyPriceIds.Contains(t.Id) && t.IsEnable == YesOrNoType.Yes).ToListAsync();
-            if (!dailyPriceDos.Any()) throw new InvalidOperationException("暂无报价数据！");
-            if (dailyPriceDos.GroupBy(t => t.CreatedbyId).Count() > 1) throw new InvalidOperationException("当前查价唯一码非同一用户报价！");
-            //收集价格计划
-            var pricePlanIds = dailyPriceDos.Select(t => t.PricePlanId).Distinct().ToList();
-
-
-
-
-
-
-
-            var hotel = await db.Queryable<HotelRoomDo>()
-                 .InnerJoin<PricePlanDo>((r, p) => r.Id == p.HotelRoomId)
-                 .Where((r, p) => r.Id == p.HotelRoomId && pricePlanIds.Contains(p.Id))
-                 //.Where((r, p) => r.HotelCode == cmd.HotelCode && r.Id == p.HotelRoomId && pricePlanIds.Contains(p.Id))
-                 //.Where((r, p) => r.MaximumNumberOfPeople >= (qry.AdultNumber + qry.ChildNumber) && r.AdultLimit >= qry.AdultNumber && r.ChildLimit >= qry.ChildNumber)
-                 .Where((r, p) => p.ContinuousStayDays <= continuousStayDays && p.DaysInAdvance <= advanceDays)
-                 .Select((r, p) => new
-                 {
-                     r.HotelId,
-                     RoomCode = r.RoomType,
-                     RoomName = r.HotelRoomTitle ?? string.Empty,
-                     r.BedType,
-                     HotelCode = r.HotelCode,
-                     BreakfastType = p.BreakfastType,
-                     PricePlanId = p.Id,
-                     p.PricePlanTitle,
-                     p.TenantId,
-                     p.CreatedbyId,
-                     p.CreatedbyName,
-                     r.MaximumNumberOfPeople,
-                     r.AdultLimit,
-                     r.ChildLimit,
-                 })
-                 .SingleAsync() ?? throw new InvalidOperationException("未找到符合条件的房间！");
-
-            var tempTotalPrice = dailyPriceDos.Sum(t => t.Price);
-            var adjustmentPrice = priceAdjustData.FirstOrDefault(t => t.TenantId == hotel.TenantId);
-            if (adjustmentPrice is not null)
+            foreach (var Id in Ids)
             {
-
-                decimal adjustDailyPrice = adjustmentPrice.AdjustmentPriceType switch
+                var _dailyInventoryList = await db.Queryable<HotelQuoteDo>()
+                                                 .InnerJoin<DailyInventoryDo>((x1, x2) => x1.DailyInventoryId == x2.Id &&
+                                                                                          x2.InventoryNum >= cmd.RoomList.Count &&
+                                                                                          x2.IsEnabled == YesOrNoType.Yes)
+                                                 .Where((x1,x2)=> x1.Id == Id)
+                                                .Select((x1, x2) => x2).ToListAsync();
+                if (_dailyInventoryList.Count != 1)
                 {
-                    AdjustmentPriceTypeEnum.FixedValueIncrease => Math.Ceiling((tempTotalPrice + (adjustmentPrice.AdjustmentPriceValue ?? 0)) / continuousStayDays),
-                    AdjustmentPriceTypeEnum.PercentageIncrease => Math.Ceiling(tempTotalPrice * (decimal)((double)(adjustmentPrice.AdjustmentPriceValue ?? 0) / 100) / continuousStayDays),
-                    _ => 0
-                };
-
-                foreach (var c in dailyPriceDos)
-                {
-                    c.Price = adjustmentPrice.AdjustmentPriceType switch
-                    {
-                        AdjustmentPriceTypeEnum.FixedValueIncrease => adjustDailyPrice,
-                        AdjustmentPriceTypeEnum.PercentageIncrease => c.Price + adjustDailyPrice,
-                        _ => c.Price
-                    };
+                    throw new InvalidOperationException("库存未发现");
                 }
+                var _dailyPriceList = await db.Queryable<HotelQuoteDo>()
+                                              .InnerJoin<DailyPriceDo>((x1, x2) => x1.DailyPriceId == x2.Id && x2.IsEnabled == YesOrNoType.Yes)
+                                              .Where((x1, x2) => x1.Id == Id)
+                                              .Select((x1, x2) => x2).ToListAsync();
+                if (_dailyPriceList.Count != 1)
+                {
+                    throw new InvalidOperationException("报价未发现");
+                }
+                DailyInventoryList.AddRange(_dailyInventoryList);
+                DailyPriceList.AddRange(_dailyPriceList);
+            }
+            var costAmount = DailyPriceList.Sum(vv => vv.Price * cmd.RoomList.Count);
+            if (cmd.SalePrice < costAmount && (costAmount - cmd.SalePrice) > 50)
+            {
+                throw new InvalidOperationException($@"价格变化 {cmd.SalePrice}<===>{costAmount}");
             }
 
-            //验证 客户下单数据、与服务端数据是否一致
-            if (cmd.RoomNum != cmd.RoomList.Count) throw new InvalidOperationException("下单房间数不匹配,请核对房间数！");
-
-            if (cmd.HotelCode.Trim().ToLower() != hotel.HotelCode.Trim().ToLower() || cmd.OtaRoomCode.Trim().ToLower() != hotel.RoomCode.Trim().ToLower()) throw new InvalidOperationException("下单酒店或房间不匹配,请勿非法操作！");
-
-            if (cmd.SalePrice != dailyPriceDos.Sum(t => t.Price) * cmd.RoomNum) throw new InvalidOperationException("价格已发生变化,请重新下单！");
-
-            if (cmd.IsBreakfast != (hotel.BreakfastType == BreakfastTypeEnum.Breakfast ? true : false)) throw new InvalidOperationException("餐食已发生变化,请重新下单！");
-
-
-
-
-
-            var customerName = cmd.RoomList.Where(room => room.PersonList != null && room.PersonList.Any())
-            .Select(room => $"{room.PersonList.Where(t => t.Type == PersonTypeEnum.Adult).First().FirstName}/{room.PersonList.Where(t => t.Type == PersonTypeEnum.Adult).First().LastName}").ToList();
-
-            //创建订单
+            //1):订单主表
             var orderDo = OrderDo.Create(orderNum: cmd.OrderCode,
-                                      bookingDate: DateTime.Now,
-                                            state: BookingStateTypeEnum.ToBeConfirmed,
-                                        hotelCode: cmd.HotelCode,
-                                      userHotelId: hotel.HotelId,
-                                         roomCode: cmd.OtaRoomCode,
-                                         roomName: hotel.RoomName,
-                                          bedCode: hotel.BedType.GetHashCode().ToString(),
-                                          bedName: $"{hotel.BedType.ToDescription()} {hotel.BedType.ToString()}",
-                                    breakfastType: hotel.BreakfastType,
-                                      checkInDate: cmd.CheckInDate,
-                                     checkOutDate: cmd.CheckOutDate,
-                                      totalAmount: cmd.SalePrice,
+                                            state: BookingStateTypeEnum.Confirmed,
+                                      userHotelId: hotelQuoteObj.UserHotelId,
+                                         roomCode: hotelQuoteObj.RoomCode,
+                                    breakfastType: hotelQuoteObj.BreakfastType,
+                                      checkInDate: Convert.ToDateTime(cmd.CheckInDate),
+                                     checkOutDate: Convert.ToDateTime(cmd.CheckOutDate),
+                                      saleAmount: cmd.SalePrice,
+                                      costAmount: costAmount,
                                   hotelConfirmNum: string.Empty,
-                              numberOfRoomsBooked: cmd.RoomNum,
-                                    howManyNights: continuousStayDays,
-                                     customerName: string.Join(",", customerName),
+                              roomNumber: cmd.RoomList.Count,
+                                    howManyNights: (Convert.ToDateTime(cmd.CheckOutDate) - Convert.ToDateTime(cmd.CheckInDate)).Days,
                                            remark: cmd.SpecialRemark ?? string.Empty,
-                                      createdbyId: hotel.CreatedbyId!,
-                                    createdbyName: hotel.CreatedbyName!,
-                                         tenantId: hotel.TenantId ?? 0);
+                                      createdbyId: hotelQuoteObj.UserId,
+                                         tenantId: DailyInventoryList.First().TenantId.Value);
 
+            List<OrderPersonDo> orderRoomPersonList = new List<OrderPersonDo>();
 
-
-            List<OrderRoomDo> orderRoomDos = new List<OrderRoomDo>();
-            List<OrderRoomPersonDo> orderRoomPersonDos = new List<OrderRoomPersonDo>();
-            List<OrderRoomDailyPriceDetailDo> orderRoomDailyPriceDetailDos = new List<OrderRoomDailyPriceDetailDo>();
-            foreach (var item in cmd.RoomList)
+            foreach (var ele in cmd.RoomList)
             {
-
-
-                //验证房间人数上限要求
-                if (hotel.MaximumNumberOfPeople < (item.AdultNumber + item.ChildNumber) || hotel.AdultLimit < item.AdultNumber || hotel.ChildLimit < item.ChildNumber
-                         ) throw new InvalidOperationException($"房间最大人数上限:{hotel.MaximumNumberOfPeople},成人:{hotel.AdultLimit},儿童:{hotel.ChildLimit},人数超出限制！");
-
-
-
-
-                var orderRoomDo = OrderRoomDo.Create(orderNum: cmd.OrderCode,
-                                                     roomName: hotel.RoomName,
-                                                     roomCode: cmd.OtaRoomCode,
-                                                      bedCode: hotel.BedType.GetHashCode().ToString(),
-                                                      bedName: $"{hotel.BedType.ToDescription()} {hotel.BedType.ToString()}",
-                                                  pricePlanId: hotel.PricePlanId,
-                                                pricePlanName: hotel.PricePlanTitle!,
-                                                breakfastType: hotel.BreakfastType);
-
-                item.PersonList.ForEach(child => orderRoomPersonDos.Add(OrderRoomPersonDo.Create(orderNum: cmd.OrderCode,
-                                                                                              orderRoomId: orderRoomDo.Id,
-                                                                                                roomIndex: child.RoomIndex,
-                                                                                                firstName: child.FirstName,
-                                                                                                 lastName: child.LastName,
-                                                                                                     type: child.Type,
-                                                                                                      age: child.Age)));
-                //创建订单房间每天价格明细
-                orderRoomDailyPriceDetailDos.AddRange(dailyPriceDos.Select(x => new OrderRoomDailyPriceDetailDo
-                {
-                    OrderNum = cmd.OrderCode,
-                    OrderRoomId = orderRoomDo.Id,
-                    CurrentDate = x.CurrentDate,
-                    DayPrice = x.Price,
-                }).ToList());
-
-                orderRoomDos.Add(orderRoomDo);
+                int roomIndex = cmd.RoomList.IndexOf(ele) + 1;
+                orderRoomPersonList.AddRange(ele.PersonList.Select(vv => OrderPersonDo.Create(orderNum: cmd.OrderCode,
+                                                                                                roomIndex: roomIndex,
+                                                                                                firstName: vv.FirstName,
+                                                                                                 lastName: vv.LastName,
+                                                                                                     type: vv.Type,
+                                                                                                      age: vv.Age)).ToList());
             }
-
-
-            await DbTransaction.ExecuteInTransactionAsync(db, async () =>
+            List<OrderDailyPriceDo> orderRoomDailyPriceDetailDos = DailyPriceList.Select(x => new OrderDailyPriceDo
             {
-                //插入订单
-                await db.Insertable(orderDo).ExecuteReturnSnowflakeIdListAsync();
+                OrderNum = cmd.OrderCode,
+                CurrentDate = x.CurrentDate,
+                DayPrice = x.Price,
+            }).ToList();
 
-                //插入订单房间
-                await db.Insertable(orderRoomDos).ExecuteCommandAsync();
 
-                //订单房间入住人信息
-                await db.Insertable(orderRoomPersonDos).ExecuteCommandAsync();
+            //插入订单
+            await db.Insertable(orderDo).ExecuteReturnSnowflakeIdListAsync();
 
-                //订单房间每天价格明细
-                await db.Insertable(orderRoomDailyPriceDetailDos).ExecuteCommandAsync();
+            //订单房间入住人信息
+            await db.Insertable(orderRoomPersonList).ExecuteCommandAsync();
 
-                //库存扣减
-                foreach (var item in dailyInventoryDos)
-                {
-                    var updateRows = await db.Updateable<DailyInventoryDo>()
-                    .SetColumns(it => new DailyInventoryDo()
-                    {
-                        Version = it.Version + 1,
-                        LastModifiedTime = DateTime.Now,
-                        InventoryNum = (it.InventoryNum - cmd.RoomNum) <= 0 ? 0 : (it.InventoryNum - cmd.RoomNum),
-                        IsEnable = (it.InventoryNum - cmd.RoomNum) <= 0 ? YesOrNoType.No : it.IsEnable,
-                    })
-                    .Where(it => it.Id == item.Id && it.InventoryNum >= cmd.RoomNum)
-                    .ExecuteCommandAsync();
-                    if (updateRows <= 0) throw new InvalidOperationException("库存扣减失败！");
-                }
-                return true;
-            });
+            //订单房间每天价格明细
+            await db.Insertable(orderRoomDailyPriceDetailDos).ExecuteCommandAsync();
 
-        },
-         timeout: TimeSpan.FromSeconds(3),
-         timeoutMethod: () => throw new InvalidOperationException("下单超时，请重试!"));
+            //库存扣减
+            foreach (var item in DailyInventoryList)
+            {
+                var NewInventoryNum = item.InventoryNum - cmd.RoomList.Count;
+                var NewIsEnabled = NewInventoryNum> 0 ?  YesOrNoType.Yes: YesOrNoType.No;
 
+                await db.Updateable<DailyInventoryDo>()
+                         .SetColumns(it => new DailyInventoryDo() {
+                                    Version = it.Version + 1,
+                                    LastModifiedTime = DateTime.Now,
+                                    InventoryNum = NewInventoryNum,
+                                    IsEnabled = NewIsEnabled,
+                         })
+                         .Where(it => it.Id == item.Id)
+                         .ExecuteCommandAsync();
+            }
+            return true;
+        });
         return true;
 
     }
 
     public async Task<PageData<IEnumerable<OrderPageListDto>>> QueryOrderPageAsync(OrderPageListFilterQry qry)
     {
-        RefAsync<int> total = 0;
-        var query = OrderRepo.AsQueryable().WhereDeptFilter(CurrentUserApp, db)
-            .LeftJoin<HotelPublishDo>((t, h) => t.HotelCode == h.HotelCode && t.UserHotelId == h.Id)
-            .With(SqlWith.NoLock)
-            .WhereIF(!string.IsNullOrWhiteSpace(qry.HotelCode), t => t.HotelCode == qry.HotelCode)
-            .Select((t, h) => new OrderPageListDto()
-            {
-                BedName = t.BedName,
-                BookingDate = t.BookingDate,
-                CheckInDate = t.CheckInDate,
-                CheckOutDate = t.CheckOutDate,
-                CustomerName = t.CustomerName,
-                HotelConfirmNum = t.HotelConfirmNum,
-                HotelName = h.HotelName,
-                HotelNameEn = h.HotelNameEn,
-                HowManyNights = t.HowManyNights,
-                NumberOfRoomsBooked = t.NumberOfRoomsBooked,
-                OrderNum = t.OrderNum,
-                RoomName = t.RoomName,
-                State = t.State,
-                TotalAmount = t.TotalAmount,
-                Id = t.Id,
-                BreakfastType = t.BreakfastType
-            });
-        var data = await query.ToPageListAsync(qry.PageIndex, qry.PageSize, total);
-        return new PageData<IEnumerable<OrderPageListDto>>(total, qry.PageSize, qry.PageIndex, data);
+        //RefAsync<int> total = 0;
+        //var query = OrderRepo.AsQueryable().WhereDeptFilter(CurrentUserApp, db)
+        //    .LeftJoin<HotelPublishDo>((t, h) => t.HotelCode == h.HotelCode && t.UserHotelId == h.Id)
+        //    .With(SqlWith.NoLock)
+        //    .WhereIF(!string.IsNullOrWhiteSpace(qry.HotelCode), t => t.HotelCode == qry.HotelCode)
+        //    .Select((t, h) => new OrderPageListDto()
+        //    {
+        //        BedName = t.BedName,
+        //        BookingDate = t.BookingDate,
+        //        CheckInDate = t.CheckInDate,
+        //        CheckOutDate = t.CheckOutDate,
+        //        CustomerName = t.CustomerName,
+        //        HotelConfirmNum = t.HotelConfirmNum,
+        //        HotelName = h.HotelName,
+        //        HotelNameEn = h.HotelNameEn,
+        //        HowManyNights = t.HowManyNights,
+        //        NumberOfRoomsBooked = t.NumberOfRoomsBooked,
+        //        OrderNum = t.OrderNum,
+        //        RoomName = t.RoomName,
+        //        State = t.State,
+        //        TotalAmount = t.TotalAmount,
+        //        Id = t.Id,
+        //        BreakfastType = t.BreakfastType
+        //    });
+        //var data = await query.ToPageListAsync(qry.PageIndex, qry.PageSize, total);
+        //return new PageData<IEnumerable<OrderPageListDto>>(total, qry.PageSize, qry.PageIndex, data);
+        return null;
     }
 }
 

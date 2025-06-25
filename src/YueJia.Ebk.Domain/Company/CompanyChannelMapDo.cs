@@ -22,43 +22,25 @@ public partial record CompanyChannelMapDo : EntityTenant
     [SugarColumn(ColumnDescription = "销售平台Code")]
     public string SalePlatCode { get; private set; } = default!;
 
-    /// <summary>
-    /// 是否启用
-    /// </summary>
-    [SugarColumn(ColumnDescription = "是否启用")]
-    public YesOrNoType Status { get; private set; } = default!;
+    ///// <summary>
+    ///// 是否启用
+    ///// </summary>
+    //[SugarColumn(ColumnDescription = "是否启用")]
+    //public YesOrNoType Status { get; private set; } = default!;
 }
 
 public partial record CompanyChannelMapDo
 {
-    private CompanyChannelMapDo(long companyId, string salePlatCode, YesOrNoType status, long tenantId)
+    private CompanyChannelMapDo(long companyId, string salePlatCode, long tenantId)
     {
         CompanyId = companyId;
         SalePlatCode = salePlatCode;
-        Status = status;
         TenantId = tenantId;
     }
 
     public static CompanyChannelMapDo Create(long companyId, string salePlatCode, long tenantId)
     {
-        return new CompanyChannelMapDo(companyId, salePlatCode, YesOrNoType.Yes, tenantId);
+        return new CompanyChannelMapDo(companyId, salePlatCode,  tenantId);
     }
 
-    public CompanyChannelMapDo SetCompanyId(long companyId)
-    {
-        CompanyId = companyId;
-        return this;
-    }
-
-    public CompanyChannelMapDo SetChannelId(string salePlatCode)
-    {
-        SalePlatCode = salePlatCode;
-        return this;
-    }
-
-    public CompanyChannelMapDo SetStatus(YesOrNoType status)
-    {
-        Status = status;
-        return this;
-    }
 }

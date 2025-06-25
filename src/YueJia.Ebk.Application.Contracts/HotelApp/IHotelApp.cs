@@ -15,7 +15,7 @@ public interface IHotelApp
     /// 查询酒店价格
     /// </summary>
     /// <returns></returns>
-    Task<IEnumerable<HotelPriceDto>> PriceSearch(PriceSearchQry qry);
+    Task<IEnumerable<HotelPriceDto>> SearchPrice(PriceSearchQry qry);
 
 
     /// <summary>
@@ -23,7 +23,7 @@ public interface IHotelApp
     /// </summary>
     /// <param name="qry"></param>
     /// <returns></returns>
-    Task<HotelPriceDto> PriceCheckQry(PriceCheckQry qry);
+    Task<decimal> CheckPrice(PriceCheckQry qry);
 
 
     /// <summary>

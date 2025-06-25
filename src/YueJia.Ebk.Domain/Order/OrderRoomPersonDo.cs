@@ -4,21 +4,15 @@
 /// <summary>
 /// 订单房间入住人信息
 /// </summary>
-[SugarTable("OrderRoomPerson", "订单房间入住人信息")]
-public partial record OrderRoomPersonDo : EntityBaseId, IDeletedFilter
+[SugarTable("OrderPerson", "订单房间入住人信息")]
+public partial record OrderPersonDo : EntityBaseId
 {
-    public OrderRoomPersonDo() { }
+    public OrderPersonDo() { }
     /// <summary>
     /// 预订号
     /// </summary>
     [SugarColumn(ColumnDescription = "预订号", Length = 50)]
     public string OrderNum { get; set; } = default!;
-
-    /// <summary>
-    /// 订单房间Id
-    /// </summary>
-    [SugarColumn(ColumnDescription = "订单房间Id")]
-    public long OrderRoomId { get; set; }
 
     /// <summary>
     /// 房间序号 从第1间 开始
@@ -46,20 +40,14 @@ public partial record OrderRoomPersonDo : EntityBaseId, IDeletedFilter
     [SugarColumn(ColumnDescription = "年龄")]
     public int Age { get; set; }
 
-    /// <summary>
-    /// 是否删除
-    /// </summary>
-    [SugarColumn(ColumnDescription = "是否删除")]
-    public bool IsDelete { get; set; }
-}
+ }
 
-public partial record OrderRoomPersonDo
+public partial record OrderPersonDo
 {
 
-    public OrderRoomPersonDo(string orderNum, long orderRoomId, int roomIndex, string firstName, string lastName, PersonTypeEnum type, int age)
+    public OrderPersonDo(string orderNum,  int roomIndex, string firstName, string lastName, PersonTypeEnum type, int age)
     {
         OrderNum = orderNum;
-        OrderRoomId = orderRoomId;
         RoomIndex = roomIndex;
         FirstName = firstName;
         LastName = lastName;
@@ -67,8 +55,8 @@ public partial record OrderRoomPersonDo
         Age = age;
     }
 
-    public static OrderRoomPersonDo Create(string orderNum, long orderRoomId, int roomIndex, string firstName, string lastName, PersonTypeEnum type, int age)
+    public static OrderPersonDo Create(string orderNum,  int roomIndex, string firstName, string lastName, PersonTypeEnum type, int age)
     {
-        return new OrderRoomPersonDo(orderNum, orderRoomId, roomIndex, firstName, lastName, type, age);
+        return new OrderPersonDo(orderNum,  roomIndex, firstName, lastName, type, age);
     }
 }

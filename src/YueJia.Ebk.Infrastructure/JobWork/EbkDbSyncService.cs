@@ -1,10 +1,15 @@
-﻿using Microsoft.Extensions.Hosting;
+﻿using Dm;
+using Microsoft.Extensions.Hosting;
 using MongoDB.Driver;
 using SqlSugar;
+using System.Collections.Generic;
 using System.Diagnostics;
 using Volo.Abp.DependencyInjection;
 using YueJia.Ebk.Domain.AggRoot;
+using YueJia.Ebk.Domain.Company;
+using YueJia.Ebk.Domain.Dept;
 using YueJia.Ebk.Domain.Hotel;
+using YueJia.Ebk.Domain.MongdbModel;
 using YueJia.Ebk.Domain.Other;
 using YueJia.Ebk.Domain.Shared.Enums;
 
@@ -27,126 +32,102 @@ public class EbkDbSyncService : BackgroundService
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         Console.WriteLine($"==================================================数据同步后台服务已启动,当前时间：{DateTime.Now},心跳每2秒执行一次====================================================================");
-        var _timer = new PeriodicTimer(TimeSpan.FromSeconds(2));
+        //var _timer = new PeriodicTimer(TimeSpan.FromSeconds(2));
 
-        while (await _timer.WaitForNextTickAsync(stoppingToken))
+        //while (await _timer.WaitForNextTickAsync(stoppingToken))
+        while(true)
         {
             var stopwatch = Stopwatch.StartNew();
             //打印任务执行耗时
             Console.WriteLine($"-----------------------------开始执行数据同步任务！-----------------------------");
 
-            if (await Db.Queryable<TracingDo>().AnyAsync(t => !t.IsDelete && t.State == 0, stoppingToken))
+            var tracingList = await Db.Ado.SqlQueryAsync<TracingDo>($@"select top 1 * from tracing where state =0 order by id asc ");
+            if (tracingList.Count > 0)
             {
 
-                var data = await Db.Queryable<TracingDo>().Where(t => !t.IsDelete && t.State == 0).ToListAsync(stoppingToken);
-                var result = data.GroupBy(t => t.TableName).Select(g => new
+                var tracingObj = tracingList.First();
+                if (tracingObj.TableName.ToLower() == "hotel_quote")
                 {
-                    tableName = g.Key,
-                    items = g.Select(m => m.TableId).Distinct().ToList(),
-                }).ToList();
 
+                    await MongoDb.GetCollection<HotelQuoteModel>(nameof(HotelQuoteModel)).DeleteManyAsync(x => x.Id == tracingObj.TableId);
+                    //同步
+                        var dataList = await Db.Queryable<HotelQuoteDo>().Where(x => x.Id == tracingObj.TableId).ToListAsync();
+                        if (dataList.Count > 0 &&
+                            dataList.First().CompanyStatus &&
+                            dataList.First().SysUserStatus &&
+                            dataList.First().UserHotelStatus &&
+                            dataList.First().UserRoomStatus &&
+                            dataList.First().UserPlanStatus &&
+                            dataList.First().DailyPriceStatus &&
+                            dataList.First().DailyInventoryStatus)
+                        {
 
-                foreach (var item in result)
+                            await MongoDb.GetCollection<HotelQuoteModel>(nameof(HotelQuoteModel)).InsertOneAsync(new HotelQuoteModel()
+                            {
+                                Id = dataList.First().Id,
+                                AdultLimit = dataList.First().AdultLimit,
+                                BreakfastType = dataList.First().BreakfastType,
+                                ChildLimit = dataList.First().ChildLimit,
+                                ContinuousStayDays = dataList.First().ContinuousStayDays,
+                                CurrentDate = Convert.ToInt32( dataList.First().CurrentDate.ToString("yyyyMMdd")),
+                                DaysInAdvance = dataList.First().DaysInAdvance,
+                                HotelCode = dataList.First().HotelCode,
+                                InventoryNum = dataList.First().InventoryNum,
+                                LastModifiedTime = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"),
+                                MaximumNumberOfPeople = dataList.First().MaximumNumberOfPeople,
+                                Price = Convert.ToInt32(dataList.First().Price),
+                                RoomCode = dataList.First().RoomCode,
+                                UserId = dataList.First().UserId,
+                                UserPricePlanId = dataList.First().UserPricePlanId.ToString(),
+                                AdjustmentPriceType = dataList.First().AdjustmentPriceType,
+                                AdjustmentPriceValue = dataList.First().AdjustmentPriceValue,
+                                CompanyId = dataList.First().CompanyId.ToString(),
+                                DeptId = dataList.First().DeptId.ToString(),
+                            });
+
+                        }
+                }
+                if (tracingObj.TableName.ToLower() == "department_channel_map")
+                { 
+                    await MongoDb.GetCollection<CompanyAndDepartmentChannelModel>(nameof(CompanyAndDepartmentChannelModel)).DeleteManyAsync(x => x.TableId == tracingObj.TableId.ToString());
+                    //同步
+                        var dataList = await Db.Queryable<DepartmentChannelMapDo>().Where(x => x.Id == tracingObj.TableId).ToListAsync();
+                        if (dataList.Count > 0 &&
+                            dataList.First().IsDelete == false)
+                        {
+                            await MongoDb.GetCollection<CompanyAndDepartmentChannelModel>(nameof(CompanyAndDepartmentChannelModel)).InsertOneAsync(new CompanyAndDepartmentChannelModel()
+                            {
+                                  TableId = dataList.First().Id.ToString(),
+                                  CompanyAndDepartmentId = dataList.First().DeptId.ToString(),
+                                  PFCode = dataList.First().SalePlatCode,
+                            });
+
+                        }
+                }
+                if (tracingObj.TableName.ToLower() == "company_channel_map")
                 {
-                    if (item.tableName == "hotel_publish")
+                    await MongoDb.GetCollection<CompanyAndDepartmentChannelModel>(nameof(CompanyAndDepartmentChannelModel)).DeleteManyAsync(x => x.TableId == tracingObj.TableId.ToString());
+                    //同步
+                    var dataList = await Db.Queryable<CompanyChannelMapDo>().Where(x => x.Id == tracingObj.TableId).ToListAsync();
+                    if (dataList.Count > 0 &&
+                        dataList.First().IsDelete == false)
                     {
-                        var list = await Db.Queryable<HotelPublishDo>().ClearFilter<IDeletedFilter, ITenantIdFilter>().Where(x => item.items.Contains(x.Id)).ToListAsync(stoppingToken);
-                        await MongoDb.GetCollection<HotelPublishDo>(nameof(HotelPublishDo)).DeleteManyAsync(x => list.Select(x => x.Id).ToList().Contains(x.Id));
-
-
-                        var addData = list.Where(x => !x.IsDelete && x.Status == HotelSaleTypeEnum.Up).ToList();
-                        if (addData.Count > 0)
+                        await MongoDb.GetCollection<CompanyAndDepartmentChannelModel>(nameof(CompanyAndDepartmentChannelModel)).InsertOneAsync(new CompanyAndDepartmentChannelModel()
                         {
-                            addData.ForEach(t =>
-                            {
-                                t.LastModifiedTime = t.LastModifiedTime.ToLocalTime();
-                                t.CreateTime = t.CreateTime.ToLocalTime();
-                            });
-                            await MongoDb.GetCollection<HotelPublishDo>(nameof(HotelPublishDo)).InsertManyAsync(addData, cancellationToken: stoppingToken);
-                        }
-
-                    }
-                    if (item.tableName == "hotel_room")
-                    {
-                        var list = await Db.Queryable<HotelRoomDo>().ClearFilter<IDeletedFilter, ITenantIdFilter>().Where(x => item.items.Contains(x.Id)).ToListAsync(stoppingToken);
-                        //删除
-                        await MongoDb.GetCollection<HotelRoomDo>(nameof(HotelRoomDo)).DeleteManyAsync(x => list.Select(x => x.Id).ToList().Contains(x.Id));
-                        //插入
-
-                        var addData = list.Where(x => !x.IsDelete && x.IsEnabled == YesOrNoType.Yes).ToList();
-                        if (addData.Count > 0)
-                        {
-                            addData.ForEach(t =>
-                            {
-                                t.LastModifiedTime = t.LastModifiedTime.ToLocalTime();
-                                t.CreateTime = t.CreateTime.ToLocalTime();
-                                t.StartDate = t.StartDate.ToLocalTime();
-                                t.EndDate = t.EndDate.ToLocalTime();
-                            });
-                            await MongoDb.GetCollection<HotelRoomDo>(nameof(HotelRoomDo)).InsertManyAsync(addData, cancellationToken: stoppingToken);
-                        }
-                    }
-                    if (item.tableName == "price_plan")
-                    {
-                        var list = await Db.Queryable<PricePlanDo>().ClearFilter<IDeletedFilter, ITenantIdFilter>().Where(x => item.items.Contains(x.Id)).ToListAsync(stoppingToken);
-                        //删除
-                        await MongoDb.GetCollection<PricePlanDo>(nameof(PricePlanDo)).DeleteManyAsync(x => list.Select(x => x.Id).ToList().Contains(x.Id));
-
-                        //插入
-                        var addData = list.Where(x => !x.IsDelete && x.IsEnable == YesOrNoType.Yes).ToList();
-                        if (addData.Count > 0)
-                        {
-                            addData.ForEach(t =>
-                            {
-                                t.LastModifiedTime = t.LastModifiedTime.ToLocalTime();
-                                t.CreateTime = t.CreateTime.ToLocalTime();
-                            });
-                            await MongoDb.GetCollection<PricePlanDo>(nameof(PricePlanDo)).InsertManyAsync(addData, cancellationToken: stoppingToken);
-                        }
-                    }
-                    if (item.tableName == "daily_inventory")
-                    {
-                        var list = await Db.Queryable<DailyInventoryDo>().ClearFilter<IDeletedFilter, ITenantIdFilter>().Where(x => item.items.Contains(x.Id)).ToListAsync(stoppingToken);
-                        //删除
-                        await MongoDb.GetCollection<DailyInventoryDo>(nameof(DailyInventoryDo)).DeleteManyAsync(x => list.Select(x => x.Id).ToList().Contains(x.Id));
-                        //插入
-                        var addData = list.Where(x => !x.IsDelete && x.IsEnable == YesOrNoType.Yes).ToList();
-                        if (addData.Count > 0)
-                        {
-                            addData.ForEach(t =>
-                            {
-                                t.LastModifiedTime = t.LastModifiedTime.ToLocalTime();
-                                t.CreateTime = t.CreateTime.ToLocalTime();
-                                t.CurrentDate = t.CurrentDate.ToLocalTime();
-                            });
-                            await MongoDb.GetCollection<DailyInventoryDo>(nameof(DailyInventoryDo)).InsertManyAsync(addData, cancellationToken: stoppingToken);
-                        }
-                    }
-                    if (item.tableName == "daily_price")
-                    {
-                        var list = await Db.Queryable<DailyPriceDo>().ClearFilter<IDeletedFilter, ITenantIdFilter>().Where(x => item.items.Contains(x.Id)).ToListAsync(stoppingToken);
-                        //删除
-                        await MongoDb.GetCollection<DailyPriceDo>(nameof(DailyPriceDo)).DeleteManyAsync(x => list.Select(x => x.Id).ToList().Contains(x.Id));
-                        //插入
-
-                        var addData = list.Where(x => !x.IsDelete && x.IsEnable == YesOrNoType.Yes).ToList();
-                        if (addData.Count > 0)
-                        {
-
-
-                            addData.ForEach(t =>
-                            {
-                                t.LastModifiedTime = t.LastModifiedTime.ToLocalTime();
-                                t.CreateTime = t.CreateTime.ToLocalTime();
-                                t.CurrentDate = t.CurrentDate.ToLocalTime();
-                            });
-                            await MongoDb.GetCollection<DailyPriceDo>(nameof(DailyPriceDo)).InsertManyAsync(addData, cancellationToken: stoppingToken);
-                        }
+                            TableId = dataList.First().Id.ToString(),
+                            CompanyAndDepartmentId = dataList.First().CompanyId.ToString(),
+                            PFCode = dataList.First().SalePlatCode,
+                        });
                     }
                 }
-                //回写sqlserver数据同步状态
-                await Db.Fastest<TracingDo>().BulkMergeAsync(data.Select(t => { t.State = 1; return t; }).ToList());
 
+                tracingObj.State = 1;
+
+                await Db.Updateable<TracingDo>(tracingObj).ExecuteCommandAsync();
+
+            }
+            else {
+                   await Task.Delay(1*1000);
             }
             stopwatch.Stop();
             Console.WriteLine($"-----------------------------数据同步任务执行完毕,总耗时：{stopwatch.ElapsedMilliseconds}毫秒！-----------------------------");

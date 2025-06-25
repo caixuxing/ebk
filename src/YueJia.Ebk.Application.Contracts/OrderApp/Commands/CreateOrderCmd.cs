@@ -5,6 +5,8 @@
 /// </summary>
 public record CreateOrderCmd
 {
+    public string TrackId { get; set; }
+
     /// <summary>
     /// 订单号
     /// </summary>
@@ -24,23 +26,18 @@ public record CreateOrderCmd
     /// 入住日期[格式:yyyy-MM-dd]
     /// </summary>
     [Required]
-    public DateTime CheckInDate { set; get; } = default!;
+    public string CheckInDate { set; get; } = default!;
     /// <summary>
     /// 离店日期[格式:yyyy-MM-dd]
     /// </summary>
     [Required]
-    public DateTime CheckOutDate { set; get; } = default!;
+    public string CheckOutDate { set; get; } = default!;
     /// <summary>
     /// 房间人员信息
     /// </summary>
     [Required]
     public List<HotelRoomModel> RoomList { set; get; } = new();
 
-    /// <summary>
-    /// 房间数
-    /// </summary>
-    [Required]
-    public int RoomNum { set; get; }
 
     /// <summary>
     /// 销售价格
@@ -56,14 +53,26 @@ public record CreateOrderCmd
     /// <summary>
     /// 是否含早
     /// </summary>
-    [Required]
     public bool IsBreakfast { set; get; }
 
     /// <summary>
     /// 查价唯一标识
     /// </summary>
-    [Required]
-    public string SearchCode { get; set; } = default!;
+    public string SearchCode { get; set; }
+
+
+
+    /// <summary>
+    /// 几晚
+    /// </summary>
+    public int NightNumber
+    {
+        get
+        {
+            return (Convert.ToDateTime(CheckOutDate) - Convert.ToDateTime(CheckInDate)).Days;
+        }
+    }
+
 }
 
 /// <summary>
@@ -88,24 +97,12 @@ public class CreateOrderCmdValidator : AbstractValidator<CreateOrderCmd>
             .Cascade(CascadeMode.Stop)
             .NotEmpty().WithMessage("房型不能为空！")
             .MaximumLength(10).WithMessage("房型长度不能超过10个字符！");
-
-        RuleFor(x => x.CheckInDate)
-       .Cascade(CascadeMode.Stop)
-       .NotNull().WithMessage("入店日期不能为空！")
-       .Must((x) => x != default(DateTime)).WithMessage("入店日期格式错误！");
-
-        RuleFor(x => x.CheckOutDate)
-            .Cascade(CascadeMode.Stop)
-            .NotEmpty().WithMessage("离店日期不能为空！")
-            .Must((x) => x != default(DateTime)).WithMessage("离店日期格式错误！")
-            .GreaterThan(x => x.CheckInDate).WithMessage("离店日期必须晚于入店日期！");
+ 
 
         RuleFor(x => x.RoomList).Cascade(CascadeMode.Stop).NotEmpty().WithMessage("房间集合不能为空！");
         RuleForEach(x => x.RoomList).SetValidator(new HotelRoomModelValidator());
 
-        RuleFor(x => x.RoomNum)
-            .Cascade(CascadeMode.Stop)
-            .GreaterThan(0).WithMessage("房间数必须大于0！");
+   
         RuleFor(x => x.SalePrice)
             .Cascade(CascadeMode.Stop)
             .GreaterThan(0).WithMessage("销售价格必须大于0！");

@@ -3,6 +3,9 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using MongoDB.Driver;
+using Nito.AsyncEx;
+using System.Linq.Expressions;
+using System.Text.RegularExpressions;
 using YueJia.Ebk.Application.Contracts.HotelApp;
 using YueJia.Ebk.Application.Contracts.HotelApp.Commands;
 using YueJia.Ebk.Application.Contracts.HotelApp.Dto;
@@ -12,7 +15,9 @@ using YueJia.Ebk.Application.Contracts.SysUserApp;
 using YueJia.Ebk.Domain.AggRoot;
 using YueJia.Ebk.Domain.Company;
 using YueJia.Ebk.Domain.Hotel;
+using YueJia.Ebk.Domain.MongdbModel;
 using YueJia.Ebk.Domain.Shared.Const;
+using YueJia.Ebk.Domain.Shared.Dto;
 
 namespace YueJia.Ebk.Application.HotelApp;
 
@@ -124,7 +129,7 @@ public class HotelApp : ApplicationService, IHotelApp
                 RoomId = hotelRoomObj.Id,
                 PricePlanId = entity.Id,
                 Price = price,
-                IsEnable = YesOrNoType.Yes,
+                IsEnabled = YesOrNoType.Yes,
                 CurrentDate = date,
             });
         }
@@ -132,8 +137,8 @@ public class HotelApp : ApplicationService, IHotelApp
 
         await DbTransaction.ExecuteInTransactionAsync(db, async () =>
         {
-            await db.Insertable<DailyPriceDo>(dailyPriceDoList).ExecuteCommandAsync();
             await db.Insertable<PricePlanDo>(entity).ExecuteCommandAsync();
+            await db.Insertable<DailyPriceDo>(dailyPriceDoList).ExecuteCommandAsync();
             return entity.Id;
         });
 
@@ -292,7 +297,7 @@ public class HotelApp : ApplicationService, IHotelApp
                                             DaysInAdvance = x1.DaysInAdvance,
                                             ContinuousStayDays = x1.ContinuousStayDays,
                                             IsReservedRoom = x1.IsReservedRoom,
-                                            IsEnable = x1.IsEnable,
+                                            IsEnable = x1.IsEnabled,
                                             HotelRoomId = x1.HotelRoomId.ToString(),
                                             PricePlanTitle = x1.PricePlanTitle
                                         }).ToListAsync();
@@ -341,7 +346,7 @@ public class HotelApp : ApplicationService, IHotelApp
                 DaysInAdvance = t.DaysInAdvance,
                 ContinuousStayDays = t.ContinuousStayDays,
                 IsReservedRoom = t.IsReservedRoom,
-                IsEnable = t.IsEnable,
+                IsEnable = t.IsEnabled,
                 HotelCode = t2.HotelCode,
                 HotelName = t2.HotelName,
                 RoomType = t1.RoomType,
@@ -372,7 +377,7 @@ public class HotelApp : ApplicationService, IHotelApp
         {
             throw new InvalidOperationException("价格计划不存在！");
         }
-        entity.SetIsEnable(entity.IsEnable == YesOrNoType.Yes ? YesOrNoType.No : YesOrNoType.Yes);
+        entity.SetIsEnable(entity.IsEnabled == YesOrNoType.Yes ? YesOrNoType.No : YesOrNoType.Yes);
         return await PricePlanRepo.AsUpdateable(entity).ExecuteCommandWithOptLockAsync(true) > 0;
     }
 
@@ -485,9 +490,9 @@ public class HotelApp : ApplicationService, IHotelApp
             {
 
                 PricePlanId = t.Id.ToString(),
-                PricePlanName = t.PricePlanTitle ?? $"{t.Id.ToString()} {t.IsEnable}",
+                PricePlanName = t.PricePlanTitle ?? $"{t.Id.ToString()} {t.IsEnabled}",
                 RoomId = t.HotelRoomId.ToString(),
-                Status = t.IsEnable
+                Status = t.IsEnabled
             })
             .ToListAsync();
 
@@ -562,7 +567,7 @@ public class HotelApp : ApplicationService, IHotelApp
                                                {
                                                    CurrentDate = vv.CurrentDate,
                                                    InventoryNum = vv.InventoryNum,
-                                                   StatusBool = vv.IsEnable == YesOrNoType.Yes
+                                                   StatusBool = vv.IsEnabled == YesOrNoType.Yes
                                                }).ToListAsync();
 
         List<DailyInventoryModel> Result = new List<DailyInventoryModel>();
@@ -608,7 +613,7 @@ public class HotelApp : ApplicationService, IHotelApp
                                                {
                                                    Price = vv.Price,
                                                    CurrentDate = vv.CurrentDate,
-                                                   StatusBool = vv.IsEnable == YesOrNoType.Yes,
+                                                   StatusBool = vv.IsEnabled == YesOrNoType.Yes,
                                                }).ToListAsync();
 
         List<DailyPriceModel> Result = new List<DailyPriceModel>();
@@ -653,12 +658,12 @@ public class HotelApp : ApplicationService, IHotelApp
             {
                 Price = pp.dailyPrice.Price,
                 CurrentDate = pp.dailyPrice.CurrentDate,
-                StatusBool = (pp.dailyPrice.IsEnable == YesOrNoType.Yes ? true : false),
+                StatusBool = (pp.dailyPrice.IsEnabled == YesOrNoType.Yes ? true : false),
             }).ToList(),
             PricePlanId = vv.Key.Id.ToString(),
             PricePlanName = vv.Key.PricePlanTitle,
             RoomId = vv.Key.HotelRoomId.ToString(),
-            Status = vv.Key.IsEnable,
+            Status = vv.Key.IsEnabled,
         }).ToList();
 
         return new InventoryAndPriceDto()
@@ -677,7 +682,7 @@ public class HotelApp : ApplicationService, IHotelApp
                                                                       {
                                                                           CurrentDate = vv.CurrentDate,
                                                                           InventoryNum = vv.InventoryNum,
-                                                                          StatusBool = vv.IsEnable == YesOrNoType.Yes
+                                                                          StatusBool = vv.IsEnabled == YesOrNoType.Yes
                                                                       }).ToList()
         };
     }
@@ -700,7 +705,7 @@ public class HotelApp : ApplicationService, IHotelApp
             {
                 var updateObj = dataList.Where(vv => vv.CurrentDate == item.CurrentDate).ToList().FirstOrDefault();
 
-                if (item.InventoryNum == updateObj.InventoryNum && updateObj.IsEnable == (item.StatusBool ? YesOrNoType.Yes : YesOrNoType.No))
+                if (item.InventoryNum == updateObj.InventoryNum && updateObj.IsEnabled == (item.StatusBool ? YesOrNoType.Yes : YesOrNoType.No))
                 {
                     dataList.Remove(updateObj);
                     continue;
@@ -736,7 +741,7 @@ public class HotelApp : ApplicationService, IHotelApp
             foreach (var item in priceList)
             {
                 var updateObj = dataList.Where(vv => vv.CurrentDate == item.CurrentDate).ToList().FirstOrDefault();
-                if (item.Price == updateObj.Price && updateObj.IsEnable == (item.StatusBool ? YesOrNoType.Yes : YesOrNoType.No))
+                if (item.Price == updateObj.Price && updateObj.IsEnabled == (item.StatusBool ? YesOrNoType.Yes : YesOrNoType.No))
                 {
                     dataList.Remove(updateObj);
                     continue;
@@ -777,7 +782,7 @@ public class HotelApp : ApplicationService, IHotelApp
             {
                 var updateObj = inventoryDataList.Where(vv => vv.CurrentDate == item.CurrentDate).ToList().FirstOrDefault();
 
-                if (item.InventoryNum == updateObj.InventoryNum && updateObj.IsEnable == (item.StatusBool ? YesOrNoType.Yes : YesOrNoType.No))
+                if (item.InventoryNum == updateObj.InventoryNum && updateObj.IsEnabled == (item.StatusBool ? YesOrNoType.Yes : YesOrNoType.No))
                 {
                     continue;
                 }
@@ -799,7 +804,7 @@ public class HotelApp : ApplicationService, IHotelApp
                 foreach (var item in ele.DailyPriceList)
                 {
                     var updateObj = dataList.Where(vv => vv.CurrentDate == item.CurrentDate).ToList().FirstOrDefault();
-                    if (item.Price == updateObj.Price && updateObj.IsEnable == (item.StatusBool ? YesOrNoType.Yes : YesOrNoType.No))
+                    if (item.Price == updateObj.Price && updateObj.IsEnabled == (item.StatusBool ? YesOrNoType.Yes : YesOrNoType.No))
                     {
                         dataList.Remove(updateObj);
                         continue;
@@ -871,7 +876,7 @@ public class HotelApp : ApplicationService, IHotelApp
                     }
 
                     var InventoryNum = dailyInventoryObj.InventoryNum;
-                    var IsEnable = dailyInventoryObj.IsEnable;
+                    var IsEnable = dailyInventoryObj.IsEnabled;
 
                     if (qry.inventoryNumFlag)
                     {
@@ -889,7 +894,7 @@ public class HotelApp : ApplicationService, IHotelApp
                     }
 
                   
-                    if ( (  InventoryNum != dailyInventoryObj.InventoryNum || IsEnable != dailyInventoryObj.IsEnable) && updateDailyInventoryList.Any(vv=> vv.Id == dailyInventoryObj.Id)==false  )
+                    if ( (  InventoryNum != dailyInventoryObj.InventoryNum || IsEnable != dailyInventoryObj.IsEnabled) && updateDailyInventoryList.Any(vv=> vv.Id == dailyInventoryObj.Id)==false  )
                     {
                         updateDailyInventoryList.Add(dailyInventoryObj);
                     }
@@ -915,7 +920,7 @@ public class HotelApp : ApplicationService, IHotelApp
                     }
 
                     var Price = dailyPriceObj.Price;
-                    var IsEnable = dailyPriceObj.IsEnable;
+                    var IsEnable = dailyPriceObj.IsEnabled;
 
                     if (qry.planPriceFlag)
                     {
@@ -943,7 +948,7 @@ public class HotelApp : ApplicationService, IHotelApp
                         dailyPriceObj.SetIsEnable(qry.planPriceState ? YesOrNoType.Yes : YesOrNoType.No);
                     }
 
-                    if (  ( Price != dailyPriceObj.Price || IsEnable != dailyPriceObj.IsEnable) && updateDailyPriceList.Any(vv => vv.Id == dailyPriceObj.Id) == false)
+                    if (  ( Price != dailyPriceObj.Price || IsEnable != dailyPriceObj.IsEnabled) && updateDailyPriceList.Any(vv => vv.Id == dailyPriceObj.Id) == false)
                     {
                         updateDailyPriceList.Add(dailyPriceObj);
                     }
@@ -964,10 +969,7 @@ public class HotelApp : ApplicationService, IHotelApp
     public async Task<bool> BatchSaveInventoryAndPricesSenior([FromBody] BatchEditInventoryAndPricesSeniorModel qry)
     {
 
-
-
         var LowestPrice = db.Queryable<HotelPublishDo>().Where(vv => vv.Id == SqlFunc.ToInt64(qry.userHotelId) && vv.TenantId == SqlFunc.ToInt64(CurrentUserApp.TenantId)).ToList().First().LowestPrice;
-
 
         List<DailyInventoryDo> updateDailyInventoryList = new List<DailyInventoryDo>();
         List<DailyPriceDo> updateDailyPriceList = new List<DailyPriceDo>();
@@ -992,7 +994,7 @@ public class HotelApp : ApplicationService, IHotelApp
                         continue;
                     }
                     var InventoryNum = dailyInventoryObj.InventoryNum;
-                    var IsEnable = dailyInventoryObj.IsEnable;
+                    var IsEnable = dailyInventoryObj.IsEnabled;
 
                     if (ele.inventoryNumExecType == "1")
                     {
@@ -1013,7 +1015,7 @@ public class HotelApp : ApplicationService, IHotelApp
                         dailyInventoryObj.SetIsEnable(YesOrNoType.No);
                     }
 
-                    if ( ( InventoryNum != dailyInventoryObj.InventoryNum || IsEnable != dailyInventoryObj.IsEnable  ) && updateDailyInventoryList.Any(vv=> vv.Id == dailyInventoryObj.Id)==false)
+                    if ( ( InventoryNum != dailyInventoryObj.InventoryNum || IsEnable != dailyInventoryObj.IsEnabled  ) && updateDailyInventoryList.Any(vv=> vv.Id == dailyInventoryObj.Id)==false)
                     {
                         updateDailyInventoryList.Add(dailyInventoryObj);
                     }
@@ -1037,13 +1039,13 @@ public class HotelApp : ApplicationService, IHotelApp
             foreach (var dailyPriceObj in dailyPriceList)
             {
 
-                if (qry.weekIndexList.Where(weekIndex => weekIndex == ((int)dailyPriceObj.CurrentDate.DayOfWeek)).Count() == 0)
+                if (qry.weekIndexList.Any(weekIndex => weekIndex == ((int)dailyPriceObj.CurrentDate.DayOfWeek))  == false)
                 {
                     continue;
                 }
 
                 var Price = dailyPriceObj.Price;
-                var IsEnable = dailyPriceObj.IsEnable;
+                var IsEnable = dailyPriceObj.IsEnabled;
 
 
                 if (ele.planPriceExecType == "1")
@@ -1070,7 +1072,7 @@ public class HotelApp : ApplicationService, IHotelApp
                 }
 
 
-                if ( (Price != dailyPriceObj.Price || IsEnable != dailyPriceObj.IsEnable )  && updateDailyPriceList.Any(vv=> vv.Id == dailyPriceObj.Id)== false)
+                if ( (Price != dailyPriceObj.Price || IsEnable != dailyPriceObj.IsEnabled )  && updateDailyPriceList.Any(vv=> vv.Id == dailyPriceObj.Id)== false)
                 {
                     updateDailyPriceList.Add(dailyPriceObj);
                 }
@@ -1099,7 +1101,7 @@ public class HotelApp : ApplicationService, IHotelApp
                                                         {
                                                             UserPlanId = SqlFunc.ToString(vv.Id),
                                                             UserPlanTitel = vv.PricePlanTitle,
-                                                            UserPlanStatusBool = vv.IsEnable == YesOrNoType.Yes,
+                                                            UserPlanStatusBool = vv.IsEnabled == YesOrNoType.Yes,
                                                         }).ToListAsync();
 
         return new LoadingInventoryAndPriceModel
@@ -1183,7 +1185,7 @@ public class HotelApp : ApplicationService, IHotelApp
                         RoomId = userRoom.Id,
                         PricePlanId = Convert.ToInt64(userPlan.UserPlanId),
                         Price = price,
-                        IsEnable = price > 0 ? YesOrNoType.Yes : YesOrNoType.No,
+                        IsEnabled = price > 0 ? YesOrNoType.Yes : YesOrNoType.No,
                         CurrentDate = date,
                     });
                 }
@@ -1255,15 +1257,11 @@ public class HotelApp : ApplicationService, IHotelApp
     public async Task<bool> CopeUserPlan(CopeUserPlanModel cmd)
     {
 
-
-
-
-
-        var LowestPrice = db.Queryable<HotelPublishDo>()
-                        .InnerJoin<HotelRoomDo>((x1, x2) => x1.Id == x2.HotelId && x1.TenantId == x2.TenantId)
-                        .InnerJoin<PricePlanDo>((x1, x2, x3) => x3.HotelRoomId == x2.Id && x3.TenantId == x2.TenantId)
-                        .Where((x1, x2, x3) => x3.Id == SqlFunc.ToInt64(cmd.CopeUserPlanId) && x3.TenantId == SqlFunc.ToInt64(CurrentUserApp.TenantId))
-                        .ToList().First().LowestPrice;
+        //var LowestPrice = db.Queryable<HotelPublishDo>()
+        //                .InnerJoin<HotelRoomDo>((x1, x2) => x1.Id == x2.HotelId && x1.TenantId == x2.TenantId)
+        //                .InnerJoin<PricePlanDo>((x1, x2, x3) => x3.HotelRoomId == x2.Id && x3.TenantId == x2.TenantId)
+        //                .Where((x1, x2, x3) => x3.Id == SqlFunc.ToInt64(cmd.CopeUserPlanId) && x3.TenantId == SqlFunc.ToInt64(CurrentUserApp.TenantId))
+        //                .ToList().First().LowestPrice;
 
         return await DbTransaction.ExecuteInTransactionAsync(db, async () =>
         {
@@ -1296,17 +1294,17 @@ public class HotelApp : ApplicationService, IHotelApp
                 {
                     price = price + cmd.AddPrice;
                 }
-                if (price > 0 && price < LowestPrice)
-                {
-                    throw new InvalidOperationException($@"酒店最低价格为{LowestPrice}！");
-                }
+                //if (price > 0 && price < LowestPrice)
+                //{
+                //    throw new InvalidOperationException($@"酒店最低价格为{LowestPrice}！");
+                //}
 
                 dailyPriceDoList.Add(new DailyPriceDo()
                 {
                     RoomId = entity.HotelRoomId,
                     PricePlanId = entity.Id,
                     Price = Math.Max(price, 0),
-                    IsEnable = YesOrNoType.Yes,
+                    IsEnabled = YesOrNoType.Yes,
                     CurrentDate = ele.CurrentDate,
                 });
             }
@@ -1320,279 +1318,84 @@ public class HotelApp : ApplicationService, IHotelApp
     }
 
 
-
-    public async Task<HotelPriceDto> PriceCheckQry(PriceCheckQry qry)
+    public async Task<decimal> CheckPrice(PriceCheckQry qry)
     {
+        var Ids = Common.AnalysisSearchCode(qry.SearchCode);
+        List<HotelQuoteDo> dataList = new List<HotelQuoteDo>();
 
-        //验证
-        await LazyServiceProvider.LazyGetRequiredService<FluentValidation.IValidator<PriceSearchQry>>().ValidateAndThrowAsync(qry);
-
-        //连住天数
-        int continuousStayDays = (qry.CheckOutDate.Date - qry.CheckInDate.Date).Days;
-        //提前天数
-        int advanceDays = (qry.CheckOutDate.Date - DateTime.Now.Date).Days;
-
-        //解密查价唯一值
-        var (isSuccess, searchCodeStr) = CompressedEncryptor.Decrypt(qry.SearchCode, SecretKeyConst.key, SecretKeyConst.iv);
-        if (!isSuccess || string.IsNullOrWhiteSpace(searchCodeStr)) throw new InvalidOperationException("查价唯一码解析失败!");
-        //解析查价唯一码
-        var searchCode = JsonUtils.AnalysisSearchCode(searchCodeStr);
-        if (searchCode is null || searchCode.DailyInventoryIds.Count == 0 || searchCode.DailyPriceIds.Count == 0) throw new InvalidOperationException("查价唯一码无效!");
-
-        //按库存ID擦查询库存集合
-        var dailyInventoryDos = await db.Queryable<DailyInventoryDo>()
-            .ClearFilter<ITenantIdFilter>()
-            .Where(t => searchCode.DailyInventoryIds.Contains(t.Id) && t.IsEnable == YesOrNoType.Yes)
-            .ToListAsync();
-        //按条件筛选：库存数、日期范围
-        var FilterData = dailyInventoryDos.Where(t => t.InventoryNum >= qry.RoomNum && t.CurrentDate >= qry.CheckInDate.Date && t.CurrentDate < qry.CheckOutDate.Date).ToList();
-        //验证库存数是否足够
-        bool areEqual = searchCode.DailyInventoryIds.Count == FilterData.Count && searchCode.DailyInventoryIds.All(id => dailyInventoryDos.Any(e => e.Id == id));
-        if (!areEqual) throw new InvalidOperationException("库存数不足！");
-        if (dailyInventoryDos.GroupBy(t => t.CreatedbyId).Count() > 1) throw new InvalidOperationException("当前查价唯一码非同一用户库存！");
-
-
-        var dailyPriceDos = await db.Queryable<DailyPriceDo>().ClearFilter<ITenantIdFilter>().Where(t => searchCode.DailyPriceIds.Contains(t.Id) && t.IsEnable == YesOrNoType.Yes).ToListAsync();
-        if (!dailyPriceDos.Any()) throw new InvalidOperationException("暂无报价数据！");
-        if (dailyPriceDos.GroupBy(t => t.CreatedbyId).Count() > 1) throw new InvalidOperationException("当前查价唯一码非同一用户报价！");
-
-
-
-        //收集价格计划
-        var pricePlanIds = dailyPriceDos.Select(t => t.PricePlanId).Distinct().ToList();
-
-        var hotel = await db.Queryable<HotelRoomDo>()
-             .InnerJoin<PricePlanDo>((r, p) => r.Id == p.HotelRoomId)
-             .Where((r, p) => r.HotelCode == qry.HotelCode && r.Id == p.HotelRoomId && pricePlanIds.Contains(p.Id) && p.IsEnable == YesOrNoType.Yes && r.IsEnabled == YesOrNoType.Yes)
-             .Where((r, p) => r.MaximumNumberOfPeople >= (qry.AdultNum + qry.ChildNum) && r.AdultLimit >= qry.AdultNum && r.ChildLimit >= qry.ChildNum)
-             .Where((r, p) => p.ContinuousStayDays <= continuousStayDays && p.DaysInAdvance <= advanceDays)
-             .Select((r, p) => new
-             {
-                 RoomCode = r.RoomType,
-                 RoomName = r.HotelRoomTitle ?? string.Empty,
-                 HotelCode = r.HotelCode,
-                 BreakfastType = p.BreakfastType,
-                 PricePlanId = p.Id.ToString(),
-                 r.TenantId
-             })
-             .SingleAsync() ?? throw new InvalidOperationException("未找到符合条件的房间！");
-
-
-
-
-
-
-        //查询公司价格调整规则
-        var priceAdjustData = await db.Queryable<CompanyDO>()
-            .ClearFilter<ITenantIdFilter>()
-            .Where(t => t.Status == YesOrNoType.Yes)
-            .Select(t => new { t.TenantId, t.AdjustmentPriceType, t.AdjustmentPriceValue })
-            .ToListAsync();
-
-
-        var tempTotalPrice = dailyPriceDos.Sum(t => t.Price);
-
-        var adjustmentPrice = priceAdjustData.FirstOrDefault(t => t.TenantId == hotel.TenantId);
-        if (adjustmentPrice is not null)
-        {
-
-            decimal adjustDailyPrice = adjustmentPrice.AdjustmentPriceType switch
-            {
-                AdjustmentPriceTypeEnum.FixedValueIncrease => Math.Ceiling((tempTotalPrice + (adjustmentPrice.AdjustmentPriceValue ?? 0)) / continuousStayDays),
-                AdjustmentPriceTypeEnum.PercentageIncrease => Math.Ceiling(tempTotalPrice * (decimal)((double)(adjustmentPrice.AdjustmentPriceValue ?? 0) / 100) / continuousStayDays),
-                _ => 0
-            };
-
-            foreach (var c in dailyPriceDos)
-            {
-                c.Price = adjustmentPrice.AdjustmentPriceType switch
-                {
-                    AdjustmentPriceTypeEnum.FixedValueIncrease => adjustDailyPrice,
-                    AdjustmentPriceTypeEnum.PercentageIncrease => c.Price + adjustDailyPrice,
-                    _ => c.Price
-                };
+        foreach (var Id in Ids) {
+            var hotelQuoteList =   db.Queryable<HotelQuoteDo>().Where(vv => vv.Id == Id
+                                                                        && vv.InventoryNum >= qry.NightNumber 
+                                                                        && vv.CompanyStatus == true
+                                                                        && vv.SysUserStatus == true
+                                                                        && vv.UserHotelStatus == true
+                                                                        && vv.UserRoomStatus == true
+                                                                        && vv.UserPlanStatus == true
+                                                                        && vv.DailyPriceStatus == true
+                                                                        && vv.DailyInventoryStatus == true ).ToList();
+            if (hotelQuoteList.Count!=1 ) {
+                return 0;
             }
+            dataList.add(hotelQuoteList.First());
         }
 
-
-        return new HotelPriceDto()
-        {
-            HotelCode = hotel.HotelCode,
-            RoomCode = hotel.RoomCode,
-            RoomName = hotel.RoomName,
-            IsBreakfast = hotel.BreakfastType.ToDescription(),
-            PricePlanId = hotel.PricePlanId,
-            DayPrice = dailyPriceDos.ToDictionary(t => t.CurrentDate.ToString("yyyy-MM-dd"), t => t.Price),
-            TotalPrice = dailyPriceDos.Sum(t => t.Price),
-            SearchCode = qry.SearchCode
-        };
+        return dataList.Sum(vv => Common.AdjustmentPriceForHotel(vv.Price, vv.AdjustmentPriceType, vv.AdjustmentPriceValue) * qry.RoomNumber);
     }
 
-
-
-
-    public async Task<IEnumerable<HotelPriceDto>> PriceSearch(PriceSearchQry qry)
+    /// <summary>
+    /// 查询报价
+    /// </summary>
+    /// <param name="qry"></param>
+    /// <returns></returns>
+    public async Task<IEnumerable<HotelPriceDto>> SearchPrice(PriceSearchQry qry)
     {
-        //验证
-        await LazyServiceProvider.LazyGetRequiredService<FluentValidation.IValidator<PriceSearchQry>>().ValidateAndThrowAsync(qry);
-
-        //连住天数
-        int continuousStayDays = (qry.CheckOutDate.Date - qry.CheckInDate.Date).Days;
-        //提前天数
-        int advanceDays = (qry.CheckOutDate.Date - DateTime.Now.Date).Days;
-
-
-        var filter = Builders<HotelRoomDo>.Filter.And(
-                         Builders<HotelRoomDo>.Filter.Eq(x => x.HotelCode, qry.HotelCode),
-                         Builders<HotelRoomDo>.Filter.Gte(x => x.MaximumNumberOfPeople, (qry.AdultNum + qry.ChildNum)),  //大于等于
-                         Builders<HotelRoomDo>.Filter.Gte(x => x.AdultLimit, qry.AdultNum),
-                         Builders<HotelRoomDo>.Filter.Gte(x => x.ChildLimit, qry.ChildNum));
-
-        var roomData = await MongoDb.GetCollection<HotelRoomDo>(nameof(HotelRoomDo)).Find(filter).ToListAsync();
-
-        if (roomData is null || roomData.Count == 0) return Enumerable.Empty<HotelPriceDto>();
-
-        //收集房间id
-        var roomids = roomData!.Select(t => t.Id).ToList();
-
-
-        //查询库存
-        var inventoryData = await MongoDb.GetCollection<DailyInventoryDo>(nameof(DailyInventoryDo))
-            .Find(Builders<DailyInventoryDo>.Filter.And(
-                    Builders<DailyInventoryDo>.Filter.In(x => x.RoomId, roomids),
-                    Builders<DailyInventoryDo>.Filter.Gte(x => x.InventoryNum, qry.RoomNum),
-                    Builders<DailyInventoryDo>.Filter.Gte(x => x.CurrentDate, qry.CheckInDate.Date),
-                    Builders<DailyInventoryDo>.Filter.Lt(x => x.CurrentDate, qry.CheckOutDate.Date))).ToListAsync();
-
-        //按CreatedbyId 分组 计算每组的记录行数
-        var inventoryGroup = inventoryData!.GroupBy(x => new { x.CreatedbyId, x.RoomId })
-            .Select(g => new { CreatedbyId = g.Key.CreatedbyId, RoomId = g.Key.RoomId, Count = g.Count(), item = g.ToList() })
-            .ToList();
-        if (!inventoryGroup.Any(t => t.Count == continuousStayDays)) return Enumerable.Empty<HotelPriceDto>();
-
-
-        //查询价格计划
-        var pricePlanData = await MongoDb.GetCollection<PricePlanDo>(nameof(PricePlanDo)).Find(Builders<PricePlanDo>.Filter.And(
-        Builders<PricePlanDo>.Filter.In(x => x.HotelRoomId, roomids),
-        Builders<PricePlanDo>.Filter.Lte(x => x.ContinuousStayDays, continuousStayDays),
-        Builders<PricePlanDo>.Filter.Lte(x => x.DaysInAdvance, advanceDays))).ToListAsync();
-        if (pricePlanData is null || pricePlanData.Count == 0) return Enumerable.Empty<HotelPriceDto>();
-
-        //收集价格计划id
-        var pricePlanIds = pricePlanData!.Select(t => t.Id).ToList();
-
-        //查询每日价格
-        var dailyPriceData = await MongoDb.GetCollection<DailyPriceDo>(nameof(DailyPriceDo)).Find(Builders<DailyPriceDo>.Filter.And(
-        Builders<DailyPriceDo>.Filter.In(x => x.PricePlanId, pricePlanIds),
-        Builders<DailyPriceDo>.Filter.Gte(x => x.CurrentDate, qry.CheckInDate.Date),
-        Builders<DailyPriceDo>.Filter.Lt(x => x.CurrentDate, qry.CheckOutDate.Date))).ToListAsync();
-
-        //按CreatedbyId 分组 计算每组的记录行数
-        var dailyPriceDataGroup = dailyPriceData!.GroupBy(x => new { x.CreatedbyId, x.RoomId, x.PricePlanId }).Select(g => new
-        {
-            CreatedbyId = g.Key.CreatedbyId,
-            RoomId = g.Key.RoomId,
-            PricePlanId = g.Key.PricePlanId,
-            Count = g.Count(),
-            item = g.ToList()
-        });
-        //价格记录行数与连住天数一致
-        if (!dailyPriceDataGroup.Any(t => t.Count == continuousStayDays)) return Enumerable.Empty<HotelPriceDto>();
-
-
-        //组装查价结果
         List<HotelPriceDto> result = new List<HotelPriceDto>();
-
-
-        //按房型分组输出房型的最低价
-        var RoomCodeGroupData = roomData.GroupBy(t => t.RoomType).Select(t => new { t.Key, item = t.ToList() }).ToList();
-
-
-
-        //查询公司价格调整规则
-        var priceAdjustData = db.Queryable<CompanyDO>()
-            .ClearFilter<ITenantIdFilter>()
-            .Select(t => new { t.TenantId, t.AdjustmentPriceType, t.AdjustmentPriceValue })
-            .ToListAsync();
-
-
-
-        foreach (var roomCodeGroup in RoomCodeGroupData)
-        {
-            List<HotelPriceDto> roomOptions = new List<HotelPriceDto>();
-            foreach (var room in roomCodeGroup.item)
-            {
-                //每日库存
-                var dailyInventory = inventoryGroup.FirstOrDefault(t => room.Id == t.RoomId && t.Count == continuousStayDays);
-                if (dailyInventory is null || dailyInventory?.Count <= 0) continue;
-
-                //价格计划   
-                var pricePlan = pricePlanData.Where(x => x.HotelRoomId == room.Id && x.ContinuousStayDays <= continuousStayDays && x.DaysInAdvance <= advanceDays).ToList();
-                if (pricePlan?.Count <= 0) continue;
-
-
-                //收集当前房型下的价格计划id
-                var roomPricePlanIds = pricePlan!.Select(t => t.Id).ToList();
-
-
-                //每日价格
-                var dailyPrice = dailyPriceDataGroup.Where(t => t.RoomId == room.Id && roomPricePlanIds.Contains(t.PricePlanId) && t.Count == continuousStayDays).ToList();
-                if (dailyPrice?.Count <= 0) continue;
-
-                foreach (var item in pricePlan!)
-                {
-                    var models = dailyPrice!.FirstOrDefault(x => x.PricePlanId == item.Id && x.RoomId == room.Id);
-                    if (models is null) continue;
-
-                    var (isSuccess, searchCode) = CompressedEncryptor.Encrypt(System.Text.Json.JsonSerializer.Serialize(new { DailyPriceIds = models.item.Select(t => t.Id).ToList(), DailyInventoryIds = dailyInventory!.item.Select(t => t.Id).ToList() }), SecretKeyConst.key, SecretKeyConst.iv);
-                    if (!isSuccess) throw new InvalidOperationException("查价唯一值加密失败！");
-
-                    var tempTotalPrice = models.item.Sum(t => t.Price);
-
-                    var adjustmentPrice = (await priceAdjustData).FirstOrDefault(t => t.TenantId == item.TenantId);
-                    if (adjustmentPrice is not null)
-                    {
-
-                        decimal adjustDailyPrice = adjustmentPrice.AdjustmentPriceType switch
-                        {
-                            AdjustmentPriceTypeEnum.FixedValueIncrease => Math.Ceiling((tempTotalPrice + (adjustmentPrice.AdjustmentPriceValue ?? 0)) / continuousStayDays),
-                            AdjustmentPriceTypeEnum.PercentageIncrease => Math.Ceiling(tempTotalPrice * (decimal)((double)(adjustmentPrice.AdjustmentPriceValue ?? 0) / 100) / continuousStayDays),
-                            _ => 0
-                        };
-
-                        foreach (var c in models.item)
-                        {
-                            c.Price = adjustmentPrice.AdjustmentPriceType switch
-                            {
-                                AdjustmentPriceTypeEnum.FixedValueIncrease => adjustDailyPrice,
-                                AdjustmentPriceTypeEnum.PercentageIncrease => c.Price + adjustDailyPrice,
-                                _ => c.Price
-                            };
-                        }
-
-                    }
-                    roomOptions.Add(new HotelPriceDto()
-                    {
-                        HotelCode = room.HotelCode,
-                        RoomCode = room.RoomType,
-                        RoomName = room.HotelRoomTitle ?? string.Empty,
-                        SearchCode = searchCode,
-                        PricePlanId = item.Id.ToString(),
-                        TotalPrice = models.item.Sum(t => t.Price),
-                        DayPrice = models.item!.ToDictionary(t => t.CurrentDate.ToString("yyyy-MM-dd"), t => t.Price),
-                        IsBreakfast = item.BreakfastType.ToDescription(),
-                    });
-                }
-
-            }
-            //筛选最低价
-            var minPrice = roomOptions.OrderBy(o => o.TotalPrice).FirstOrDefault();
-            if (minPrice is not null)
-            {
-                result.Add(minPrice);
-            }
+        var CompanyAndDepartmentChannelList = await MongoDb.GetCollection<CompanyAndDepartmentChannelModel>(nameof(CompanyAndDepartmentChannelModel)).Find<CompanyAndDepartmentChannelModel>(vv=>vv.PFCode == qry.PFCode ).ToListAsync();
+        if (CompanyAndDepartmentChannelList.Count == 0) {
+            return result;
         }
 
+        Expression<Func<HotelQuoteModel, bool>> queryWhere = (HotelQuoteModel p) => p.HotelCode == qry.HotelCode
+                                                                                  && p.CurrentDate >= Convert.ToInt32(Convert.ToDateTime(qry.CheckInDate).ToString("yyyyMMdd"))
+         && p.CurrentDate < Convert.ToInt32(Convert.ToDateTime(qry.CheckOutDate).ToString("yyyyMMdd"))
+         && p.InventoryNum >= qry.RoomNumber
+         && p.MaximumNumberOfPeople >= qry.PersonCount 
+         && p.AdultLimit >= qry.PersonCount
+         && p.DaysInAdvance <= qry.AdvanceDays
+         && p.ContinuousStayDays <= qry.NightNumber;
+
+        var dataList = await MongoDb.GetCollection<HotelQuoteModel>(nameof(HotelQuoteModel)).Find<HotelQuoteModel>(queryWhere).ToListAsync();
+        var UserPricePlanIdList = dataList.Select(vv => vv.UserPricePlanId).Distinct().ToList();
+        foreach (var UserPricePlanId in UserPricePlanIdList) {
+            List<HotelQuoteModel> DayPriceList = new List<HotelQuoteModel>();
+
+            for (int Index = 0; Index < qry.NightNumber; Index++) {
+                var TempTime = Convert.ToDateTime(qry.CheckInDate).AddDays(Index).Date;
+                var TempPriceObjList = dataList.Where(x => x.UserPricePlanId == UserPricePlanId && x.CurrentDate == Convert.ToInt32(TempTime.ToString("yyyyMMdd"))).ToList();
+                if (TempPriceObjList.Count() != 1)
+                {
+                    break;
+                }
+                if (CompanyAndDepartmentChannelList.Any(vv=> vv.CompanyAndDepartmentId == TempPriceObjList.First().CompanyId || vv.CompanyAndDepartmentId == TempPriceObjList.First().DeptId)   ) {
+                    DayPriceList.Add(TempPriceObjList.First());
+                }
+            }
+
+            if (DayPriceList.Count == qry.NightNumber)
+            {
+                result.Add(new HotelPriceDto(qry.RoomNumber)
+                {
+                    HotelCode = DayPriceList.First().HotelCode,
+                    RoomCode = DayPriceList.First().RoomCode,
+                    SearchCode = Common.GetSearchCode(DayPriceList.Select(vv => vv.Id).ToList()),
+                    IsBreakfast = DayPriceList.First().BreakfastType ==  BreakfastTypeEnum.Breakfast,
+                    DayPrice = DayPriceList.Select(vv => Common.AdjustmentPriceForHotel( vv.Price, vv.AdjustmentPriceType,vv.AdjustmentPriceValue )).ToList(),
+                }); 
+            }
+        }
         return result;
     }
+
+
+
 }

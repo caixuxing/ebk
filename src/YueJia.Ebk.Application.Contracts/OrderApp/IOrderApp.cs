@@ -24,6 +24,5 @@ namespace YueJia.Ebk.Application.Contracts.OrderApp
         /// <param name="qry"></param>
         /// <returns></returns>
         Task<PageData<IEnumerable<OrderPageListDto>>> QueryOrderPageAsync(OrderPageListFilterQry qry);
-
     }
 }

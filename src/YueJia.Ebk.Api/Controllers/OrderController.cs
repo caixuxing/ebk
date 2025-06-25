@@ -28,10 +28,10 @@ public class OrderController : AbpController
     public async Task<IResult> CreateOrder([FromBody] CreateOrderCmd cmd) => ApiResult.HandleBoolResult(await OrderApp.CreateOrderAsync(cmd));
 
 
-    /// <summary>
-    /// 订单列表
-    /// </summary>
-    /// <returns></returns>
-    [HttpPost("OrderPageList")]
-    public async Task<IResult> OrderPageList([FromBody] OrderPageListFilterQry qry) => ApiResult.HandleResult(await OrderApp.QueryOrderPageAsync(qry));
+    ///// <summary>
+    ///// 订单列表
+    ///// </summary>
+    ///// <returns></returns>
+    //[HttpPost("OrderPageList")]
+    //public async Task<IResult> OrderPageList([FromBody] OrderPageListFilterQry qry) => ApiResult.HandleResult(await OrderApp.QueryOrderPageAsync(qry));
 }

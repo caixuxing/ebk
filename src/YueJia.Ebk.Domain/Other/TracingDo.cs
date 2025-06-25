@@ -5,7 +5,7 @@
 /// 追踪
 /// </summary>
 [SugarTable("Tracing", "追踪")]
-public record TracingDo : IDeletedFilter
+public record TracingDo 
 {
     /// <summary>
     /// 主键ID
@@ -23,11 +23,11 @@ public record TracingDo : IDeletedFilter
     [SugarColumn(ColumnDescription = "表名", Length = 50, IsNullable = true)]
     public string? TableName { get; set; }
 
-    /// <summary>
-    /// 动作类型
-    /// </summary>
-    [SugarColumn(ColumnDescription = "动作类型", Length = 5, IsNullable = true)]
-    public string? ActionType { get; set; }
+    ///// <summary>
+    ///// 动作类型
+    ///// </summary>
+    //[SugarColumn(ColumnDescription = "动作类型", Length = 5, IsNullable = true)]
+    //public string? ActionType { get; set; }
 
     /// <summary>
     /// 状态（默认0：待处理,1:已完成,2:异常）
@@ -41,9 +41,9 @@ public record TracingDo : IDeletedFilter
     [SugarColumn(ColumnDescription = "创建时间", ColumnDataType = "datetime")]
     public DateTime CreateTime { get; set; }
 
-    /// <summary>
-    /// 是否删除
-    /// </summary>
-    [SugarColumn(ColumnDescription = "是否删除", DefaultValue = "0")]
-    public bool IsDelete { get; set; }
+    ///// <summary>
+    ///// 是否删除
+    ///// </summary>
+    //[SugarColumn(ColumnDescription = "是否删除", DefaultValue = "0")]
+    //public bool IsDelete { get; set; }
 }

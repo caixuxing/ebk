@@ -19,13 +19,13 @@ public class HotelController : AbpController
     /// 查价
     /// </summary>
     /// <returns></returns>
-    [HttpPost("PriceSearch")]
-    public async Task<IResult> PriceSearch([FromBody] PriceSearchQry qry) => ApiResult.HandleResult(await HotelApp.PriceSearch(qry));
+    [HttpPost("SearchPrice")]
+    public async Task<IResult> PriceSearch([FromBody] PriceSearchQry qry) => ApiResult.HandleResult(await HotelApp.SearchPrice(qry));
 
     /// <summary>
     /// 验价
     /// </summary>
     /// <returns></returns>
-    [HttpPost("PriceCheck")]
-    public async Task<IResult> PriceCheck([FromBody] PriceCheckQry qry) => ApiResult.HandleResult(await HotelApp.PriceCheckQry(qry));
+    [HttpPost("CheckPrice")]
+    public async Task<IResult> PriceCheck([FromBody] PriceCheckQry qry) => ApiResult.HandleResult(await HotelApp.CheckPrice(qry));
 }

@@ -76,7 +76,23 @@
         <el-form :inline="true" label-width="auto" style="width:810px;margin:0px auto">
             <div>
                 <el-form-item label="成本 (CNY)">
-                    <el-descriptions direction="vertical" :column="7" border>
+                    <el-descriptions direction="vertical" :column="8" border>
+                        <el-descriptions-item label-class-name="my-label">
+                            <el-input-number v-model="batchPrice"
+                                             v-on:change="vmodel.model.sunday = batchPrice;
+                                                          vmodel.model.monday = batchPrice;
+                                                          vmodel.model.tuesday = batchPrice;
+                                                          vmodel.model.wednesday = batchPrice;
+                                                          vmodel.model.thursday = batchPrice;
+                                                          vmodel.model.friday = batchPrice;
+                                                          vmodel.model.saturday = batchPrice;"
+                                             :controls="false"
+                                             :value-on-clear="0"
+                                             style="width:80px"
+                                             :precision="0"
+                                             :min="0"
+                                             :max="100"></el-input-number>
+                        </el-descriptions-item>
                         <el-descriptions-item label="星期天" label-class-name="my-label">
                             <el-input-number v-model="vmodel.model.sunday" :controls="false" :value-on-clear="0" style="width:80px"  :min="0" :max="100000"></el-input-number>
                         </el-descriptions-item>
@@ -123,6 +139,8 @@
                     A_isEnable :true,
                });
 
+               const batchPrice = Vue.ref(0);
+
                 Vue.onMounted(() => {
                      vmodel.A_isReservedRoom = vmodel.model.isReservedRoom==1;
                      vmodel.A_isEnable =  vmodel.model.isEnable==1;
@@ -148,6 +166,7 @@
 
                 return {
                     vmodel
+                    ,batchPrice
                     ,onSave
                 }
         }

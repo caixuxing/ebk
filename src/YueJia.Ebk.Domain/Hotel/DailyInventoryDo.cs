@@ -32,7 +32,7 @@ public partial record DailyInventoryDo : EntityTenant
     /// 是否启用
     /// </summary>
     [SugarColumn(ColumnDescription = "是否启用")]
-    public YesOrNoType IsEnable { get; set; }
+    public YesOrNoType IsEnabled { get; set; }
 }
 
 public partial record DailyInventoryDo
@@ -44,7 +44,7 @@ public partial record DailyInventoryDo
         RoomId = roomId;
         CurrentDate = currentDate;
         InventoryNum = inventoryNum;
-        IsEnable = isEnable;
+        IsEnabled = isEnable;
     }
 
     public static DailyInventoryDo Create(long roomId, DateTime currentDate, int inventoryNum, YesOrNoType isEnable)
@@ -60,7 +60,7 @@ public partial record DailyInventoryDo
     public DailyInventoryDo SetIsEnable(YesOrNoType isEnable)
     {
 
-        IsEnable = isEnable;
+        IsEnabled = isEnable;
         return this;
     }
     public DailyInventoryDo SetTenantId(long tenantId)
