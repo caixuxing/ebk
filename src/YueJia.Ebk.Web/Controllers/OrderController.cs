@@ -1,7 +1,9 @@
 ﻿using YueJia.Ebk.Application.Contracts.OrderApp;
 using YueJia.Ebk.Application.Contracts.OrderApp.Qry;
+using YueJia.Ebk.Application.Contracts.OuterServiceApp;
 using YueJia.Ebk.Application.Contracts.SysApp;
 using YueJia.Ebk.Application.Contracts.SysUserApp;
+using YueJia.Ebk.Application.OuterServiceApp;
 using YueJia.Ebk.Application.SysUserApp;
 
 namespace YueJia.Ebk.Web.Controllers
@@ -22,14 +24,18 @@ namespace YueJia.Ebk.Web.Controllers
 
         private ISysUserApp sysUserApp => LazyServiceProvider.LazyGetRequiredService<ISysUserApp>();
 
+        private IYueJiaSysServiceApp yueJiaSysServiceApp => LazyServiceProvider.LazyGetRequiredService<IYueJiaSysServiceApp>();
+
+
         /// <summary>
         /// 用户订单管理（View）
         /// </summary>
         /// <returns></returns>
-        public IActionResult UserOrderMgr()
+        public async Task<IActionResult> UserOrderMgr()
         {
             ViewBag.UserId = currentUserApp.Id.ToString();
             ViewBag.GetManageUserList = sysUserApp.GetManageUserList();
+            ViewBag.CountryList = await yueJiaSysServiceApp.GetDropDownCountryListAsync();
             ViewBag.OrderStateData = JsonConvert.SerializeObject(SysEnumApp.GetEnumDataList(nameof(BookingStateTypeEnum)), new JsonSerializerSettings { ContractResolver = new CamelCasePropertyNamesContractResolver() });
             return View();
         }

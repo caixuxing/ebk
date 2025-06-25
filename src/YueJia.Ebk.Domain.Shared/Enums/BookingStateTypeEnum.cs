@@ -22,8 +22,8 @@ public enum BookingStateTypeEnum
     BookConfirmed = 1,
 
     /// <summary>
-    /// 成功
+    /// 无效
     /// </summary>
-    [Description("成功")]
-    BookInvalid = 1,
+    [Description("无效")]
+    BookInvalid = 2,
 }

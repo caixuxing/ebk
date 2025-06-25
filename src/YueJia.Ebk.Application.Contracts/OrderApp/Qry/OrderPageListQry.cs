@@ -10,29 +10,42 @@ public record OrderPageListFilterQry : BasePageQry
     /// </summary>
     public int DateType { get; set; }
 
-    /// <summary>
-    /// 日期范围
-    /// </summary>
-    /// <param name="start"></param>
-    /// <param name="end"></param>
-    /// <returns></returns>
-    public record DateRange(DateTime start, DateTime end);
+    public string StartDate { get; set; }
+    public string EndDate { get; set; }
 
     /// <summary>
     /// 预订号
     /// </summary>
-    public string? OrderNum { get; set; }
+    public string OrderNum { get; set; }
 
-    /// <summary>
-    /// 酒店Code
-    /// </summary>
-    public string? HotelCode { get; set; }
     /// <summary>
     /// 酒店名称
     /// </summary>
 
-    public string? HotelName { get; set; }
+    public string HotelName { get; set; }
 
     public string UserId { get; set; }
+
+
+    /// <summary>
+    /// 酒店编码
+    /// </summary>
+    public string HotelCode { get; set; }
+
+
+    /// <summary>
+    /// 状态
+    /// </summary>
+    public HotelSaleTypeEnum? Status { get; set; }
+
+    /// <summary>
+    /// 国家 Ios
+    /// </summary>
+    public int? countryId { get; set; }
+
+    /// <summary>
+    /// 城市名称
+    /// </summary>
+    public string cityName { get; set; }
 
 }
