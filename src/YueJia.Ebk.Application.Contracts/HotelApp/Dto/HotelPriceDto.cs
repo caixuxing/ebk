@@ -5,6 +5,10 @@
 /// </summary>
 public record HotelPriceDto
 {
+
+    public HotelPriceDto(int _RoomNumber) {
+        RoomNumber = _RoomNumber;
+    }
     /// <summary>
     /// 酒店代码
     /// </summary>
@@ -20,33 +24,29 @@ public record HotelPriceDto
     /// </summary>
     public string RoomCode { get; set; } = default!;
 
-    /// <summary>
-    /// 房间类型
-    /// </summary>
-    public string RoomName { get; set; } = default!;
 
-    /// <summary>
-    /// 房间类型英文名
-    /// </summary>
-    public string RoomNameEn { get; set; } = default!;
 
     /// <summary>
     /// 餐食
     /// </summary>
-    public string IsBreakfast { get; set; } = default!;
+    public bool IsBreakfast { get; set; } = default!;
 
-    /// <summary>
-    /// 价格计划Id
-    /// </summary>
-    public string PricePlanId { get; set; } = default!;
 
     /// <summary>
     /// 总价
     /// </summary>
-    public decimal TotalPrice { get; set; }
+    public int TotalPrice
+    {
+        get {
+            return DayPrice.Sum(dayPrice => dayPrice) * RoomNumber;
+        }
+    }
 
     /// <summary>
     /// 每日价格集合
     /// </summary>
-    public Dictionary<string, decimal> DayPrice { get; set; } = new();
+    public List<int> DayPrice { get; set; } = new();
+
+     int RoomNumber { get; set; }
+
 }

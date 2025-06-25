@@ -86,7 +86,23 @@
             <div>
                 <el-form-item label="房间库存" >
 
-                    <el-descriptions  direction="vertical" :column="7" border>
+                    <el-descriptions  direction="vertical" :column="8" border>
+                        <el-descriptions-item  label-class-name="my-label">
+                            <el-input-number v-model="batchNumber"
+                                             v-on:change="model.sunday = batchNumber;
+                                                          model.monday = batchNumber;
+                                                          model.tuesday = batchNumber;
+                                                          model.wednesday = batchNumber;
+                                                          model.thursday = batchNumber;
+                                                          model.friday = batchNumber;
+                                                          model.saturday = batchNumber;"
+                                            :controls="false" 
+                                            :value-on-clear="0" 
+                                            style="width:80px" 
+                                            :precision="0" 
+                                            :min="0" 
+                                            :max="100"></el-input-number>
+                        </el-descriptions-item>
                         <el-descriptions-item label="星期天" label-class-name="my-label">
                             <el-input-number v-model="model.sunday" :controls="false" :value-on-clear="0" style="width:80px" :precision="0" :min="0" :max="100"></el-input-number>
                         </el-descriptions-item>
@@ -131,6 +147,9 @@
         @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model, new System.Text.Json.JsonSerializerOptions() { PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase }))
                 );
 
+
+                const batchNumber = Vue.ref(0);
+
                 const otaRoomList = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(await yueJiaSysServiceApp.GetOTARoomAsync(Model.HotelCode), new System.Text.Json.JsonSerializerOptions() { PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase }));
                
                 Vue.onMounted(() => {
@@ -167,6 +186,7 @@
 
                 return {
                     model
+                    ,batchNumber
                     ,userEvent
                     ,otaRoomList
                 }

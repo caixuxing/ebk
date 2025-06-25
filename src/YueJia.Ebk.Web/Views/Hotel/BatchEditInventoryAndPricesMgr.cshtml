@@ -57,7 +57,6 @@
                  </el-form-item>
                     <el-form-item v-if="index > 0" style="margin-bottom:5px;">
                         <el-button size="small" v-on:click="vmodel.dateRangeList.splice(index,1)  ">-</el-button>
-                        {{dateRange}} * {{index}}
                  </el-form-item>
             </div>
             <div>
@@ -249,7 +248,6 @@
                     activeName:'simple',
                     dateRangeList:[
                         [ '@DateTime.Now.ToString("yyyy-MM-dd")', '@DateTime.Now.AddMonths(1).AddDays(-1).ToString("yyyy-MM-dd")'],
-                        [ '@DateTime.Now.ToString("yyyy-MM-dd")', '@DateTime.Now.AddMonths(1).AddDays(-1).ToString("yyyy-MM-dd")'],
                     ],
                     
                     // ,
@@ -377,7 +375,7 @@
                             userHotelId:'@ViewBag.mv.Id',
                             userRoomList:userRoomList,
                             userPlanList:userPlanList,
-                            dateRangeList = vmodel.dateRangeList,
+                            dateRangeList : vmodel.dateRangeList,
                             weekIndexList : vmodel.weekIndexList,
                        }
                        console.log(reqData);

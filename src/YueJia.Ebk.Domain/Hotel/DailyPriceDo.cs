@@ -35,23 +35,23 @@ public partial record DailyPriceDo : EntityTenant
     /// 是否启用
     /// </summary>
     [SugarColumn(ColumnDescription = "是否启用")]
-    public YesOrNoType IsEnable { get; set; }
+    public YesOrNoType IsEnabled { get; set; }
 }
 public partial record DailyPriceDo
 {
-    private DailyPriceDo(long roomId, long pricePlanId, DateTime currentDate, decimal price, YesOrNoType isEnable)
+    private DailyPriceDo(long roomId, long pricePlanId, DateTime currentDate, decimal price, YesOrNoType isEnabled)
     {
         Id = SnowFlakeSingle.instance.getID();
         RoomId = roomId;
         PricePlanId = pricePlanId;
         CurrentDate = currentDate;
         Price = price;
-        IsEnable = isEnable;
+        IsEnabled = isEnabled;
     }
 
-    public static DailyPriceDo Create(long roomId, long pricePlanId, DateTime currentDate, decimal price, YesOrNoType isEnable)
+    public static DailyPriceDo Create(long roomId, long pricePlanId, DateTime currentDate, decimal price, YesOrNoType isEnabled)
     {
-        return new DailyPriceDo(roomId, pricePlanId, currentDate, price, isEnable);
+        return new DailyPriceDo(roomId, pricePlanId, currentDate, price, isEnabled);
     }
 
     public DailyPriceDo SetPrice(decimal price)
@@ -61,7 +61,7 @@ public partial record DailyPriceDo
     }
     public DailyPriceDo SetIsEnable(YesOrNoType isEnable)
     {
-        IsEnable = isEnable;
+        IsEnabled = isEnable;
         return this;
     }
 

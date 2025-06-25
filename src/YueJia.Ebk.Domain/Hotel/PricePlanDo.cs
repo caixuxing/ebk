@@ -48,7 +48,7 @@ public partial record PricePlanDo : EntityTenant
     /// 是否启用
     /// </summary>
     [SugarColumn(ColumnDescription = "是否启用")]
-    public YesOrNoType IsEnable { get; set; }
+    public YesOrNoType IsEnabled { get; set; }
 
     /// <summary>
     /// 备注
@@ -71,7 +71,7 @@ public partial record PricePlanDo
         DaysInAdvance = daysInAdvance;
         ContinuousStayDays = continuousStayDays;
         IsReservedRoom = isReservedRoom;
-        IsEnable = isEnable;
+        IsEnabled = isEnable;
     }
 
     public static PricePlanDo Create(long hotelRoomId, string pricePlanTitle, BreakfastTypeEnum breakfastType, int daysInAdvance, int continuousStayDays, YesOrNoType isReservedRoom, YesOrNoType isEnable)
@@ -107,7 +107,7 @@ public partial record PricePlanDo
 
     public PricePlanDo SetIsEnable(YesOrNoType isEnable)
     {
-        IsEnable = isEnable;
+        IsEnabled = isEnable;
         return this;
     }
 }

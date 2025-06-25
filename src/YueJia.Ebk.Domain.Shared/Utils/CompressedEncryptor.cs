@@ -17,23 +17,16 @@ public class CompressedEncryptor
     /// <param name="key">加密密钥(32字节，256位)</param>
     /// <param name="iv">初始化向量(16字节，128位)</param>
     /// <returns>Base64编码的加密结果</returns>
-    public static (bool, string) Encrypt(string plainText, byte[] key, byte[] iv)
+    public static string Encrypt(string plainText, byte[] key, byte[] iv)
     {
-        try
-        {
-            // 1. 将原始文本转换为UTF-8编码的字节数组
-            byte[] compressed = Compress(Encoding.UTF8.GetBytes(plainText));
-
-            // 2. 使用AES加密压缩后的数据
-            byte[] encrypted = EncryptBytes(compressed, key, iv);
-
-            // 3. 将加密结果转换为Base64字符串以便安全传输/存储
-            return (true, Convert.ToBase64String(encrypted));
-        }
-        catch (Exception ex)
-        {
-            return (false, $"加密失败：{ex.Message}");
-        }
+        // 1. 将原始文本转换为UTF-8编码的字节数组
+        byte[] compressed = Compress(Encoding.UTF8.GetBytes(plainText));
+        
+        // 2. 使用AES加密压缩后的数据
+        byte[] encrypted = EncryptBytes(compressed, key, iv);
+        
+        // 3. 将加密结果转换为Base64字符串以便安全传输/存储
+        return  Convert.ToBase64String(encrypted);
     }
 
     /// <summary>
@@ -43,10 +36,9 @@ public class CompressedEncryptor
     /// <param name="key">加密时使用的密钥(32字节)</param>
     /// <param name="iv">加密时使用的初始化向量(16字节)</param>
     /// <returns>解密后的原始文本</returns>
-    public static (bool, string) Decrypt(string cipherText, byte[] key, byte[] iv)
+    public static string Decrypt(string cipherText, byte[] key, byte[] iv)
     {
-        try
-        {
+     
             // 1. 将Base64字符串转换回字节数组
             byte[] encrypted = Convert.FromBase64String(cipherText);
 
@@ -57,13 +49,8 @@ public class CompressedEncryptor
             byte[] decompressed = Decompress(decrypted);
 
             // 4. 将字节数组转换回UTF-8字符串
-            return (true, Encoding.UTF8.GetString(decompressed));
-        }
-
-        catch (Exception ex)
-        {
-            return (false, $"解密失败：{ex.Message}");
-        }
+            return  Encoding.UTF8.GetString(decompressed);
+   
     }
 
     /// <summary>

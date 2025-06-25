@@ -17,23 +17,12 @@ public partial record OrderDo : EntityTenant, IEntity<long>
     [SugarColumn(ColumnDescription = "预订号", Length = 50)]
     public string OrderNum { get; set; } = default!;
 
-    /// <summary>
-    /// 预订日期
-    /// </summary>
-    [SugarColumn(ColumnDescription = "预订日期")]
-    public DateTime BookingDate { get; set; } = default!;
 
     /// <summary>
     /// 预订单状态
     /// </summary>
     [SugarColumn(ColumnDescription = "预订单状态")]
     public BookingStateTypeEnum State { get; set; } = default!;
-
-    /// <summary>
-    /// 酒店Code
-    /// </summary>
-    [SugarColumn(ColumnDescription = "酒店Code", Length = 50)]
-    public string HotelCode { get; set; } = default!;
 
     /// <summary>
     /// 用户酒店ID
@@ -47,23 +36,6 @@ public partial record OrderDo : EntityTenant, IEntity<long>
     [SugarColumn(ColumnDescription = "房型Code", Length = 20)]
     public string RoomCode { get; set; } = default!;
 
-    /// <summary>
-    /// 房型名称
-    /// </summary>
-    [SugarColumn(ColumnDescription = "床型名称", Length = 200)]
-    public string RoomName { get; set; } = default!;
-
-    /// <summary>
-    /// 床型名称
-    /// </summary>
-    [SugarColumn(ColumnDescription = "床型名称", Length = 200)]
-    public string BedName { get; set; } = default!;
-
-    /// <summary>
-    /// 床型Code
-    /// </summary>
-    [SugarColumn(ColumnDescription = "床型Code", Length = 20)]
-    public string BedCode { get; set; } = default!;
 
     /// <summary>
     /// 餐食类型
@@ -86,31 +58,31 @@ public partial record OrderDo : EntityTenant, IEntity<long>
     /// 订单总金额
     /// </summary>
     [SugarColumn(ColumnDescription = "订单总金额", ColumnDataType = "decimal(10,2)")]
-    public decimal TotalAmount { get; set; } = default!;
+    public decimal SaleAmount { get; set; } 
+
+    /// <summary>
+    /// 成本金额
+    /// </summary>
+    [SugarColumn(ColumnDescription = "成本金额", ColumnDataType = "decimal(10,2)")]
+    public decimal CostAmount { get; set; } 
 
     /// <summary>
     /// 酒店确认号
     /// </summary>
     [SugarColumn(ColumnDescription = "酒店确认号", IsNullable = true, Length = 50)]
-    public string HotelConfirmNum { get; set; } = default!;
+    public string HotelConfirmNum { get; set; } 
 
     /// <summary>
     /// 订房间数
     /// </summary>
     [SugarColumn(ColumnDescription = "订房间数")]
-    public int NumberOfRoomsBooked { get; set; }
+    public int RoomNumber { get; set; }
 
     /// <summary>
     /// 几晚
     /// </summary>
     [SugarColumn(ColumnDescription = "几晚")]
     public int HowManyNights { get; set; }
-
-    /// <summary>
-    /// 客户姓名（第一房  第一入住人）
-    /// </summary>
-    [SugarColumn(ColumnDescription = "客户姓名", Length = 150)]
-    public string CustomerName { get; set; } = default!;
 
     /// <summary>
     /// 备注
@@ -123,36 +95,31 @@ public partial record OrderDo : EntityTenant, IEntity<long>
 
 public partial record OrderDo
 {
-    private OrderDo(string orderNum, DateTime bookingDate, BookingStateTypeEnum state, string hotelCode,
-        long userHotelId, string roomCode, string roomName, string bedName, string bedCode, BreakfastTypeEnum breakfastType, DateTime checkInDate,
-        DateTime checkOutDate, decimal totalAmount, string hotelConfirmNum, int numberOfRoomsBooked,
-        int howManyNights, string customerName, string remark, string createdbyId, string createdbyName, long tenantId)
+    private OrderDo(string orderNum,  BookingStateTypeEnum state, 
+        long userHotelId, string roomCode,  BreakfastTypeEnum breakfastType, DateTime checkInDate,
+        DateTime checkOutDate, decimal saleAmount,decimal costAmount, string hotelConfirmNum, int roomNumber,
+        int howManyNights,  string remark, string createdbyId,  long tenantId)
     {
         OrderNum = orderNum;
-        BookingDate = bookingDate;
         State = state;
-        HotelCode = hotelCode;
         UserHotelId = userHotelId;
         RoomCode = roomCode;
-        RoomName = roomName;
-        BedName = bedName;
-        BedCode = bedCode;
         BreakfastType = breakfastType;
         CheckInDate = checkInDate;
         CheckOutDate = checkOutDate;
-        TotalAmount = totalAmount;
+        SaleAmount = saleAmount;
+        CostAmount = costAmount;
         HotelConfirmNum = hotelConfirmNum;
-        NumberOfRoomsBooked = numberOfRoomsBooked;
+        RoomNumber = roomNumber;
         HowManyNights = howManyNights;
-        CustomerName = customerName;
         Remark = remark;
         this.CreatedbyId = createdbyId;
-        this.CreatedbyName = createdbyName;
+        this.CreatedbyName = "sys";
         this.TenantId = tenantId;
     }
 
-    public static OrderDo Create(string orderNum, DateTime bookingDate, BookingStateTypeEnum state, string hotelCode, long userHotelId, string roomCode, string roomName, string bedName, string bedCode, BreakfastTypeEnum breakfastType, DateTime checkInDate, DateTime checkOutDate, decimal totalAmount, string hotelConfirmNum, int numberOfRoomsBooked, int howManyNights, string customerName, string remark, string createdbyId, string createdbyName, long tenantId)
+    public static OrderDo Create(string orderNum, BookingStateTypeEnum state,  long userHotelId, string roomCode,  BreakfastTypeEnum breakfastType, DateTime checkInDate, DateTime checkOutDate, decimal saleAmount, decimal costAmount, string hotelConfirmNum, int roomNumber, int howManyNights,  string remark, string createdbyId,  long tenantId)
     {
-        return new OrderDo(orderNum, bookingDate, state, hotelCode, userHotelId, roomCode, roomName, bedName, bedCode, breakfastType, checkInDate, checkOutDate, totalAmount, hotelConfirmNum, numberOfRoomsBooked, howManyNights, customerName, remark, createdbyId, createdbyName, tenantId);
+        return new OrderDo(orderNum, state,  userHotelId, roomCode,  breakfastType, checkInDate, checkOutDate, saleAmount, costAmount, hotelConfirmNum, roomNumber, howManyNights,  remark, createdbyId,  tenantId);
     }
 }
