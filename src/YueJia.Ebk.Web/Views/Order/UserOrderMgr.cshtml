@@ -13,6 +13,14 @@
                     </el-select>
 
                 </el-form-item>
+                <el-form-item label="用户" style="margin-bottom:5px;">
+                    <el-select v-model="state.qry.userId" style="width:200px;" filterable v-on:change="pageIndex=1;userEvent.loadData()">
+                        @foreach (YueJia.Ebk.Application.Contracts.SysUserApp.Dto.SysUserDetailsDto ele in ViewBag.GetManageUserList)
+                        {
+                            <el-option label="@ele.RealName" value="@ele.Id.ToString()"></el-option>
+                        }
+                    </el-select>
+                </el-form-item>
                 <el-form-item prop="desc" style="margin-bottom:5px;">
                     <el-button type="primary" v-on:click="pageIndex=1;loadData()" id="query">查询</el-button>
                     <el-button v-on:click="resetQueryForm">重置</el-button>
@@ -34,15 +42,40 @@
                     </div>
                 </template>
             </el-table-column>
-            <el-table-column label="订单号" width="120px" align="center" fixed>
+            <el-table-column label="订单号" width="160px" align="center" fixed>
                    <template #default="scope">
-      @*               <label v-on:click="userEvent.onToUserHotel(scope.row)" style="color: #1890ff;cursor: pointer; "> </label> *@
                      <el-link :underline="false" type="primary" v-on:click="ViewDetail(scope.row)">{{ scope.row.orderNum }}</el-link>
                 </template>
             </el-table-column>
+
+            <el-table-column label="国家" width="120px" align="center" >
+                <template #default="scope">
+                   <div style="text-align:left" >
+                        <el-text>{{ scope.row.countryName }}</el-text>
+                   </div>
+                </template>
+            </el-table-column>
+            <el-table-column label="酒店名称" width="220px" align="center" show-overflow-tooltip>
+                <template #default="scope">
+                    <div style="text-align:left">
+                        <el-text>{{ scope.row.hotelName }}</el-text>
+                    </div>
+                    <div style="text-align:left">
+                        <el-text>{{ scope.row.hotelNameEn }}</el-text>
+                    </div>
+                </template>
+            </el-table-column>
+
+            <el-table-column label="入店/离店" width="120" align="center">
+                <template #default="scope">
+                    <p>  {{ scope.row.checkInDateString }}</p>
+                    <p>  {{ scope.row.checkOutDateString }}</p>
+                </template>
+            </el-table-column>
+
             <el-table-column label="订单时间" width="160px" align="center">
                 <template #default="scope" >
-                    {{ scope.row.bookingDate }}
+                    {{ scope.row.createTimeString }}
                 </template>
             </el-table-column>
             <el-table-column label="酒店名称/间夜数" width="auto" min-width="280px" align="center" show-overflow-tooltip>
@@ -65,12 +98,7 @@
             </el-table-column>
             
 
-            <el-table-column label="入店/离店" width="120" align="center">
-                <template #default="scope" >
-                  <p>  {{ scope.row.checkInDate }}</p>
-                  <p>  {{ scope.row.checkOutDate }}</p>
-                </template>
-            </el-table-column>
+
 
             <el-table-column label="价格" width="auto" max-width="80px" align="center">
                 <template #default="scope">
@@ -141,7 +169,7 @@
         const app = Vue.createApp({
         setup() {
 
-           let qry = {  accountName: '',isEnabled: null,pageIndex: 1,pageSize: 50,totalCount: 0 }
+           let qry = {  accountName: '',isEnabled: null,pageIndex: 1,pageSize: 50,totalCount: 0 , userId:'@ViewBag.UserId'}
 
            const state = Vue.reactive({
                 qry:  qry,
@@ -149,6 +177,7 @@
                 orderSateList:@(Html.Raw(ViewBag.OrderStateData)),
             });
            Vue.onMounted(() => { loadData()  });
+
             const loadData = () => {
                 axios.post(`/Order/OrderPageList`, {...state.qry}).then(response => {
                     let {data,status}=response;

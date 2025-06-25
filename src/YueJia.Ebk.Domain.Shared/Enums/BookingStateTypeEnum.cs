@@ -9,16 +9,21 @@ namespace YueJia.Ebk.Domain.Shared.Enums;
 
 public enum BookingStateTypeEnum
 {
-
     /// <summary>
     /// 失败
     /// </summary>
     [Description("失败")]
-    ToBeConfirmed = 0,
+    BookFail = 0,
 
     /// <summary>
     /// 成功
     /// </summary>
     [Description("成功")]
-    Pending = 1
+    BookConfirmed = 1,
+
+    /// <summary>
+    /// 成功
+    /// </summary>
+    [Description("成功")]
+    BookInvalid = 1,
 }

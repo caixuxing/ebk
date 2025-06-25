@@ -33,4 +33,6 @@ public record OrderPageListFilterQry : BasePageQry
 
     public string? HotelName { get; set; }
 
+    public string UserId { get; set; }
+
 }

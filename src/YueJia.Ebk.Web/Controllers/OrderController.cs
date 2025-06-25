@@ -1,6 +1,8 @@
 ﻿using YueJia.Ebk.Application.Contracts.OrderApp;
 using YueJia.Ebk.Application.Contracts.OrderApp.Qry;
 using YueJia.Ebk.Application.Contracts.SysApp;
+using YueJia.Ebk.Application.Contracts.SysUserApp;
+using YueJia.Ebk.Application.SysUserApp;
 
 namespace YueJia.Ebk.Web.Controllers
 {
@@ -16,12 +18,18 @@ namespace YueJia.Ebk.Web.Controllers
 
         private ISysEnumApp SysEnumApp => LazyServiceProvider.LazyGetRequiredService<ISysEnumApp>();
 
+        private ICurrentUserApp currentUserApp => LazyServiceProvider.LazyGetRequiredService<ICurrentUserApp>();
+
+        private ISysUserApp sysUserApp => LazyServiceProvider.LazyGetRequiredService<ISysUserApp>();
+
         /// <summary>
         /// 用户订单管理（View）
         /// </summary>
         /// <returns></returns>
         public IActionResult UserOrderMgr()
         {
+            ViewBag.UserId = currentUserApp.Id.ToString();
+            ViewBag.GetManageUserList = sysUserApp.GetManageUserList();
             ViewBag.OrderStateData = JsonConvert.SerializeObject(SysEnumApp.GetEnumDataList(nameof(BookingStateTypeEnum)), new JsonSerializerSettings { ContractResolver = new CamelCasePropertyNamesContractResolver() });
             return View();
         }

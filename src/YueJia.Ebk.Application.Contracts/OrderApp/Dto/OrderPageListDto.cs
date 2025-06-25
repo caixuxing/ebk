@@ -15,6 +15,10 @@ public record OrderPageListDto
     /// 预订号
     /// </summary>
     public string OrderNum { get; set; } = default!;
+
+    public string CountryName { get; set; }
+    public string CityName { get; set; }
+
     /// <summary>
     /// 酒店名称
     /// </summary>
@@ -24,12 +28,6 @@ public record OrderPageListDto
     /// </summary>
 
     public string HotelNameEn { get; set; } = default!;
-
-    /// <summary>
-    /// 预订日期
-    /// </summary>
-    [JsonConverter(typeof(DateTimeConverter))]
-    public DateTime BookingDate { get; set; } = default!;
 
     /// <summary>
     /// 预订单状态
@@ -50,12 +48,10 @@ public record OrderPageListDto
     /// <summary>
     /// 入店日期
     /// </summary>
-    [JsonConverter(typeof(DateConverter))]
     public DateTime CheckInDate { get; set; }
     /// <summary>
     /// 离店日期
     /// </summary>
-    [JsonConverter(typeof(DateConverter))]
     public DateTime CheckOutDate { get; set; }
 
     /// <summary>
@@ -75,7 +71,7 @@ public record OrderPageListDto
     /// <summary>
     /// 订单总金额
     /// </summary>
-    public decimal TotalAmount { get; set; } = default!;
+    public decimal CostAmount { get; set; } = default!;
 
     /// <summary>
     /// 酒店确认号
@@ -85,25 +81,34 @@ public record OrderPageListDto
     /// <summary>
     /// 订房间数
     /// </summary>
-    public int NumberOfRoomsBooked { get; set; }
+    public int RoomNumber { get; set; }
     /// <summary>
     /// 几晚
     /// </summary>
     public int HowManyNights { get; set; }
+    public DateTime CreateTime { get; set; }
 
-    /// <summary>
-    /// 客户姓名（第一房  第一入住人）
-    /// </summary>
-    public string CustomerName { get; set; } = default!;
 
-    /// <summary>
-    /// 房型名称
-    /// </summary>
-    public string RoomName { get; set; } = default!;
+    public string CreateTimeString
+    {
+        get {
+            return CreateTime.ToString("yyyy-MM-dd HH:mm:ss");
+        }
+    }
 
-    /// <summary>
-    /// 床型名称
-    /// </summary>
-    public string BedName { get; set; } = default!;
+    public string CheckInDateString
+    {
+        get
+        {
+            return CheckInDate.ToString("yyyy-MM-dd");
+        }
+    }
+    public string CheckOutDateString
+    {
+        get
+        {
+            return CheckOutDate.ToString("yyyy-MM-dd");
+        }
+    }
 
 }
