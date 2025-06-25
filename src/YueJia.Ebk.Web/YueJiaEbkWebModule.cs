@@ -1,8 +1,8 @@
 ﻿using Microsoft.AspNetCore.Authentication.Cookies;
 using System.Net;
 using System.Text.Json.Serialization;
-using Volo.Abp.Auditing;
 using YueJia.Ebk.Domain.Shared.Response;
+using YueJia.Ebk.Infrastructure.JobWork;
 using YueJia.Ebk.Web.Filter;
 
 namespace YueJia.Ebk.Web;
@@ -148,25 +148,12 @@ internal class YueJiaEbkWebModule : AbpModule
 
 
 
-        Configure<AbpAuditingOptions>(options =>
+        context.Services.AddHostedService<EbkDbSyncService>();
+        context.Services.AddHostedService<EbkPublishService>();
+        context.Services.Configure<HostOptions>(options =>
         {
-            // 启用审计日志
-            options.IsEnabled = true;
-            // 隐藏敏感数据
-            options.HideErrors = false;
-            //启用记录get请求
-            options.IsEnabledForGetRequests = true;
-
-            // 自定义应用名称
-            options.ApplicationName = "MyApplication";
+            options.BackgroundServiceExceptionBehavior = BackgroundServiceExceptionBehavior.Ignore;
         });
-
-        Configure<AbpAuditingOptions>(options =>
-        {
-            options.EntityHistorySelectors.AddAllEntities();
-        });
-
-
 
 
         return base.ConfigureServicesAsync(context);
@@ -174,6 +161,11 @@ internal class YueJiaEbkWebModule : AbpModule
 
     public override Task OnPreApplicationInitializationAsync(ApplicationInitializationContext context)
     {
+
+
+
+
+
 
         return base.OnPreApplicationInitializationAsync(context);
     }
@@ -195,8 +187,6 @@ internal class YueJiaEbkWebModule : AbpModule
                                                   //options.DefaultModelExpandDepth(0);  // 可选：设置单个模型默认折叠
             options.DocExpansion(DocExpansion.None); // 可选：禁用文档中的默认展开
         });
-        app.UseAuditing();
-
         return base.OnApplicationInitializationAsync(context);
     }
 

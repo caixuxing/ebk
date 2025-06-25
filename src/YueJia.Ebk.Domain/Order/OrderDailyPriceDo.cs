@@ -36,8 +36,8 @@ public partial record OrderDailyPriceDo
         DayPrice = dayPrice;
     }
 
-    public static OrderDailyPriceDo Create(string orderNum,  DateTime currentDate, decimal dayPrice)
+    public static OrderDailyPriceDo Create(string orderNum, DateTime currentDate, decimal dayPrice)
     {
-        return new OrderDailyPriceDo(orderNum,  currentDate, dayPrice);
+        return new OrderDailyPriceDo(orderNum, currentDate, dayPrice);
     }
 }

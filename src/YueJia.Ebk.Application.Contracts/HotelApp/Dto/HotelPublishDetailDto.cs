@@ -5,7 +5,7 @@ namespace YueJia.Ebk.Application.Contracts.HotelApp.Dto;
 /// <summary>
 /// 
 /// </summary>
-public class HotelPublishDetailDto : CreateOrUpHotelPublishCmd
+public record HotelPublishDetailDto : CreateOrUpHotelPublishCmd
 {
     public string Id { get; set; }
 }

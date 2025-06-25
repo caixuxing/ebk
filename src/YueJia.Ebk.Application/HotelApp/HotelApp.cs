@@ -16,6 +16,7 @@ using YueJia.Ebk.Domain.AggRoot;
 using YueJia.Ebk.Domain.Company;
 using YueJia.Ebk.Domain.Hotel;
 using YueJia.Ebk.Domain.MongdbModel;
+using YueJia.Ebk.Domain.Other;
 using YueJia.Ebk.Domain.Shared.Const;
 using YueJia.Ebk.Domain.Shared.Dto;
 
@@ -82,10 +83,16 @@ public class HotelApp : ApplicationService, IHotelApp
 
             dailyInventoryDoList.Add(DailyInventoryDo.Create(entity.Id, date, stockNum, YesOrNoType.Yes));
         }
+
+
+
+        var logs = CustomerLogsDo.Create("添加酒店房间", $"酒店编码:{entity.HotelCode},房间：{entity.HotelRoomTitle}", null, entity.ToString());
+
         await DbTransaction.ExecuteInTransactionAsync(db, async () =>
       {
           await db.Insertable<DailyInventoryDo>(dailyInventoryDoList).ExecuteCommandAsync();
           await db.Insertable(entity).ExecuteCommandAsync();
+          await db.Insertable(logs).ExecuteReturnSnowflakeIdAsync();
           return entity.Id;
       });
         return true;
@@ -863,7 +870,8 @@ public class HotelApp : ApplicationService, IHotelApp
         //处理库存
         foreach (var userRoomId in qry.userRoomIdList)
         {
-            foreach (var dateRange in qry.dateRangeList) {
+            foreach (var dateRange in qry.dateRangeList)
+            {
                 var startDate = Convert.ToDateTime(dateRange[0]);
                 var endDate = Convert.ToDateTime(dateRange[1]);
 
@@ -900,7 +908,7 @@ public class HotelApp : ApplicationService, IHotelApp
                     }
                 }
             }
- 
+
         }
 
         //处理价格
@@ -1028,7 +1036,8 @@ public class HotelApp : ApplicationService, IHotelApp
         //处理价格
         foreach (var ele in qry.userPlanList)
         {
-            foreach (var dateRange in qry.dateRangeList) {
+            foreach (var dateRange in qry.dateRangeList)
+            {
 
                 var startDate = Convert.ToDateTime(dateRange[0]);
                 var endDate = Convert.ToDateTime(dateRange[1]);
@@ -1036,8 +1045,8 @@ public class HotelApp : ApplicationService, IHotelApp
                                                                                 vv.CurrentDate >= startDate &&
                                                                                 vv.CurrentDate <= endDate &&
                                                                                 vv.TenantId == SqlFunc.ToInt64(CurrentUserApp.TenantId)).ToArrayAsync();
-            foreach (var dailyPriceObj in dailyPriceList)
-            {
+                foreach (var dailyPriceObj in dailyPriceList)
+                {
 
                 if (qry.weekIndexList.Any(weekIndex => weekIndex == ((int)dailyPriceObj.CurrentDate.DayOfWeek))  == false)
                 {
@@ -1048,28 +1057,28 @@ public class HotelApp : ApplicationService, IHotelApp
                 var IsEnable = dailyPriceObj.IsEnabled;
 
 
-                if (ele.planPriceExecType == "1")
-                {
-                    dailyPriceObj.SetPrice(ele.planPrice);
-
-                    if (ele.planPrice > 0 && ele.planPrice < LowestPrice)
+                    if (ele.planPriceExecType == "1")
                     {
-                        throw new InvalidOperationException($@"酒店最低价格为{LowestPrice}！");
-                    }
-                }
-                else if (ele.planPriceExecType == "2")
-                {
-                    dailyPriceObj.SetPrice(ele.planPrice + dailyPriceObj.Price);
-                }
+                        dailyPriceObj.SetPrice(ele.planPrice);
 
-                if (ele.planPriceStateType == "1")
-                {
-                    dailyPriceObj.SetIsEnable(YesOrNoType.Yes);
-                }
-                else if (ele.planPriceStateType == "2")
-                {
-                    dailyPriceObj.SetIsEnable(YesOrNoType.No);
-                }
+                        if (ele.planPrice > 0 && ele.planPrice < LowestPrice)
+                        {
+                            throw new InvalidOperationException($@"酒店最低价格为{LowestPrice}！");
+                        }
+                    }
+                    else if (ele.planPriceExecType == "2")
+                    {
+                        dailyPriceObj.SetPrice(ele.planPrice + dailyPriceObj.Price);
+                    }
+
+                    if (ele.planPriceStateType == "1")
+                    {
+                        dailyPriceObj.SetIsEnable(YesOrNoType.Yes);
+                    }
+                    else if (ele.planPriceStateType == "2")
+                    {
+                        dailyPriceObj.SetIsEnable(YesOrNoType.No);
+                    }
 
 
                 if ( (Price != dailyPriceObj.Price || IsEnable != dailyPriceObj.IsEnabled )  && updateDailyPriceList.Any(vv=> vv.Id == dailyPriceObj.Id)== false)
@@ -1222,20 +1231,19 @@ public class HotelApp : ApplicationService, IHotelApp
 
     public async Task<bool> BatchUpdateHotelState(List<string> userHotelIds, HotelSaleTypeEnum newSaleType)
     {
+        var ids = userHotelIds.Select(t => t.ToLong()).ToList();
+        var dataList = await db.Queryable<HotelPublishDo>().Where(vv => ids.Contains(vv.Id)).ToListAsync();
+        var logs = CustomerLogsDo.Create($"批量{newSaleType.ToDescription()}酒店", $"酒店集合：{string.Join(",", dataList.Select(t => $"{t.HotelName}({t.HotelNameEn})").ToList())}批量{newSaleType.ToDescription()}", string.Empty, dataList.ToString());
 
         return await DbTransaction.ExecuteInTransactionAsync(db, async () =>
         {
-            foreach (var userHotelId in userHotelIds)
-            {
+            await db.Updateable(dataList)
+             .PublicSetColumns(it => it.Version, it => it.Version + 1)
+             .PublicSetColumns(it => it.Status, it => newSaleType)
+             .UpdateColumns(it => new { it.Status, it.LastModifiedbyId, it.LastModifiedbyName, it.LastModifiedTime, it.Version })
+             .ExecuteCommandAsync();
 
-                var model = db.Queryable<HotelPublishDo>().Single(vv => vv.Id == SqlFunc.ToInt64(userHotelId) && vv.TenantId == SqlFunc.ToInt64(CurrentUserApp.TenantId));
-                if (model.Status == newSaleType)
-                {
-                    continue;
-                }
-                model.SetStatus(newSaleType);
-                db.Updateable<HotelPublishDo>(model).ExecuteCommand();
-            }
+            await db.Insertable(logs).ExecuteReturnSnowflakeIdAsync();
             return true;
         });
     }

@@ -1,5 +1,3 @@
-using YueJia.Ebk.Infrastructure.JobWork;
-
 namespace YueJia.Ebk.Web;
 
 /// <summary>
@@ -29,11 +27,7 @@ public class Program
             //BsonSerializer.RegisterSerializer(typeof(DateTime?),
             //    new NullableSerializer<DateTime>(new DateTimeSerializer(DateTimeKind.Local)));
 
-            builder.Services.AddHostedService<EbkDbSyncService>();
-            builder.Services.Configure<HostOptions>(options =>
-            {
-                options.BackgroundServiceExceptionBehavior = BackgroundServiceExceptionBehavior.Ignore;
-            });
+
 
             await builder.AddApplicationAsync<YueJiaEbkWebModule>();
             var app = builder.Build();

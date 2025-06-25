@@ -7,6 +7,7 @@ using YueJia.Ebk.Application.Contracts.OuterServiceApp.Entity;
 using YueJia.Ebk.Application.Contracts.SysUserApp;
 using YueJia.Ebk.Application.OrderApp;
 using YueJia.Ebk.Domain.Hotel;
+using YueJia.Ebk.Domain.Other;
 using YueJia.Ebk.Domain.Shared.Const;
 using YueJia.Ebk.Domain.SysUser;
 
@@ -63,7 +64,7 @@ public class HotelPublishApp : ApplicationService, IHotelPublishApp
               .WhereIF(!string.IsNullOrEmpty(CountryIosCode), (x1, x2) => x1.CountryIosCode == CountryIosCode)
               .WhereIF(!string.IsNullOrEmpty(qry.cityName), (x1, x2) => x1.CityName.Contains(qry.cityName))
               .WhereIF(qry.Status.HasValue, (x1, x2) => x1.Status == qry.Status)
-              .Where((x1,x2)=> x1.CreatedbyId == qry.UserId)
+              .Where((x1, x2) => x1.CreatedbyId == qry.UserId)
 
          .Select((x1, x2) => new HotelPublishPageListDto()
          {
@@ -124,19 +125,33 @@ public class HotelPublishApp : ApplicationService, IHotelPublishApp
         entity.CountryIosCode = cmd.CountryIosCode;
         entity.CountryName = cmd.CountryName;
         entity.CityName = cmd.AreaName;
-        await HotelPublishRepo.InsertReturnSnowflakeIdAsync(entity);
-        return true;
+
+
+        var logs = CustomerLogsDo.Create("添加酒店", $"添加酒店：{cmd.HotelName}({cmd.HotelNameEn})", string.Empty, cmd.ToString());
+
+        return await DbTransaction.ExecuteInTransactionAsync(db, async () =>
+         {
+             await HotelPublishRepo.InsertReturnSnowflakeIdAsync(entity);
+
+             await db.Insertable(logs).ExecuteReturnSnowflakeIdAsync();
+             return true;
+         });
     }
 
     public async Task<bool> UpdatePublishHotelAsync(CreateOrUpHotelPublishCmd cmd, long id)
     {
-        var entity = await HotelPublishRepo.GetByIdAsync(id);
-        if (entity == null)
-        {
-            throw new InvalidOperationException($"资源不存在！");
-        }
+        var entity = await HotelPublishRepo.GetByIdAsync(id) ?? throw new InvalidOperationException($"资源不存在！");
+
+        var oldEntity = entity with { };
         entity.SetStatus(cmd.Status).SetLowestPrice(cmd.LowestPrice);
-        await HotelPublishRepo.AsUpdateable(entity).ExecuteCommandAsync();
-        return true;
+        if (oldEntity.Equals(entity)) return true;
+        var logs = CustomerLogsDo.Create("更新酒店",
+            $@"酒店：{cmd.HotelName}({cmd.HotelNameEn});销售状态：【{oldEntity.Status.ToDescription()}=》{cmd.Status.ToDescription()}】;最低价：【{oldEntity.LowestPrice}=》{cmd.LowestPrice}】", oldEntity.ToString(), entity.ToString());
+        return await DbTransaction.ExecuteInTransactionAsync(db, async () =>
+        {
+            await HotelPublishRepo.AsUpdateable(entity).ExecuteCommandAsync();
+            await db.Insertable(logs).ExecuteReturnSnowflakeIdAsync();
+            return true;
+        });
     }
 }

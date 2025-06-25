@@ -12,7 +12,6 @@ using System.Text.Unicode;
 using Volo.Abp;
 using Volo.Abp.AspNetCore;
 using Volo.Abp.AspNetCore.Mvc;
-using Volo.Abp.Auditing;
 using Volo.Abp.Autofac;
 using Volo.Abp.Json;
 using Volo.Abp.Modularity;
@@ -82,24 +81,6 @@ namespace YueJia.Ebk.Api
                  .ForEach(item => c.IncludeXmlComments(item, true));
             });
             context.Services.AddHttpClient();
-            Configure<AbpAuditingOptions>(options =>
-            {
-                // 启用审计日志
-                options.IsEnabled = true;
-                // 隐藏敏感数据
-                options.HideErrors = false;
-                //启用记录get请求
-                options.IsEnabledForGetRequests = true;
-
-                // 自定义应用名称
-                options.ApplicationName = "MyApplication";
-            });
-
-            Configure<AbpAuditingOptions>(options =>
-            {
-                options.EntityHistorySelectors.AddAllEntities();
-            });
-
             return base.ConfigureServicesAsync(context);
         }
 
@@ -123,8 +104,6 @@ namespace YueJia.Ebk.Api
                                                       //options.DefaultModelExpandDepth(0);  // 可选：设置单个模型默认折叠
                 options.DocExpansion(DocExpansion.None); // 可选：禁用文档中的默认展开
             });
-            app.UseAuditing();
-
             return base.OnApplicationInitializationAsync(context);
         }
     }

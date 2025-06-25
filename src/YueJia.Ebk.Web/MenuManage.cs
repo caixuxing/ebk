@@ -1,12 +1,11 @@
-﻿using YueJia.Ebk.Application.Contracts.SysUserApp;
-using YueJia.Ebk.Web.ViewModels;
+﻿using YueJia.Ebk.Web.ViewModels;
 
 namespace YueJia.Ebk.Web
 {
     public class MenuManage
     {
 
-        public List<MenuModel> UserMenuList(AccountTypeEnum userAccountType,bool IsDeptAdmin)
+        public List<MenuModel> UserMenuList(AccountTypeEnum userAccountType, bool IsDeptAdmin)
         {
             //部门管理员
 
@@ -52,6 +51,12 @@ namespace YueJia.Ebk.Web
                                  title ="用户管理",
                                  url = "/SysUser/Index" ,
                                  isShow = new List<AccountTypeEnum>(){ AccountTypeEnum.SysAdmin }.Contains(userAccountType) ||IsDeptAdmin
+                             },
+                              new MenuModel(){
+                                 pageIndex = "page2-4" ,
+                                 title ="操作日志",
+                                 url = "/Logs/CustoLogsMgr" ,
+                                 isShow = new List<AccountTypeEnum>(){ AccountTypeEnum.SysAdmin,AccountTypeEnum.NormalUser }.Contains(userAccountType) ||IsDeptAdmin
                              },
                          }
                       },

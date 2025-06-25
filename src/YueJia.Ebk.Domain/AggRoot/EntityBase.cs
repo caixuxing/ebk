@@ -1,13 +1,20 @@
-﻿namespace YueJia.Ebk.Domain.AggRoot;
+﻿using Volo.Abp.Domain.Entities;
+
+namespace YueJia.Ebk.Domain.AggRoot;
 
 
 /// <summary>
 /// 框架实体基类Id
 /// </summary>
-public abstract record EntityBaseId
+public abstract record EntityBaseId : IAggregateRoot
 {
     [SugarColumn(ColumnDescription = "主键ID", IsPrimaryKey = true, ColumnName = "Id")]
     public virtual long Id { get; init; }
+
+    public object?[] GetKeys()
+    {
+        throw new NotImplementedException();
+    }
 }
 
 
