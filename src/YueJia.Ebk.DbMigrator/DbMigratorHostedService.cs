@@ -116,160 +116,151 @@ namespace YueJia.Ebk.DbMigrator
         /// <param name="db"></param>
         private async Task AddTriggers(ISqlSugarClient db)
         {
-            if (!((await db.Ado.GetIntAsync("SELECT 1 FROM sys.triggers WHERE name = 'add_update_delete_hotel_publish'")) > 0))
+            if (!((await db.Ado.GetIntAsync("SELECT 1 FROM sys.triggers WHERE name = 'add_update_delete_company_channel_map'")) > 0))
             {
-                await db.Ado.ExecuteCommandAsync(@"create trigger [dbo].[add_update_delete_hotel_publish]
-                                        on [dbo].[hotel_publish]
+                await db.Ado.ExecuteCommandAsync(@"Create trigger [dbo].[add_update_delete_company_channel_map]
+                                        on [dbo].[company_channel_map]
                                             AFTER DELETE,INSERT,UPDATE
                                         as
                                             begin
-		                                           --1 新增
-		                                          if  EXISTS ( SELECT 1 FROM inserted) AND NOT EXISTS(SELECT 1 FROM Deleted)
-		                                          BEGIN
-          	                                            insert into tracing
-				                                        select id,'hotel_publish','A',0,GETDATE(),0 from inserted
-		                                          end
-		                                          --2 修改
-		                                          IF  EXISTS ( SELECT 1 FROM inserted) AND  EXISTS(SELECT 1 FROM Deleted)
-		                                          BEGIN
-          	                                            insert into tracing
-							                                        select id,'hotel_publish','U',0,GETDATE(),0 from inserted
-		                                          end
-		                                          --3  删除
-		                                          if NOT EXISTS ( SELECT 1 FROM inserted) AND EXISTS(SELECT 1 FROM Deleted)
-		                                          BEGIN
-          	                                            insert into tracing
-		                                           select id,'hotel_publish','D',0,GETDATE(),0 from inserted
-		                                          end
+
+	                                            -- 新增
+		                                         insert into tracing
+		                                         select id,'company_channel_map',0,GETDATE() from (
+				                                        select Id from inserted
+				                                        union
+				                                        select Id from deleted
+			                                        ) as T
+
                                         end");
             }
 
-            if (!((await db.Ado.GetIntAsync("SELECT 1 FROM sys.triggers WHERE name = 'add_update_delete_hotel_room'")) > 0))
-            {
-                await db.Ado.ExecuteCommandAsync(@"Create trigger [dbo].[add_update_delete_hotel_room]
-    on [dbo].[hotel_room]
-    AFTER DELETE, INSERT, UPDATE
-    as
-    begin
-        --1 新增
-        if EXISTS (SELECT 1 FROM inserted) AND NOT EXISTS(SELECT 1 FROM Deleted)
-            BEGIN
-                insert into tracing
-                select id, 'hotel_room', 'A', 0, GETDATE(), 0
-                from inserted
-            end
-        --2 修改
-        IF EXISTS (SELECT 1 FROM inserted) AND EXISTS(SELECT 1 FROM Deleted)
-            BEGIN
-                insert into tracing
-                select id, 'hotel_room', 'U', 0, GETDATE(), 0
-                from inserted
-            end
-        --3  删除
-        if NOT EXISTS (SELECT 1 FROM inserted) AND EXISTS(SELECT 1 FROM Deleted)
-            BEGIN
-                insert into tracing
-                select id, 'hotel_room', 'D', 0, GETDATE(), 0
-                from inserted
-            end
-    end");
-            }
+            //if (!((await db.Ado.GetIntAsync("SELECT 1 FROM sys.triggers WHERE name = 'add_update_delete_hotel_room'")) > 0))
+            //{
+            //    await db.Ado.ExecuteCommandAsync(@"Create trigger [dbo].[add_update_delete_hotel_room]
+            //on [dbo].[hotel_room]
+            //AFTER DELETE, INSERT, UPDATE
+            //as
+            //begin
+            //    --1 新增
+            //    if EXISTS (SELECT 1 FROM inserted) AND NOT EXISTS(SELECT 1 FROM Deleted)
+            //        BEGIN
+            //            insert into tracing
+            //            select id, 'hotel_room', 'A', 0, GETDATE(), 0
+            //            from inserted
+            //        end
+            //    --2 修改
+            //    IF EXISTS (SELECT 1 FROM inserted) AND EXISTS(SELECT 1 FROM Deleted)
+            //        BEGIN
+            //            insert into tracing
+            //            select id, 'hotel_room', 'U', 0, GETDATE(), 0
+            //            from inserted
+            //        end
+            //    --3  删除
+            //    if NOT EXISTS (SELECT 1 FROM inserted) AND EXISTS(SELECT 1 FROM Deleted)
+            //        BEGIN
+            //            insert into tracing
+            //            select id, 'hotel_room', 'D', 0, GETDATE(), 0
+            //            from inserted
+            //        end
+            //end");
+            //}
 
-            if (!((await db.Ado.GetIntAsync("SELECT 1 FROM sys.triggers WHERE name = 'add_update_delete_price_plan'")) > 0))
-            {
+            //if (!((await db.Ado.GetIntAsync("SELECT 1 FROM sys.triggers WHERE name = 'add_update_delete_price_plan'")) > 0))
+            //{
 
-                await db.Ado.ExecuteCommandAsync(@"CREATE trigger [dbo].[add_update_delete_price_plan]
-    on [dbo].[price_plan]
-    AFTER DELETE, INSERT, UPDATE
-    as
-    begin
-        --1 新增
-        if EXISTS (SELECT 1 FROM inserted) AND NOT EXISTS(SELECT 1 FROM Deleted)
-            BEGIN
-                insert into tracing
-                select id, 'price_plan', 'A', 0, GETDATE(), 0
-                from inserted
-            end
-        --2 修改
-        IF EXISTS (SELECT 1 FROM inserted) AND EXISTS(SELECT 1 FROM Deleted)
-            BEGIN
-                insert into tracing
-                select id, 'price_plan', 'U', 0, GETDATE(), 0
-                from inserted
-            end
-        --3  删除
-        if NOT EXISTS (SELECT 1 FROM inserted) AND EXISTS(SELECT 1 FROM Deleted)
-            BEGIN
-                insert into tracing
-                select id, 'price_plan', 'D', 0, GETDATE(), 0
-                from inserted
-            end
-    end");
-            }
+            //    await db.Ado.ExecuteCommandAsync(@"CREATE trigger [dbo].[add_update_delete_price_plan]
+            //on [dbo].[price_plan]
+            //AFTER DELETE, INSERT, UPDATE
+            //as
+            //begin
+            //    --1 新增
+            //    if EXISTS (SELECT 1 FROM inserted) AND NOT EXISTS(SELECT 1 FROM Deleted)
+            //        BEGIN
+            //            insert into tracing
+            //            select id, 'price_plan', 'A', 0, GETDATE(), 0
+            //            from inserted
+            //        end
+            //    --2 修改
+            //    IF EXISTS (SELECT 1 FROM inserted) AND EXISTS(SELECT 1 FROM Deleted)
+            //        BEGIN
+            //            insert into tracing
+            //            select id, 'price_plan', 'U', 0, GETDATE(), 0
+            //            from inserted
+            //        end
+            //    --3  删除
+            //    if NOT EXISTS (SELECT 1 FROM inserted) AND EXISTS(SELECT 1 FROM Deleted)
+            //        BEGIN
+            //            insert into tracing
+            //            select id, 'price_plan', 'D', 0, GETDATE(), 0
+            //            from inserted
+            //        end
+            //end");
+            //}
 
-            if (!((await db.Ado.GetIntAsync("SELECT 1 FROM sys.triggers WHERE name = 'add_update_delete_daily_inventory'")) > 0))
-            {
+            //if (!((await db.Ado.GetIntAsync("SELECT 1 FROM sys.triggers WHERE name = 'add_update_delete_daily_inventory'")) > 0))
+            //{
 
-                await db.Ado.ExecuteCommandAsync(@"CREATE trigger [dbo].[add_update_delete_daily_inventory]
-    on [dbo].[daily_inventory]
-    AFTER DELETE, INSERT, UPDATE
-    as
-    begin
-        --1 新增
-        if EXISTS (SELECT 1 FROM inserted) AND NOT EXISTS(SELECT 1 FROM Deleted)
-            BEGIN
-                insert into tracing
-                select id, 'daily_inventory', 'A', 0, GETDATE(), 0
-                from inserted
-            end
-        --2 修改
-        IF EXISTS (SELECT 1 FROM inserted) AND EXISTS(SELECT 1 FROM Deleted)
-            BEGIN
-                insert into tracing
-                select id, 'daily_inventory', 'U', 0, GETDATE(), 0
-                from inserted
-            end
-        --3  删除
-        if NOT EXISTS (SELECT 1 FROM inserted) AND EXISTS(SELECT 1 FROM Deleted)
-            BEGIN
-                insert into tracing
-                select id, 'daily_inventory', 'D', 0, GETDATE(), 0
-                from inserted
-            end
-    end");
-            }
+            //    await db.Ado.ExecuteCommandAsync(@"CREATE trigger [dbo].[add_update_delete_daily_inventory]
+            //on [dbo].[daily_inventory]
+            //AFTER DELETE, INSERT, UPDATE
+            //as
+            //begin
+            //    --1 新增
+            //    if EXISTS (SELECT 1 FROM inserted) AND NOT EXISTS(SELECT 1 FROM Deleted)
+            //        BEGIN
+            //            insert into tracing
+            //            select id, 'daily_inventory', 'A', 0, GETDATE(), 0
+            //            from inserted
+            //        end
+            //    --2 修改
+            //    IF EXISTS (SELECT 1 FROM inserted) AND EXISTS(SELECT 1 FROM Deleted)
+            //        BEGIN
+            //            insert into tracing
+            //            select id, 'daily_inventory', 'U', 0, GETDATE(), 0
+            //            from inserted
+            //        end
+            //    --3  删除
+            //    if NOT EXISTS (SELECT 1 FROM inserted) AND EXISTS(SELECT 1 FROM Deleted)
+            //        BEGIN
+            //            insert into tracing
+            //            select id, 'daily_inventory', 'D', 0, GETDATE(), 0
+            //            from inserted
+            //        end
+            //end");
+            //}
 
-            if (!((await db.Ado.GetIntAsync("SELECT 1 FROM sys.triggers WHERE name = 'add_update_delete_daily_price'")) > 0))
-            {
-                await db.Ado.ExecuteCommandAsync(@"CREATE trigger [dbo].[add_update_delete_daily_price]
-    on [dbo].[daily_price]
-    AFTER DELETE, INSERT, UPDATE
-    as
-    begin
-        --1 新增
-        if EXISTS (SELECT 1 FROM inserted) AND NOT EXISTS(SELECT 1 FROM Deleted)
-            BEGIN
-                insert into tracing
-                select id, 'daily_price', 'A', 0, GETDATE(), 0
-                from inserted
-            end
-        --2 修改
-        IF EXISTS (SELECT 1 FROM inserted) AND EXISTS(SELECT 1 FROM Deleted)
-            BEGIN
-                insert into tracing
-                select id, 'daily_price', 'U', 0, GETDATE(), 0
-                from inserted
-            end
-        --3  删除
-        if NOT EXISTS (SELECT 1 FROM inserted) AND EXISTS(SELECT 1 FROM Deleted)
-            BEGIN
-                insert into tracing
-                select id, 'daily_price', 'D', 0, GETDATE(), 0
-                from inserted
-            end
-    end");
+            //if (!((await db.Ado.GetIntAsync("SELECT 1 FROM sys.triggers WHERE name = 'add_update_delete_daily_price'")) > 0))
+            //{
+            //    await db.Ado.ExecuteCommandAsync(@"CREATE trigger [dbo].[add_update_delete_daily_price]
+            //on [dbo].[daily_price]
+            //AFTER DELETE, INSERT, UPDATE
+            //as
+            //begin
+            //    --1 新增
+            //    if EXISTS (SELECT 1 FROM inserted) AND NOT EXISTS(SELECT 1 FROM Deleted)
+            //        BEGIN
+            //            insert into tracing
+            //            select id, 'daily_price', 'A', 0, GETDATE(), 0
+            //            from inserted
+            //        end
+            //    --2 修改
+            //    IF EXISTS (SELECT 1 FROM inserted) AND EXISTS(SELECT 1 FROM Deleted)
+            //        BEGIN
+            //            insert into tracing
+            //            select id, 'daily_price', 'U', 0, GETDATE(), 0
+            //            from inserted
+            //        end
+            //    --3  删除
+            //    if NOT EXISTS (SELECT 1 FROM inserted) AND EXISTS(SELECT 1 FROM Deleted)
+            //        BEGIN
+            //            insert into tracing
+            //            select id, 'daily_price', 'D', 0, GETDATE(), 0
+            //            from inserted
+            //        end
+            //end");
 
-            }
+            //}
         }
 
 
