@@ -24,5 +24,23 @@ namespace YueJia.Ebk.Application.Contracts.OrderApp
         /// <param name="qry"></param>
         /// <returns></returns>
         Task<PageData<IEnumerable<OrderPageListDto>>> QueryOrderPageAsync(OrderPageListFilterQry qry);
+
+
+
+        /// <summary>
+        /// 按Id查询订单详情
+        /// </summary>
+        /// <param name="id">订单ID</param>
+        /// <returns></returns>
+        Task<OrderDetailDto> OrderDetailByIdAsync(long id);
+
+
+        /// <summary>
+        /// 保存订单酒店确认号
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="confirmNum"></param>
+        /// <returns></returns>
+        Task<bool> SaveOrderConfirmNumAsync(long id, string confirmNum);
     }
 }

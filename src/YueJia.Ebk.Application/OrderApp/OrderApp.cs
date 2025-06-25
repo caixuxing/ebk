@@ -176,6 +176,78 @@ public class OrderApp : ApplicationService, IOrderApp
         //return new PageData<IEnumerable<OrderPageListDto>>(total, qry.PageSize, qry.PageIndex, data);
         return null;
     }
+
+
+    public async Task<OrderDetailDto> OrderDetailByIdAsync(long id)
+    {
+
+
+        var order = await db.Queryable<OrderDo>()
+            .InnerJoin<HotelPublishDo>((t, p) => t.HotelCode == p.HotelCode && t.UserHotelId == p.Id)
+            .Where((t, p) => t.Id == id)
+            .Select((t, p) => new OrderDetailDto()
+            {
+                HotelName = p.HotelName,
+                HotelNameEn = p.HotelNameEn,
+                RoomName = t.RoomName,
+                CustRemark = t.Remark,
+                CheckInDate = t.CheckInDate,
+                CheckOutDate = t.CheckOutDate,
+                BedTypeName = t.BedName,
+                BookingDate = t.BookingDate,
+                TotalAmount = t.TotalAmount,
+                Address = $"{p.Address}(${p.AddressEn})",
+                BreakfastType = t.BreakfastType,
+                State = t.State,
+                OrderNum = t.OrderNum,
+                Contact = p.TelPhone,
+                Id = t.Id,
+                Area = $"[{p.CountryIosCode}]{p.CountryName}/{p.CityName}",
+                HotelConfirmNum = t.HotelConfirmNum
+
+            }).SingleAsync() ?? throw new InvalidOperationException("订单不存在！");
+
+
+
+
+        var roomList = await db.Queryable<OrderRoomDo>()
+            .InnerJoin<OrderRoomPersonDo>((t, t1) => t.OrderNum == t1.OrderNum && t1.OrderRoomId == t.Id)
+            .InnerJoin<OrderRoomDailyPriceDetailDo>((t, t1, t2) => t2.OrderNum == t.OrderNum && t2.OrderRoomId == t.Id)
+            .Where((t, t1, t2) => t.OrderNum == order.OrderNum)
+            .Select((t, t1, t2) => new
+            {
+                t.Id,
+                t.OrderNum,
+                t.RoomName,
+                t.BedName,
+                t.PricePlanName,
+                Name = $"{t1.LastName}/{t1.FirstName}",
+                t1.Type,
+                t2.CurrentDate,
+                t2.DayPrice
+            })
+            .ToListAsync();
+        order.HotelRoomInfo = roomList.GroupBy(t => t.Id)
+             .Select(g => new HotelRoomInfoOB()
+             {
+                 PricePlanTitle = g.FirstOrDefault()?.PricePlanName ?? string.Empty,
+                 Adult = g.Where(t => t.Type == PersonTypeEnum.Adult).Select(t => t.Name).ToList(),
+                 Child = g.Where(t => t.Type == PersonTypeEnum.Child).Select(t => t.Name).ToList(),
+                 DailyPrice = g.ToDictionary(t => t.CurrentDate.ToString("yyyy-MM-dd"), t => t.DayPrice)
+
+             }).ToList();
+        return order;
+    }
+
+    public async Task<bool> SaveOrderConfirmNumAsync(long id, string confirmNum)
+    {
+        var entity = await OrderRepo.GetByIdAsync(id) ?? throw new InvalidOperationException("订单不存在！");
+        entity.HotelConfirmNum = confirmNum;
+        await OrderRepo.AsUpdateable(entity).UpdateColumns(it => new { it.HotelConfirmNum, it.LastModifiedbyId, it.LastModifiedbyName, it.LastModifiedTime, it.Version })
+                .ExecuteCommandWithOptLockAsync();
+        return true;
+
+    }
 }
 
 internal static partial class MapExt

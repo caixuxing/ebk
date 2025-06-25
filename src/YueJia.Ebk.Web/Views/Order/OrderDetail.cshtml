@@ -1,0 +1,156 @@
+﻿@model YueJia.Ebk.Application.Contracts.OrderApp.Dto.OrderDetailDto
+
+<el-container style="height:100vh;overflow: hidden;">
+    <el-main  >
+        <el-scrollbar style="overflow-x: hidden;">
+
+          <el-card style="width:100%">
+            <template #header>
+              <div class="card-header">
+                <span>基本信息</span>
+              </div>
+            </template>
+                <el-form label-width="auto" :model="model" >
+                    <el-form-item label="订单号">
+                        @Model.OrderNum
+                    </el-form-item>
+                    <el-form-item label="订单日期">
+                        @Model.BookingDate
+                    </el-form-item>
+
+                    <el-form-item label="订单状态" >
+                      @Model.StateName
+                    </el-form-item>
+                    <el-form-item label="房型名称">
+                        @Model.RoomName
+                    </el-form-item>
+                    <el-form-item label="入住日期">
+                        @Model.CheckInDate / @Model.CheckOutDate
+                    </el-form-item>
+                     <el-form-item label="总价" >
+                      @Model.TotalAmount
+                    </el-form-item>
+                    <el-form-item label="订单确认号">
+                        <el-input v-model="state.hotelConfirmNum" style="width: 240px" placeholder="订单确认号"></el-input>  <el-button type="primary" v-on:click="save">保存</el-button>
+                    </el-form-item>
+                </el-form>
+          
+          </el-card>
+
+        <el-card style="width:100%; margin-top:10px">
+            <template #header>
+              <div class="card-header">
+                <span>酒店信息</span>
+              </div>
+            </template>
+           
+                <el-form label-width="auto" :model="model">
+                    <el-form-item label="酒店名称">
+                        @Model.HotelName (@Model.HotelNameEn)
+                    </el-form-item>
+                    <el-form-item label="区域">
+                       @Model.Area
+                    </el-form-item>
+
+                    <el-form-item label="地址">
+                        @Model.Address
+                    </el-form-item>
+                    <el-form-item label="联系方式">
+                        @Model.Contact
+                    </el-form-item>
+                </el-form>
+
+          </el-card>
+
+          <el-card style="max-width: 100%; margin-top:10px">
+            <template #header>
+              <div class="card-header">
+                <span>房间信息</span>
+              </div>
+            </template>
+            
+                    <el-form label-width="auto" >
+
+                        <el-form-item>
+
+
+                        @foreach (var item in Model.HotelRoomInfo)
+                        {
+                     
+
+                            <el-card style="width:48%; margin: 5px;">
+                                <template #header>
+                                    <div class="card-header">
+                                        <span>房间 #{{o}}</span>
+                                    </div>
+                                </template>
+
+                                <el-form label-width="auto" :model="model">
+                                    <el-form-item label="房型名称">
+                                        @Model.RoomName
+                                    </el-form-item>
+                                    <el-form-item label="床型">
+                                        @Model.BedTypeName
+                                    </el-form-item>
+
+                                    <el-form-item label="价格计划">
+                                      @item.PricePlanTitle
+                                    </el-form-item>
+                                    <el-form-item label="价格代码">
+
+                                    </el-form-item>
+                                    <el-form-item label="成人 #1">
+                                        @string.Join(",",item.Adult)
+                                    </el-form-item>
+                                    <el-form-item label="儿童 #1">
+                                        @string.Join(",", item.Child)
+                                    </el-form-item>
+
+                                    <el-form-item>
+
+                                        @foreach (var  daily in item.DailyPrice)
+                                        {
+                                            <el-descriptions direction="vertical" border style="margin:  5px">
+                                                <el-descriptions-item label="@daily.Key">价格 @daily.Value</el-descriptions-item>
+                                            </el-descriptions>
+                                        }
+
+                                    
+                                    </el-form-item>
+                                </el-form>
+                            </el-card>
+                    
+
+                        }
+                        </el-form-item>
+                    </el-form>
+        
+          </el-card>
+
+
+ </el-scrollbar>
+    </el-main>
+</el-container>
+
+@section scripts {
+    <script type="text/javascript">
+        const app = Vue.createApp({
+        setup() {
+           const state = Vue.reactive({
+                    hotelConfirmNum:`@Html.Raw(Model.HotelConfirmNum)`
+           });
+           const save = () => {
+                  axios['put'](`/Order/HotelConfirmNum/@Model.Id`,null,{ params:{  confirmNum:state.hotelConfirmNum}})
+                  .then(res=>{
+               top.window.vueElMessage({ message: res.data. message , type:  res.data.isSuccess?'success':'info' })
+             });
+           };
+           Vue.onMounted(() => {   });
+            return { state,save };
+               }
+            });
+            app.use(ElementPlus,{ locale: ElementPlusLocaleZhCn });
+            app.mount('#app');
+    </script>
+
+}
