@@ -7,8 +7,11 @@ public record OrderPageListFilterQry : BasePageQry
 {
     /// <summary>
     /// 日期类型
+    /// A 下单日期
+    /// B 入住日期
+    /// C 离店日期
     /// </summary>
-    public int DateType { get; set; }
+    public string DateType { get; set; }
 
     public string StartDate { get; set; }
     public string EndDate { get; set; }
@@ -23,8 +26,6 @@ public record OrderPageListFilterQry : BasePageQry
     /// </summary>
 
     public string HotelName { get; set; }
-
-    public string UserId { get; set; }
 
 
     /// <summary>
@@ -41,11 +42,14 @@ public record OrderPageListFilterQry : BasePageQry
     /// <summary>
     /// 国家 Ios
     /// </summary>
-    public int? countryId { get; set; }
+    public int? CountryId { get; set; }
 
     /// <summary>
     /// 城市名称
     /// </summary>
-    public string cityName { get; set; }
+    public string CityName { get; set; }
+
+    public string UserId { get; set; }
+
 
 }

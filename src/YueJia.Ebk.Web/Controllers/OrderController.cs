@@ -1,4 +1,5 @@
 ﻿using YueJia.Ebk.Application.Contracts.OrderApp;
+using YueJia.Ebk.Application.Contracts.OrderApp.Dto;
 using YueJia.Ebk.Application.Contracts.OrderApp.Qry;
 using YueJia.Ebk.Application.Contracts.OuterServiceApp;
 using YueJia.Ebk.Application.Contracts.SysApp;
@@ -40,9 +41,6 @@ namespace YueJia.Ebk.Web.Controllers
             return View();
         }
 
-
-
-
         /// <summary>
         /// 订单列表
         /// </summary>
@@ -50,15 +48,27 @@ namespace YueJia.Ebk.Web.Controllers
         [HttpPost, Route("[controller]/OrderPageList")]
         public async Task<IResult> OrderPageList([FromBody] OrderPageListFilterQry qry) => ApiResult.HandleResult(await OrderApp.QueryOrderPageAsync(qry));
 
-
-
         /// <summary>
         /// 订单详情
         /// </summary>
         /// <returns></returns>
-        public async Task<IActionResult> OrderDetail(string id) => View(await OrderApp.OrderDetailByIdAsync(id.ToLong()));
+        public async Task<IActionResult> OrderDetail(string orderId)
+        {
+            var orderModel = await OrderApp.OrderDetailByIdAsync(orderId.ToLong());
+            ViewBag.PersonList = await OrderApp.GetOrderPersonList(orderModel.OrderNum);
+            ViewBag.OrderDailyPriceList = await OrderApp.GetOrderDailyPriceList(orderModel.OrderNum);
+            ViewBag.OrderLogList = await OrderApp.GetOrderLogList(orderModel.OrderNum);
+            return View(orderModel);
+        }
 
+        
 
+        [HttpPost, Route("[controller]/SetInputRemark")]
+
+        public async Task<IResult> SetInputRemark([FromBody] OrderLogDto cmd)
+        {
+            return ApiResult.HandleBoolResult(await OrderApp.SetInputRemark(cmd.OrderNum, cmd.Describe));
+        }
 
 
         /// <summary>

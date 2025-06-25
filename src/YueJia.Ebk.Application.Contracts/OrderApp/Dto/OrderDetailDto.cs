@@ -14,18 +14,63 @@ public record OrderDetailDto
     /// <summary>
     /// 预订号
     /// </summary>
-    public string OrderNum { get; set; } = default!;
+    public string OrderNum { get; set; } 
+
+    public string HotelCode { get; set; }
 
     /// <summary>
-    /// 预订日期
+    /// 酒店名称
     /// </summary>
-    [JsonConverter(typeof(DateTimeConverter))]
-    public DateTime BookingDate { get; set; } = default!;
+    public string HotelName { get; set; } 
+    /// <summary>
+    /// 酒店名称(英文名)
+    /// </summary>
+
+    public string HotelNameEn { get; set; }
+
+    /// <summary>
+    ///酒店地址
+    /// </summary>
+    public string Address { get; set; }
+
+    /// <summary>
+    ///酒店电话
+    /// </summary>
+    public string TelPhone { get; set; }
+
+    /// <summary>
+    /// 房型名称
+    /// </summary>
+    public string HotelRoomTitle { get; set; }
+
+    /// <summary>
+    /// 床型
+    /// </summary>
+    public string BedType { get; set; } 
+
+    public DateTime CheckInDate { get; set; }
+    /// <summary>
+    /// 离店日期
+    /// </summary>
+    public DateTime CheckOutDate { get; set; }
+
+
+
+    /// <summary>
+    /// 订房间数
+    /// </summary>
+    public int RoomNumber { get; set; }
+    /// <summary>
+    /// 几晚
+    /// </summary>
+    public int HowManyNights { get; set; }
+
 
     /// <summary>
     /// 预订单状态
     /// </summary>
     public BookingStateTypeEnum State { get; set; } = default!;
+
     /// <summary>
     /// 预订单状态描述
     /// </summary>
@@ -37,27 +82,13 @@ public record OrderDetailDto
             return State.ToDescription();
         }
     }
-    /// <summary>
-    /// 房型名称
-    /// </summary>
-    public string RoomName { get; set; } = default!;
+   
 
 
-    /// <summary>
-    /// 床型
-    /// </summary>
-    public string BedTypeName { get; set; } = default!;
 
-    /// <summary>
-    /// 入店日期
-    /// </summary>
-    [JsonConverter(typeof(DateConverter))]
-    public DateTime CheckInDate { get; set; }
-    /// <summary>
-    /// 离店日期
-    /// </summary>
-    [JsonConverter(typeof(DateConverter))]
-    public DateTime CheckOutDate { get; set; }
+    public DateTime CreateTime { get; set; }
+
+
 
     /// <summary>
     /// 餐食类型
@@ -76,74 +107,104 @@ public record OrderDetailDto
     /// <summary>
     /// 订单总金额
     /// </summary>
-    public decimal TotalAmount { get; set; } = default!;
+    public decimal CostAmount { get; set; } = default!;
 
     /// <summary>
     /// 客户备注
     /// </summary>
-    public string CustRemark { get; set; } = default!;
+    public string Remark { get; set; }
 
-    /// <summary>
-    /// 酒店名称
-    /// </summary>
-    public string HotelName { get; set; } = default!;
-    /// <summary>
-    /// 酒店名称(英文名)
-    /// </summary>
 
-    public string HotelNameEn { get; set; } = default!;
 
-    /// <summary>
-    /// 区域
-    /// </summary>
-    public string Area { get; set; } = default!;
+    public string CountryName { get; set; }
+    public string CityName { get; set; }
 
-    /// <summary>
-    ///酒店地址
-    /// </summary>
-    public string Address { get; set; } = default!;
-
-    /// <summary>
-    /// 酒店联系方式
-    /// </summary>
-    public string Contact { get; set; } = default!;
 
     /// <summary>
     /// 酒店确认号
     /// </summary>
     public string HotelConfirmNum { get; set; } = default!;
 
-    /// <summary>
-    /// 房间入住明细
-    /// </summary>
-    public List<HotelRoomInfoOB> HotelRoomInfo { get; set; } = new();
+
 
 }
+
+public class OrderPersonDto {
+    /// <summary>
+    /// 预订号
+    /// </summary>
+    public string OrderNum { get; set; } = default!;
+    /// <summary>
+    /// 房间序号 从第1间 开始
+    /// </summary>
+    public int RoomIndex { get; set; }
+    /// <summary>
+    ///名拼音
+    /// </summary>
+    public string FirstName { get; set; } = default!;
+    /// <summary>
+    /// 姓拼音
+    /// </summary>
+    public string LastName { get; set; } = default!;
+    /// <summary>
+    /// 类型 
+    /// </summary>
+    public string TypeString { get; set; }
+    /// <summary>
+    /// 年龄(儿童年龄必须要)
+    /// </summary>
+    public int Age { get; set; }
+}
+
 
 
 /// <summary>
 /// 房间信息
 /// </summary>
-public record HotelRoomInfoOB
+public class OrderDailyPriceDto
 {
-
-
     /// <summary>
-    /// 价格计划名称
+    /// 当前日期
     /// </summary>
-    public string PricePlanTitle { get; set; } = default!;
-
+    public DateTime CurrentDate { get; set; }
     /// <summary>
-    /// 成人集合
+    /// 当前日期
     /// </summary>
-    public List<string> Adult { get; set; } = new();
-    /// <summary>
-    /// 儿童集合
-    /// </summary>
-    public List<string> Child { get; set; } = new();
+    public string CurrentDateString
+    {
+        get {
+            return CurrentDate.ToString("yyyy-MM-dd");
+        }
+    }
 
     /// <summary>
-    /// 每日价格（日期YYYY-MM-DD）,价格
+    /// 当日价格
     /// </summary>
-    public Dictionary<string, decimal> DailyPrice { get; set; } = new();
+    public decimal DayPrice { get; set; }
+}
+
+
+public class OrderLogDto {
+
+    public string OrderNum { get; set; } 
+
+    /// <summary>
+    /// 当前日期
+    /// </summary>
+    public DateTime? CreateTime { get; set; }
+    /// <summary>
+    /// 当前日期
+    /// </summary>
+    public string CreateTimetring
+    {
+        get
+        {
+            string Result = "*";
+            if (CreateTime!=null) {
+                Result = CreateTime.Value.ToString("yyyy-MM-dd HH:mm:ss");
+            }
+            return Result;
+        }
+    }
+    public string Describe { get; set; }
 }

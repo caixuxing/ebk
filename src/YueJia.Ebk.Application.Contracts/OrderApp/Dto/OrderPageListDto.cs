@@ -19,6 +19,8 @@ public record OrderPageListDto
     public string CountryName { get; set; }
     public string CityName { get; set; }
 
+    public string HotelCode { get; set; }
+
     /// <summary>
     /// 酒店名称
     /// </summary>

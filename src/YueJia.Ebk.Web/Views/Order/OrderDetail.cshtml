@@ -1,134 +1,182 @@
 ﻿@model YueJia.Ebk.Application.Contracts.OrderApp.Dto.OrderDetailDto
+@inject ISysEnumApp enumApp
 
 <el-container style="height:100vh;overflow: hidden;">
     <el-main  >
         <el-scrollbar style="overflow-x: hidden;">
 
-          <el-card style="width:100%">
-            <template #header>
-              <div class="card-header">
-                <span>基本信息</span>
-              </div>
-            </template>
-                <el-form label-width="auto" :model="model" >
-                    <el-form-item label="订单号">
-                        @Model.OrderNum
-                    </el-form-item>
-                    <el-form-item label="订单日期">
-                        @Model.BookingDate
-                    </el-form-item>
-
-                    <el-form-item label="订单状态" >
-                      @Model.StateName
-                    </el-form-item>
-                    <el-form-item label="房型名称">
-                        @Model.RoomName
-                    </el-form-item>
-                    <el-form-item label="入住日期">
-                        @Model.CheckInDate / @Model.CheckOutDate
-                    </el-form-item>
-                     <el-form-item label="总价" >
-                      @Model.TotalAmount
-                    </el-form-item>
+           <el-form label-width="auto" :inline="true">
+                    <div>
+                        <el-form-item label="订单号" style="margin-bottom:5px;">
+                            @Model.OrderNum
+                        </el-form-item>
+                    </div>
+                    <el-row>
+                        <el-col :span="8">
+                            <el-form-item label="酒店编码" style="margin-bottom:5px;">
+                                @Model.HotelCode
+                            </el-form-item>
+                        </el-col>
+                        <el-col :span="8">
+                            <el-form-item label="名称(中)" style="margin-bottom:5px;">
+                                @Model.HotelName
+                            </el-form-item>
+                        </el-col>
+                        <el-col :span="8">
+                            <el-form-item label="名称(英文)" style="margin-bottom:5px;">
+                                @Model.HotelNameEn
+                            </el-form-item>
+                        </el-col>
+                    </el-row>
+                    <el-row>
+                        <el-col :span="8">
+                            <el-form-item label="订单日期" style="margin-bottom:5px;">
+                                @Model.CreateTime.ToString("yyyy-MM-dd HH:mm:ss")
+                            </el-form-item>
+                        </el-col>
+                        <el-col :span="8">
+                            <el-form-item label="入住日期" style="margin-bottom:5px;">
+                                @Model.CheckInDate.ToString("yyyy-MM-dd")
+                            </el-form-item>
+                        </el-col>
+                        <el-col :span="8">
+                            <el-form-item label="离店日期" style="margin-bottom:5px;">
+                                @Model.CheckOutDate.ToString("yyyy-MM-dd")
+                            </el-form-item>
+                        </el-col>
+                    </el-row>
+                    <el-row>
+                        <el-col :span="8">
+                            <el-form-item label="房型名称" style="margin-bottom:5px;">
+                                @Model.HotelRoomTitle
+                            </el-form-item>
+                        </el-col>
+                        <el-col :span="8" >
+                            <el-form-item label="床型" style="margin-bottom:5px;">
+                                @foreach (var ele in enumApp.GetEnumDataList(nameof(BedTypeEnum)).Where(vv => vv.Value == Convert.ToInt32(Model.BedType)))
+                                {
+                                    @ele.Describe
+                                }
+                            </el-form-item>
+                        </el-col>
+                    </el-row>
+                    <el-row>
+                        <el-col :span="8">
+                            <el-form-item label="国家" style="margin-bottom:5px;">
+                                @Model.CountryName
+                            </el-form-item>
+                        </el-col>
+                        <el-col :span="8">
+                            <el-form-item label="城市" style="margin-bottom:5px;">
+                                @Model.CityName
+                            </el-form-item>
+                        </el-col>
+                    </el-row>
+                    <el-row>
+                        <el-col :span="24">
+                            <el-form-item label="金额" style="margin-bottom:5px;">
+                                @Model.CostAmount   
+                                @foreach (YueJia.Ebk.Application.Contracts.OrderApp.Dto.OrderDailyPriceDto ele in ViewBag.OrderDailyPriceList)
+                                {
+                                    <label style="margin-left:10px;">[@ele.CurrentDateString => @ele.DayPrice]</label>
+                                }
+                            </el-form-item>
+                        </el-col>
+                    </el-row>
+                    <el-row>
+                        <el-col :span="24">
+                            <el-form-item label="客户备注" style="margin-bottom:5px;">
+                            @Model.Remark
+                            </el-form-item>
+                        </el-col>
+                    </el-row>
                     <el-form-item label="订单确认号">
-                        <el-input v-model="state.hotelConfirmNum" style="width: 240px" placeholder="订单确认号"></el-input>  <el-button type="primary" v-on:click="save">保存</el-button>
+                        <el-input v-model="state.hotelConfirmNum" style="width: 240px" placeholder="订单确认号"></el-input> 
+                        <el-button style="margin-left:20px;"  v-on:click="save">保存</el-button>
                     </el-form-item>
                 </el-form>
-          
-          </el-card>
+        
 
-        <el-card style="width:100%; margin-top:10px">
-            <template #header>
-              <div class="card-header">
-                <span>酒店信息</span>
-              </div>
-            </template>
-           
-                <el-form label-width="auto" :model="model">
-                    <el-form-item label="酒店名称">
-                        @Model.HotelName (@Model.HotelNameEn)
-                    </el-form-item>
-                    <el-form-item label="区域">
-                       @Model.Area
-                    </el-form-item>
+          <el-row :gutter="20">
+                <el-col :span="12">
+                    <el-card style="max-width: 100%; margin-top:10px">
+                        <template #header>
+                            <div class="card-header">
+                                <span>入住人</span>
+                            </div>
+                        </template>
+                        <el-table :data="state.personList"
+                                  border
+                                  height="100%">
 
-                    <el-form-item label="地址">
-                        @Model.Address
-                    </el-form-item>
-                    <el-form-item label="联系方式">
-                        @Model.Contact
-                    </el-form-item>
-                </el-form>
-
-          </el-card>
-
-          <el-card style="max-width: 100%; margin-top:10px">
-            <template #header>
-              <div class="card-header">
-                <span>房间信息</span>
-              </div>
-            </template>
-            
-                    <el-form label-width="auto" >
-
-                        <el-form-item>
-
-
-                        @foreach (var item in Model.HotelRoomInfo)
-                        {
-                     
-
-                            <el-card style="width:48%; margin: 5px;">
-                                <template #header>
-                                    <div class="card-header">
-                                        <span>房间 #{{o}}</span>
+                            <el-table-column label="房间号" width="80" align="center">
+                                <template #default="scope">
+                                    {{scope.row.roomIndex}}
+                                </template>
+                            </el-table-column>
+                            <el-table-column label="拼音姓"  align="center">
+                                <template #default="scope">
+                                    <div style="text-align:left" >
+                                        {{scope.row.firstName}}
                                     </div>
                                 </template>
+                            </el-table-column>
+                            <el-table-column label="拼音名" align="center">
+                                <template #default="scope">
+                                    <div style="text-align:left">
+                                        {{scope.row.lastName}}
+                                    </div>
+                                </template>
+                            </el-table-column>
+                            <el-table-column label="类型" width="80" align="center">
+                                <template #default="scope">
+                                    {{scope.row.typeString}}
+                                </template>
+                            </el-table-column>
+                        </el-table>
+                    </el-card>
+                </el-col>
 
-                                <el-form label-width="auto" :model="model">
-                                    <el-form-item label="房型名称">
-                                        @Model.RoomName
-                                    </el-form-item>
-                                    <el-form-item label="床型">
-                                        @Model.BedTypeName
-                                    </el-form-item>
+                <el-col :span="12">
+                    <el-card style="max-width: 100%; margin-top:10px">
+                        <template #header>
+                            <div class="card-header">
+                                <span>跟单描述</span>
+                            </div>
+                        </template>
+                        <div style="margin-bottom:5px;" >
+                            <el-input v-model="state.inputReamrk" style="width: 240px" ></el-input>
+                            <el-button style="margin-left:20px;" v-on:click="saveInputReamrk">保存</el-button>
+                        </div>
+                        <el-table :data="state.orderLogList"
+                                  border
+                                  height="100%">
+                            <el-table-column label="#" width="60" align="center">
+                                <template #default="scope">
+                                    <div style="text-align:left">
+                                        <span>{{  scope.$index +1   }}</span>
+                                    </div>
+                                </template>
+                            </el-table-column>
+                            <el-table-column label="内容" align="center" show-overflow-tooltip >
+                                <template #default="scope">
+                                    <div style="text-align:left">
+                                        {{scope.row.describe}}
+                                    </div>
+                                </template>
+                            </el-table-column>
+                       
+                            <el-table-column label="操作时间" width="180" align="center">
+                                <template #default="scope">
+                                    {{scope.row.createTimetring}}
+                                </template>
+                            </el-table-column>
+                        </el-table>
+                    </el-card>
+                </el-col>
+            </el-row>
 
-                                    <el-form-item label="价格计划">
-                                      @item.PricePlanTitle
-                                    </el-form-item>
-                                    <el-form-item label="价格代码">
-
-                                    </el-form-item>
-                                    <el-form-item label="成人 #1">
-                                        @string.Join(",",item.Adult)
-                                    </el-form-item>
-                                    <el-form-item label="儿童 #1">
-                                        @string.Join(",", item.Child)
-                                    </el-form-item>
-
-                                    <el-form-item>
-
-                                        @foreach (var  daily in item.DailyPrice)
-                                        {
-                                            <el-descriptions direction="vertical" border style="margin:  5px">
-                                                <el-descriptions-item label="@daily.Key">价格 @daily.Value</el-descriptions-item>
-                                            </el-descriptions>
-                                        }
-
-                                    
-                                    </el-form-item>
-                                </el-form>
-                            </el-card>
-                    
-
-                        }
-                        </el-form-item>
-                    </el-form>
-        
-          </el-card>
-
-
- </el-scrollbar>
+        </el-scrollbar>
     </el-main>
 </el-container>
 
@@ -137,16 +185,40 @@
         const app = Vue.createApp({
         setup() {
            const state = Vue.reactive({
-                    hotelConfirmNum:`@Html.Raw(Model.HotelConfirmNum)`
-           });
+                    hotelConfirmNum:`@Html.Raw(Model.HotelConfirmNum)`,
+                    personList: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(ViewBag.PersonList, new System.Text.Json.JsonSerializerOptions() { PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase })),
+                    orderLogList: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(ViewBag.OrderLogList, new System.Text.Json.JsonSerializerOptions() { PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase })),
+                    inputReamrk:'',
+                });
            const save = () => {
                   axios['put'](`/Order/HotelConfirmNum/@Model.Id`,null,{ params:{  confirmNum:state.hotelConfirmNum}})
                   .then(res=>{
                top.window.vueElMessage({ message: res.data. message , type:  res.data.isSuccess?'success':'info' })
+                 window.location.reload();
              });
            };
-           Vue.onMounted(() => {   });
-            return { state,save };
+
+
+           /**
+            * 保存录入备注
+            */
+           const saveInputReamrk = ()=>{
+                axios.post(`/Order/SetInputRemark`, { orderNum:'@Model.OrderNum' ,describe:state.inputReamrk }).then(res=>{
+                          top.window.vueElMessage({ message: res.data. message , type:  res.data.isSuccess?'success':'info' })
+                          if(res.data.isSuccess){
+                             window.location.reload();
+                          }
+                })
+           }
+
+
+           Vue.onMounted(() => {
+                console.log(state.personList);
+                console.log(state.orderLogList);
+           });
+            return {
+                state,save,saveInputReamrk
+            };
                }
             });
             app.use(ElementPlus,{ locale: ElementPlusLocaleZhCn });

@@ -10,14 +10,16 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <!-- Import style -->
-    <link rel="stylesheet" href="//unpkg.com/element-plus/dist/index.css" />
+    <link href="~/element-plus/index.css" rel="stylesheet" />
     <!-- Import Vue 3 -->
-    <script src="//unpkg.com/vue@3"></script>
+    <script src="~/js/vue.global.js"></script>
+
     <!-- Import component library -->
-    <script src="//unpkg.com/element-plus"></script>
-    <script src="//unpkg.com/element-plus/dist/locale/zh-cn"></script>
-    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
-    <script src="http://ms.mxhols.com/admin/Scripts/jquery-3.3.1.min.js"></script>
+ 
+    <script src="~/element-plus/index.full.js"></script>
+    <script src="~/element-plus/zh-cn.js"></script>
+    <script src="~/js/axios.min.js"></script>
+    <script src="~/js/jquery-3.3.1.min.js"></script>
     <style>
         body {
             font-family: "Helvetica Neue",Helvetica,Arial,sans-serif;
@@ -65,12 +67,10 @@
         @RenderBody()
     </div>
 </body>
-<script src="https://unpkg.com/dayjs@1.8.21/dayjs.min.js"></script>
-<script src="https://unpkg.com/dayjs@1.8.21/plugin/utc.js"></script>
+<link href="~/layui/layui.css" rel="stylesheet" />
 <!-- 引入 layui.css -->
-<link href="//unpkg.com/layui@2.11.2/dist/css/layui.css" rel="stylesheet">
 <!-- 引入 layui.js -->
-<script src="//unpkg.com/layui@2.11.2/dist/layui.js"></script>
+<script src="~/layui/layui.js"></script>
 
 <script type="text/javascript">
 

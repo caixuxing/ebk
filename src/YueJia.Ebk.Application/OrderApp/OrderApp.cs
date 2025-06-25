@@ -1,5 +1,7 @@
 ﻿using LiteDB;
+using Microsoft.Extensions.DependencyInjection;
 using MongoDB.Driver;
+using System.Linq;
 using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Text.Unicode;
@@ -7,14 +9,17 @@ using YueJia.Ebk.Application.Contracts.OrderApp;
 using YueJia.Ebk.Application.Contracts.OrderApp.Commands;
 using YueJia.Ebk.Application.Contracts.OrderApp.Dto;
 using YueJia.Ebk.Application.Contracts.OrderApp.Qry;
+using YueJia.Ebk.Application.Contracts.OuterServiceApp.Entity;
 using YueJia.Ebk.Application.Contracts.SysUserApp;
 using YueJia.Ebk.Domain.AggRoot;
 using YueJia.Ebk.Domain.Hotel;
 using YueJia.Ebk.Domain.Order;
+using YueJia.Ebk.Domain.Shared.Const;
 using YueJia.Ebk.Domain.Other;
 using YueJia.Ebk.Domain.Shared.Dto;
 using YueJia.Ebk.Domain.SysUser;
 using YueJia.Ebk.Infrastructure.DistributedLock;
+using ZstdSharp.Unsafe;
 
 namespace YueJia.Ebk.Application.OrderApp;
 
@@ -34,6 +39,8 @@ public class OrderApp : ApplicationService, IOrderApp
     private IDistributedLockService DistributedLockService => LazyServiceProvider.LazyGetRequiredService<IDistributedLockService>();
 
     private IMongoDatabase MongoDb => LazyServiceProvider.LazyGetRequiredService<IMongoDatabase>();
+
+    private ISqlSugarClient SqlSugarClient => LazyServiceProvider.GetRequiredKeyedService<ISqlSugarClient>(DbConst.YueJiaSysDb);
 
 
     public async Task<bool> CreateOrderAsync(CreateOrderCmd cmd)
@@ -203,11 +210,30 @@ public class OrderApp : ApplicationService, IOrderApp
     public async Task<PageData<IEnumerable<OrderPageListDto>>> QueryOrderPageAsync(OrderPageListFilterQry qry)
     {
         RefAsync<int> total = 0;
+
+        string CountryIosCode = "";
+        if (qry.CountryId != null)
+        {
+            CountryIosCode = SqlSugarClient.Queryable<BAreaEntity>().Single(vv => vv.Id == qry.CountryId).CountryIosCode ?? "";
+        }
+
+
         var query = OrderRepo.AsQueryable().WhereDeptFilter(CurrentUserApp, db)
                              .LeftJoin<HotelPublishDo>((x1, x2) => x1.UserHotelId == x2.Id && x1.TenantId == x2.TenantId)
                              .With(SqlWith.NoLock)
                              .Where((x1, x2) => x1.CreatedbyId == qry.UserId)
+
+                             .WhereIF(!string.IsNullOrEmpty(qry.OrderNum), (x1, x2) => x1.OrderNum ==qry.OrderNum)
                              .WhereIF(!string.IsNullOrWhiteSpace(qry.HotelCode), (x1, x2) => x2.HotelCode == qry.HotelCode)
+                             .WhereIF(!string.IsNullOrWhiteSpace(qry.HotelName), (x1, x2) => x2.HotelName.Contains(qry.HotelName)  || x2.HotelNameEn.Contains(qry.HotelName))
+                             .WhereIF(!string.IsNullOrEmpty(CountryIosCode), (x1, x2) => x2.CountryIosCode == CountryIosCode)
+                             .WhereIF(!string.IsNullOrEmpty(qry.CityName), (x1, x2) => x2.CityName.Contains(qry.CityName))
+
+                             .WhereIF(qry.DateType=="A", (x1, x2) =>  x1.CreateTime>= SqlFunc.ToDate(qry.StartDate) && x1.CreateTime<= SqlFunc.ToDate(qry.EndDate).AddDays(1))
+                             .WhereIF(qry.DateType == "B", (x1, x2) => x1.CheckInDate >= SqlFunc.ToDate(qry.StartDate) && x1.CheckInDate <= SqlFunc.ToDate(qry.EndDate))
+                             .WhereIF(qry.DateType == "C", (x1, x2) => x1.CheckOutDate >= SqlFunc.ToDate(qry.StartDate) && x1.CheckOutDate <= SqlFunc.ToDate(qry.EndDate))
+
+
                              .WhereIF(!string.IsNullOrWhiteSpace(qry.HotelName), (x1, x2) => x2.HotelName.Contains(qry.HotelName) || x2.HotelNameEn.Contains(qry.HotelName))
                              .Select((x1, x2) => new OrderPageListDto()
                              {
@@ -215,6 +241,7 @@ public class OrderApp : ApplicationService, IOrderApp
                                  OrderNum = x1.OrderNum,
                                  CountryName = x2.CountryName,
                                  CityName = x2.CityName,
+                                 HotelCode = x2.HotelCode,
                                  HotelName = x2.HotelName,
                                  HotelNameEn = x2.HotelNameEn,
                                  CheckInDate = x1.CheckInDate,
@@ -232,73 +259,115 @@ public class OrderApp : ApplicationService, IOrderApp
     }
 
 
-    public async Task<OrderDetailDto> OrderDetailByIdAsync(long id)
+    public async Task<OrderDetailDto> OrderDetailByIdAsync(long orderId)
     {
-        var order = await db.Queryable<OrderDo>()
-            .InnerJoin<HotelPublishDo>((t, p) => t.UserHotelId == p.Id)
-            .Where((t, p) => t.Id == id)
-            .Select((t, p) => new OrderDetailDto()
-            {
-                HotelName = p.HotelName,
-                HotelNameEn = p.HotelNameEn,
-                //RoomName = t.RoomName,
-                CustRemark = t.Remark,
-                CheckInDate = t.CheckInDate,
-                CheckOutDate = t.CheckOutDate,
-                //BedTypeName = t.BedName,
-                BookingDate = t.CreateTime,
-                TotalAmount = t.CostAmount,
-                Address = $"{p.Address}(${p.AddressEn})",
-                BreakfastType = t.BreakfastType,
-                State = t.State,
-                OrderNum = t.OrderNum,
-                Contact = p.TelPhone,
-                Id = t.Id,
-                Area = $"[{p.CountryIosCode}]{p.CountryName}/{p.CityName}",
-                HotelConfirmNum = t.HotelConfirmNum
+        return await db.Queryable<OrderDo>()
+                        .InnerJoin<HotelPublishDo>((x1, x2) => x1.UserHotelId == x2.Id && x1.TenantId == x2.TenantId)
+                        .InnerJoin<HotelRoomDo>((x1, x2, x3) => x1.RoomCode == x3.RoomType && x1.UserHotelId == x3.HotelId && x1.TenantId == x3.TenantId)
+                        .Where((x1, x2, x3) => x1.Id == orderId)
+                        .Select((x1, x2, x3) => new OrderDetailDto()
+                        {
+                            OrderNum = x1.OrderNum,
+                            HotelCode = x2.HotelCode,
+                            HotelName = x2.HotelName,
+                            HotelNameEn = x2.HotelNameEn,
+                            TelPhone = x2.TelPhone,
+                            CheckInDate = x1.CheckInDate,
+                            CheckOutDate = x1.CheckOutDate,
+                            HotelRoomTitle = x3.HotelRoomTitle,
+                            BedType = ((int)x3.BedType).ToString(),
+                            BreakfastType = x1.BreakfastType,
+                            HowManyNights = x1.HowManyNights,
+                            RoomNumber = x1.RoomNumber,
 
-            }).SingleAsync() ?? throw new InvalidOperationException("订单不存在！");
-
-
-
-
-        var roomList = await db.Queryable<OrderRoomDo>()
-            .InnerJoin<OrderPersonDo>((t, t1) => t.OrderNum == t1.OrderNum)
-            .InnerJoin<OrderDailyPriceDo>((t, t1, t2) => t2.OrderNum == t.OrderNum)
-            .Where((t, t1, t2) => t.OrderNum == order.OrderNum)
-            .Select((t, t1, t2) => new
-            {
-                t.Id,
-                t.OrderNum,
-                t.RoomName,
-                t.BedName,
-                t.PricePlanName,
-                Name = $"{t1.LastName}/{t1.FirstName}",
-                t1.Type,
-                t2.CurrentDate,
-                t2.DayPrice
-            })
-            .ToListAsync();
-        order.HotelRoomInfo = roomList.GroupBy(t => t.Id)
-             .Select(g => new HotelRoomInfoOB()
-             {
-                 PricePlanTitle = g.FirstOrDefault()?.PricePlanName ?? string.Empty,
-                 Adult = g.Where(t => t.Type == PersonTypeEnum.Adult).Select(t => t.Name).ToList(),
-                 Child = g.Where(t => t.Type == PersonTypeEnum.Child).Select(t => t.Name).ToList(),
-                 DailyPrice = g.ToDictionary(t => t.CurrentDate.ToString("yyyy-MM-dd"), t => t.DayPrice)
-
-             }).ToList();
-
-        return order;
+                            Address = x2.Address,
+                            CityName = x2.CityName,
+                            CountryName = x2.CountryName,
+                            CostAmount = x1.CostAmount,
+                            Id = x1.Id,
+                            Remark = x1.Remark,
+                            HotelConfirmNum = x1.HotelConfirmNum,
+                            State = x1.State,
+                            CreateTime = x1.CreateTime,
+                        }).SingleAsync();
     }
+
+
+    public async Task<List<OrderPersonDto>> GetOrderPersonList(string orderNum) {
+        return await db.Queryable<OrderPersonDo>()
+                       .Where(vv=> vv.OrderNum == orderNum).Select(vv => new OrderPersonDto()
+                        {
+                            FirstName = vv.FirstName,
+                            LastName = vv.LastName,
+                            Age = vv.Age,
+                            OrderNum = vv.OrderNum,
+                            RoomIndex = vv.RoomIndex, 
+                            TypeString = vv.Type == PersonTypeEnum.Adult ? "成人" : "儿童"
+                        }).ToListAsync();
+    
+    }
+
+
+    public async Task<List<OrderDailyPriceDto>> GetOrderDailyPriceList(string orderNum)
+    {
+        return await db.Queryable<OrderDailyPriceDo>()
+                       .Where(vv => vv.OrderNum == orderNum).Select(vv => new OrderDailyPriceDto()
+                       {
+                            CurrentDate = vv.CurrentDate,
+                            DayPrice = vv.DayPrice,
+                       }).ToListAsync();
+
+    }
+
+    public async Task<List<OrderLogDto>> GetOrderLogList(string orderNum)
+    {
+        return await db.Queryable<OrderLogDo>()
+                       .Where(vv => vv.OrderNum == orderNum)
+                       .OrderByDescending(vv => vv.CreateTime)
+                       .Select(vv => new OrderLogDto()
+                       {
+                          CreateTime = vv.CreateTime,
+                          Describe = vv.Describe,
+                       })
+                   .ToListAsync();
+
+    }
+
+    public async Task<bool> SetInputRemark(string orderNum, string inputRemark)
+    {
+        db.Insertable<OrderLogDo>(new OrderLogDo()
+        {
+            OrderNum = orderNum,
+            CreateTime = DateTime.Now,
+            Describe = inputRemark
+        }).ExecuteCommand();
+        return true;
+    }
+
+
+
+
+
+
+
+
+
 
     public async Task<bool> SaveOrderConfirmNumAsync(long id, string confirmNum)
     {
-        var entity = await OrderRepo.GetByIdAsync(id) ?? throw new InvalidOperationException("订单不存在！");
+        var entity = await OrderRepo.GetByIdAsync(id);
         entity.HotelConfirmNum = confirmNum;
         await OrderRepo.AsUpdateable(entity).UpdateColumns(it => new { it.HotelConfirmNum, it.LastModifiedbyId, it.LastModifiedbyName, it.LastModifiedTime, it.Version })
             .EnableDiffLogEvent()
             .ExecuteCommandWithOptLockAsync();
+
+
+        db.Insertable<OrderLogDo>(new OrderLogDo() { 
+           OrderNum = entity.OrderNum,
+            CreateTime =DateTime.Now,
+             Describe = $@"更新确认号：{confirmNum}"
+        }).ExecuteCommand();
+
         return true;
 
     }

@@ -31,4 +31,13 @@
     </Content>
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="JS\element-plus\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="wwwroot\element-plus\index.css" />
+    <None Include="wwwroot\js\vue.global.js" />
+  </ItemGroup>
+
 </Project>

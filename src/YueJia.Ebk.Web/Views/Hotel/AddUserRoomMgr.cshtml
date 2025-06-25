@@ -35,7 +35,6 @@
                         @foreach (var ele in enumApp.GetEnumDataList(nameof(BedTypeEnum)))
                         {
                             <el-option label='@ele.Describe &nbsp @ele.Name' :value="@ele.Value"></el-option>
-                             
                         }
                     </el-select>
                 </el-form-item>
