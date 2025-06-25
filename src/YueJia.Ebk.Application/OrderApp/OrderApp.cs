@@ -1,5 +1,8 @@
 ﻿using LiteDB;
 using MongoDB.Driver;
+using System.Text.Encodings.Web;
+using System.Text.Json;
+using System.Text.Unicode;
 using YueJia.Ebk.Application.Contracts.OrderApp;
 using YueJia.Ebk.Application.Contracts.OrderApp.Commands;
 using YueJia.Ebk.Application.Contracts.OrderApp.Dto;
@@ -8,6 +11,8 @@ using YueJia.Ebk.Application.Contracts.SysUserApp;
 using YueJia.Ebk.Domain.AggRoot;
 using YueJia.Ebk.Domain.Hotel;
 using YueJia.Ebk.Domain.Order;
+using YueJia.Ebk.Domain.Other;
+using YueJia.Ebk.Domain.Shared.Dto;
 using YueJia.Ebk.Domain.SysUser;
 using YueJia.Ebk.Infrastructure.DistributedLock;
 
@@ -33,14 +38,29 @@ public class OrderApp : ApplicationService, IOrderApp
 
     public async Task<bool> CreateOrderAsync(CreateOrderCmd cmd)
     {
+        await LazyServiceProvider.LazyGetRequiredService<FluentValidation.IValidator<CreateOrderCmd>>().ValidateAndThrowAsync(cmd);
         var Ids = Common.AnalysisSearchCode(cmd.SearchCode);
-        var hotelQuoteObj = db.Queryable<HotelQuoteDo>().Where(vv => vv.Id == Ids.First()).ToList().First();
-        if (Ids.Count != cmd.NightNumber)
-        {
-            throw new InvalidOperationException("参数错误");
-        }
+        var hotelQuoteObj = await db.Queryable<HotelQuoteDo>().SingleAsync(vv => vv.Id == Ids.First());
+        if (Ids.Count != cmd.NightNumber) throw new InvalidOperationException("参数错误");
+
+
+
+        var hotel = await db.Queryable<HotelPublishDo>()
+     .InnerJoin<HotelRoomDo>((x1, x2) => x1.Id == x2.HotelId)
+     .InnerJoin<SysUserDo>((x1, x2, x3) => SqlFunc.ToInt64(x1.CreatedbyId) == x3.Id)
+     .With(SqlWith.NoLock)
+     .Where((x1, x2, x3) => x2.Id == hotelQuoteObj.UserRoomId)
+     .Select((x1, x2, x3) => new { x1.HotelName, x1.HotelNameEn, x2.HotelRoomTitle, x2.BedType, x3.ContactPhone, x3.Email })
+     .SingleAsync();
+
+
+
         await DbTransaction.ExecuteInTransactionAsync(db, async () =>
         {
+
+
+
+
             List<DailyInventoryDo> DailyInventoryList = new List<DailyInventoryDo>();
             List<DailyPriceDo> DailyPriceList = new List<DailyPriceDo>();
 
@@ -50,12 +70,17 @@ public class OrderApp : ApplicationService, IOrderApp
                                                  .InnerJoin<DailyInventoryDo>((x1, x2) => x1.DailyInventoryId == x2.Id &&
                                                                                           x2.InventoryNum >= cmd.RoomList.Count &&
                                                                                           x2.IsEnabled == YesOrNoType.Yes)
+
+                                                 .With($"WITH(ROWLOCK, UPDLOCK, HOLDLOCK)")
                                                  .Where((x1, x2) => x1.Id == Id)
-                                                .Select((x1, x2) => x2).ToListAsync();
-                if (_dailyInventoryList.Count != 1)
-                {
-                    throw new InvalidOperationException("库存未发现");
-                }
+                                                .Select((x1, x2) => x2).SingleAsync() ?? throw new InvalidOperationException("库存未发现");
+
+                _dailyInventoryList.InventoryNum = _dailyInventoryList.InventoryNum - cmd.RoomList.Count;
+                _dailyInventoryList.IsEnabled = _dailyInventoryList.InventoryNum > 0 ? YesOrNoType.Yes : YesOrNoType.No;
+                _dailyInventoryList.Version = _dailyInventoryList.Version + 1;
+                _dailyInventoryList.LastModifiedTime = DateTime.Now;
+
+
                 var _dailyPriceList = await db.Queryable<HotelQuoteDo>()
                                               .InnerJoin<DailyPriceDo>((x1, x2) => x1.DailyPriceId == x2.Id && x2.IsEnabled == YesOrNoType.Yes)
                                               .Where((x1, x2) => x1.Id == Id)
@@ -64,7 +89,7 @@ public class OrderApp : ApplicationService, IOrderApp
                 {
                     throw new InvalidOperationException("报价未发现");
                 }
-                DailyInventoryList.AddRange(_dailyInventoryList);
+                DailyInventoryList.Add(_dailyInventoryList);
                 DailyPriceList.AddRange(_dailyPriceList);
             }
             var costAmount = DailyPriceList.Sum(vv => vv.Price * cmd.RoomList.Count);
@@ -88,7 +113,7 @@ public class OrderApp : ApplicationService, IOrderApp
                                     howManyNights: (Convert.ToDateTime(cmd.CheckOutDate) - Convert.ToDateTime(cmd.CheckInDate)).Days,
                                            remark: cmd.SpecialRemark ?? string.Empty,
                                       createdbyId: hotelQuoteObj.UserId,
-                                         tenantId: DailyInventoryList.First().TenantId.Value);
+                                         tenantId: DailyInventoryList.FirstOrDefault()?.TenantId ?? 0);
 
             List<OrderPersonDo> orderRoomPersonList = new List<OrderPersonDo>();
 
@@ -110,6 +135,50 @@ public class OrderApp : ApplicationService, IOrderApp
             }).ToList();
 
 
+            var taskPublishData = new TaskPublishDto
+            {
+                OrderCode = cmd.OrderCode,
+                HotelName = hotel.HotelName,
+                HotelNameEn = hotel.HotelNameEn,
+                RecipientAccount = hotel.Email ?? string.Empty,
+                RoomNmae = hotel.HotelRoomTitle ?? string.Empty,
+                BedType = hotel.BedType.ToDescription(),
+                CheckInDate = cmd.CheckInDate,
+                CheckOutDate = cmd.CheckOutDate,
+                AdultNumber = cmd.RoomList.FirstOrDefault()?.AdultNumber ?? 0,
+                ChildNumber = cmd.RoomList.FirstOrDefault()?.ChildNumber ?? 0,
+                CostAmount = costAmount,
+                RoomNumber = cmd.RoomList.Count,
+                PersonName = cmd.RoomList.SelectMany(t => t.PersonList)
+             .Where(t => t.Type == PersonTypeEnum.Adult)
+             .Select(t => $"{t.LastName}/{t.FirstName}")
+             .ToList()
+            };
+
+
+            //推送任数据包装
+
+            //创建推送任务
+            var taskPublishDo = new List<TaskPublishDo>() {
+             TaskPublishDo.Create(
+                 PushTypeEnum.Email,
+                 cmd.OrderCode,
+                 System.Text.Json.JsonSerializer.Serialize(taskPublishData, new JsonSerializerOptions { Encoder = JavaScriptEncoder.Create(UnicodeRanges.All) }),
+                 0,
+                 null,
+                 TaskPushStatusTypeEnum.Pending,
+                 DateTime.Now),
+             TaskPublishDo.Create(
+                 PushTypeEnum.SMS,
+                 cmd.OrderCode,
+                 System.Text.Json.JsonSerializer.Serialize(taskPublishData with{ RecipientAccount=hotel.ContactPhone??string.Empty }, new JsonSerializerOptions { Encoder = JavaScriptEncoder.Create(UnicodeRanges.All) }),
+                 0,
+                 null,
+                 TaskPushStatusTypeEnum.Pending,
+                 DateTime.Now)
+            };
+
+
             //插入订单
             await db.Insertable(orderDo).ExecuteReturnSnowflakeIdListAsync();
 
@@ -120,22 +189,11 @@ public class OrderApp : ApplicationService, IOrderApp
             await db.Insertable(orderRoomDailyPriceDetailDos).ExecuteCommandAsync();
 
             //库存扣减
-            foreach (var item in DailyInventoryList)
-            {
-                var NewInventoryNum = item.InventoryNum - cmd.RoomList.Count;
-                var NewIsEnabled = NewInventoryNum > 0 ? YesOrNoType.Yes : YesOrNoType.No;
+            await db.Updateable(DailyInventoryList).UpdateColumns(it => new { it.InventoryNum, it.IsEnabled, it.LastModifiedTime, it.Version })
+           .ExecuteCommandAsync();
 
-                await db.Updateable<DailyInventoryDo>()
-                         .SetColumns(it => new DailyInventoryDo()
-                         {
-                             Version = it.Version + 1,
-                             LastModifiedTime = DateTime.Now,
-                             InventoryNum = NewInventoryNum,
-                             IsEnabled = NewIsEnabled,
-                         })
-                         .Where(it => it.Id == item.Id)
-                         .ExecuteCommandAsync();
-            }
+            //插入推送任务
+            await db.Insertable(taskPublishDo).ExecuteCommandAsync();
             return true;
         });
         return true;
@@ -150,7 +208,7 @@ public class OrderApp : ApplicationService, IOrderApp
                              .With(SqlWith.NoLock)
                              .Where((x1, x2) => x1.CreatedbyId == qry.UserId)
                              .WhereIF(!string.IsNullOrWhiteSpace(qry.HotelCode), (x1, x2) => x2.HotelCode == qry.HotelCode)
-                             .WhereIF(!string.IsNullOrWhiteSpace(qry.HotelName), (x1, x2) => x2.HotelName.Contains(qry.HotelName)  || x2.HotelNameEn.Contains(qry.HotelName))
+                             .WhereIF(!string.IsNullOrWhiteSpace(qry.HotelName), (x1, x2) => x2.HotelName.Contains(qry.HotelName) || x2.HotelNameEn.Contains(qry.HotelName))
                              .Select((x1, x2) => new OrderPageListDto()
                              {
 

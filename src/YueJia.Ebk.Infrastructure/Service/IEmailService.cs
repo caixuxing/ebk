@@ -6,6 +6,6 @@
         /// 发送邮件
         /// </summary>
         /// <returns></returns>
-        Task DoSendAsync();
+        Task<bool> DoSendAsync(string to, string subject, string htmlContent);
     }
 }
