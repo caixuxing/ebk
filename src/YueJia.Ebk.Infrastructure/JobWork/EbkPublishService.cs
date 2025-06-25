@@ -32,12 +32,9 @@ namespace YueJia.Ebk.Infrastructure.JobWork
                 var stopwatch = Stopwatch.StartNew();
                 //打印任务执行耗时
                 Console.WriteLine($"-----------------------------开始执行发布服务任务！-----------------------------");
-                var item = await Db.Queryable<TaskPublishDo>().OrderBy(t => t.CeateTime)
-                    .FirstAsync(t => new List<TaskPushStatusTypeEnum>() {
-                        TaskPushStatusTypeEnum .Pending,
-                        TaskPushStatusTypeEnum.Exception,
-                        TaskPushStatusTypeEnum.Failed
-                        }.Contains(t.Status) && t.PushCount <= 3, stoppingToken);
+                var item = await Db.Queryable<TaskPublishDo>()
+                    .Where(t => (t.Status == TaskPushStatusTypeEnum.Pending || t.Status == TaskPushStatusTypeEnum.Exception || t.Status == TaskPushStatusTypeEnum.Failed) && t.PushCount <= 3)
+                    .FirstAsync(stoppingToken);
                 if (item is not null)
                 {
                     //解析文本内容
