@@ -3,22 +3,17 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using MongoDB.Driver;
-using Nito.AsyncEx;
 using System.Linq.Expressions;
-using System.Text.RegularExpressions;
 using YueJia.Ebk.Application.Contracts.HotelApp;
 using YueJia.Ebk.Application.Contracts.HotelApp.Commands;
 using YueJia.Ebk.Application.Contracts.HotelApp.Dto;
 using YueJia.Ebk.Application.Contracts.HotelApp.Query;
 using YueJia.Ebk.Application.Contracts.OuterServiceApp.Entity;
 using YueJia.Ebk.Application.Contracts.SysUserApp;
-using YueJia.Ebk.Domain.AggRoot;
-using YueJia.Ebk.Domain.Company;
 using YueJia.Ebk.Domain.Hotel;
 using YueJia.Ebk.Domain.MongdbModel;
 using YueJia.Ebk.Domain.Other;
 using YueJia.Ebk.Domain.Shared.Const;
-using YueJia.Ebk.Domain.Shared.Dto;
 
 namespace YueJia.Ebk.Application.HotelApp;
 
@@ -907,8 +902,8 @@ public class HotelApp : ApplicationService, IHotelApp
                         dailyInventoryObj.SetIsEnable(qry.inventoryState ? YesOrNoType.Yes : YesOrNoType.No);
                     }
 
-                  
-                    if ( (  InventoryNum != dailyInventoryObj.InventoryNum || IsEnable != dailyInventoryObj.IsEnabled) && updateDailyInventoryList.Any(vv=> vv.Id == dailyInventoryObj.Id)==false  )
+
+                    if ((InventoryNum != dailyInventoryObj.InventoryNum || IsEnable != dailyInventoryObj.IsEnabled) && updateDailyInventoryList.Any(vv => vv.Id == dailyInventoryObj.Id) == false)
                     {
                         updateDailyInventoryList.Add(dailyInventoryObj);
                     }
@@ -962,7 +957,7 @@ public class HotelApp : ApplicationService, IHotelApp
                         dailyPriceObj.SetIsEnable(qry.planPriceState ? YesOrNoType.Yes : YesOrNoType.No);
                     }
 
-                    if (  ( Price != dailyPriceObj.Price || IsEnable != dailyPriceObj.IsEnabled) && updateDailyPriceList.Any(vv => vv.Id == dailyPriceObj.Id) == false)
+                    if ((Price != dailyPriceObj.Price || IsEnable != dailyPriceObj.IsEnabled) && updateDailyPriceList.Any(vv => vv.Id == dailyPriceObj.Id) == false)
                     {
                         updateDailyPriceList.Add(dailyPriceObj);
                     }
@@ -1029,7 +1024,7 @@ public class HotelApp : ApplicationService, IHotelApp
                         dailyInventoryObj.SetIsEnable(YesOrNoType.No);
                     }
 
-                    if ( ( InventoryNum != dailyInventoryObj.InventoryNum || IsEnable != dailyInventoryObj.IsEnabled  ) && updateDailyInventoryList.Any(vv=> vv.Id == dailyInventoryObj.Id)==false)
+                    if ((InventoryNum != dailyInventoryObj.InventoryNum || IsEnable != dailyInventoryObj.IsEnabled) && updateDailyInventoryList.Any(vv => vv.Id == dailyInventoryObj.Id) == false)
                     {
                         updateDailyInventoryList.Add(dailyInventoryObj);
                     }
@@ -1054,13 +1049,13 @@ public class HotelApp : ApplicationService, IHotelApp
                 foreach (var dailyPriceObj in dailyPriceList)
                 {
 
-                if (qry.weekIndexList.Any(weekIndex => weekIndex == ((int)dailyPriceObj.CurrentDate.DayOfWeek))  == false)
-                {
-                    continue;
-                }
+                    if (qry.weekIndexList.Any(weekIndex => weekIndex == ((int)dailyPriceObj.CurrentDate.DayOfWeek)) == false)
+                    {
+                        continue;
+                    }
 
-                var Price = dailyPriceObj.Price;
-                var IsEnable = dailyPriceObj.IsEnabled;
+                    var Price = dailyPriceObj.Price;
+                    var IsEnable = dailyPriceObj.IsEnabled;
 
 
                     if (ele.planPriceExecType == "1")
@@ -1087,11 +1082,11 @@ public class HotelApp : ApplicationService, IHotelApp
                     }
 
 
-                if ( (Price != dailyPriceObj.Price || IsEnable != dailyPriceObj.IsEnabled )  && updateDailyPriceList.Any(vv=> vv.Id == dailyPriceObj.Id)== false)
-                {
-                    updateDailyPriceList.Add(dailyPriceObj);
+                    if ((Price != dailyPriceObj.Price || IsEnable != dailyPriceObj.IsEnabled) && updateDailyPriceList.Any(vv => vv.Id == dailyPriceObj.Id) == false)
+                    {
+                        updateDailyPriceList.Add(dailyPriceObj);
+                    }
                 }
-            }
 
             }
         }
@@ -1338,17 +1333,19 @@ public class HotelApp : ApplicationService, IHotelApp
         var Ids = Common.AnalysisSearchCode(qry.SearchCode);
         List<HotelQuoteDo> dataList = new List<HotelQuoteDo>();
 
-        foreach (var Id in Ids) {
-            var hotelQuoteList =   db.Queryable<HotelQuoteDo>().Where(vv => vv.Id == Id
-                                                                        && vv.InventoryNum >= qry.NightNumber 
+        foreach (var Id in Ids)
+        {
+            var hotelQuoteList = db.Queryable<HotelQuoteDo>().Where(vv => vv.Id == Id
+                                                                        && vv.InventoryNum >= qry.RoomNumber
                                                                         && vv.CompanyStatus == true
                                                                         && vv.SysUserStatus == true
                                                                         && vv.UserHotelStatus == true
                                                                         && vv.UserRoomStatus == true
                                                                         && vv.UserPlanStatus == true
                                                                         && vv.DailyPriceStatus == true
-                                                                        && vv.DailyInventoryStatus == true ).ToList();
-            if (hotelQuoteList.Count!=1 ) {
+                                                                        && vv.DailyInventoryStatus == true).ToList();
+            if (hotelQuoteList.Count != 1)
+            {
                 return 0;
             }
             dataList.add(hotelQuoteList.First());
@@ -1365,8 +1362,9 @@ public class HotelApp : ApplicationService, IHotelApp
     public async Task<IEnumerable<HotelPriceDto>> SearchPrice(PriceSearchQry qry)
     {
         List<HotelPriceDto> result = new List<HotelPriceDto>();
-        var CompanyAndDepartmentChannelList = await MongoDb.GetCollection<CompanyAndDepartmentChannelModel>(nameof(CompanyAndDepartmentChannelModel)).Find<CompanyAndDepartmentChannelModel>(vv=>vv.PFCode == qry.PFCode ).ToListAsync();
-        if (CompanyAndDepartmentChannelList.Count == 0) {
+        var CompanyAndDepartmentChannelList = await MongoDb.GetCollection<CompanyAndDepartmentChannelModel>(nameof(CompanyAndDepartmentChannelModel)).Find<CompanyAndDepartmentChannelModel>(vv => vv.PFCode == qry.PFCode).ToListAsync();
+        if (CompanyAndDepartmentChannelList.Count == 0)
+        {
             return result;
         }
 
@@ -1374,24 +1372,27 @@ public class HotelApp : ApplicationService, IHotelApp
                                                                                   && p.CurrentDate >= Convert.ToInt32(Convert.ToDateTime(qry.CheckInDate).ToString("yyyyMMdd"))
          && p.CurrentDate < Convert.ToInt32(Convert.ToDateTime(qry.CheckOutDate).ToString("yyyyMMdd"))
          && p.InventoryNum >= qry.RoomNumber
-         && p.MaximumNumberOfPeople >= qry.PersonCount 
+         && p.MaximumNumberOfPeople >= qry.PersonCount
          && p.AdultLimit >= qry.PersonCount
          && p.DaysInAdvance <= qry.AdvanceDays
          && p.ContinuousStayDays <= qry.NightNumber;
 
         var dataList = await MongoDb.GetCollection<HotelQuoteModel>(nameof(HotelQuoteModel)).Find<HotelQuoteModel>(queryWhere).ToListAsync();
         var UserPricePlanIdList = dataList.Select(vv => vv.UserPricePlanId).Distinct().ToList();
-        foreach (var UserPricePlanId in UserPricePlanIdList) {
+        foreach (var UserPricePlanId in UserPricePlanIdList)
+        {
             List<HotelQuoteModel> DayPriceList = new List<HotelQuoteModel>();
 
-            for (int Index = 0; Index < qry.NightNumber; Index++) {
+            for (int Index = 0; Index < qry.NightNumber; Index++)
+            {
                 var TempTime = Convert.ToDateTime(qry.CheckInDate).AddDays(Index).Date;
                 var TempPriceObjList = dataList.Where(x => x.UserPricePlanId == UserPricePlanId && x.CurrentDate == Convert.ToInt32(TempTime.ToString("yyyyMMdd"))).ToList();
                 if (TempPriceObjList.Count() != 1)
                 {
                     break;
                 }
-                if (CompanyAndDepartmentChannelList.Any(vv=> vv.CompanyAndDepartmentId == TempPriceObjList.First().CompanyId || vv.CompanyAndDepartmentId == TempPriceObjList.First().DeptId)   ) {
+                if (CompanyAndDepartmentChannelList.Any(vv => vv.CompanyAndDepartmentId == TempPriceObjList.First().CompanyId || vv.CompanyAndDepartmentId == TempPriceObjList.First().DeptId))
+                {
                     DayPriceList.Add(TempPriceObjList.First());
                 }
             }
@@ -1403,9 +1404,9 @@ public class HotelApp : ApplicationService, IHotelApp
                     HotelCode = DayPriceList.First().HotelCode,
                     RoomCode = DayPriceList.First().RoomCode,
                     SearchCode = Common.GetSearchCode(DayPriceList.Select(vv => vv.Id).ToList()),
-                    IsBreakfast = DayPriceList.First().BreakfastType ==  BreakfastTypeEnum.Breakfast,
-                    DayPrice = DayPriceList.Select(vv => Common.AdjustmentPriceForHotel( vv.Price, vv.AdjustmentPriceType,vv.AdjustmentPriceValue )).ToList(),
-                }); 
+                    IsBreakfast = DayPriceList.First().BreakfastType == BreakfastTypeEnum.Breakfast,
+                    DayPrice = DayPriceList.Select(vv => Common.AdjustmentPriceForHotel(vv.Price, vv.AdjustmentPriceType, vv.AdjustmentPriceValue)).ToList(),
+                });
             }
         }
         return result;

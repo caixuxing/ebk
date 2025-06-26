@@ -16,7 +16,7 @@ public class EmailService : IEmailService, ITransientDependency
     };
 
 
-    public async Task DoSendAsync()
+    public async Task<bool> DoSendAsync(string to, string subject, string htmlContent)
     {
         try
         {
@@ -24,13 +24,11 @@ public class EmailService : IEmailService, ITransientDependency
             MailMessage mail = new MailMessage();
             // 设置发件人邮箱地址
             mail.From = new MailAddress("develop@yegatrip.com", "YueJia");
-            string to = "11360847@qq.com";
+            //string to = "11360847@qq.com";
             // 设置收件人邮箱地址，可以添加多个收件人
             to.Split(',').ToList().ForEach(item => mail.To.Add(item));
             // 设置邮件主题
-            mail.Subject = $"测试邮件{GenerateRandomString(10)}";
-            // 进行替换操作
-            string htmlContent = $"邮件内容信息fe{GenerateRandomString(10)}";
+            mail.Subject = subject;
             // 设置邮件正文
             mail.Body = htmlContent;
             mail.IsBodyHtml = true;
@@ -44,13 +42,11 @@ public class EmailService : IEmailService, ITransientDependency
             //smtpClient.EnableSsl = true;
             // 发送邮件
             await _smtpClient.SendMailAsync(mail);
-
-            //更新数据库发布信息表状态
-
+            return true;
         }
         catch (Exception ex)
         {
-
+            throw new InvalidOperationException("邮件发送失败", ex);
         }
     }
 
