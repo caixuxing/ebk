@@ -50,14 +50,11 @@ public class SysUserApp : ApplicationService, ISysUserApp
             throw new InvalidOperationException($"不能删除当前登录用户！");
         }
 
-        var delEntity = entity with { };
-        delEntity.IsDelete = true;
-        if (entity.Equals(delEntity))
-        {
-            return true;
-        }
-        await SysUserRepo.AsUpdateable(delEntity)
-                         .UpdateColumns(it => new { it.IsDelete, it.Version, it.LastModifiedbyId, it.LastModifiedbyName, it.LastModifiedTime })
+        entity.IsDelete = true;
+        entity.IsEnabled = YesOrNoType.No;
+     
+        await SysUserRepo.AsUpdateable(entity)
+                         .UpdateColumns(it => new { it.IsDelete, it.IsEnabled, it.Version, it.LastModifiedbyId, it.LastModifiedbyName, it.LastModifiedTime })
                          .ExecuteCommandWithOptLockAsync();
         return true;
     }

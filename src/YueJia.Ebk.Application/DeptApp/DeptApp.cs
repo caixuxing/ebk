@@ -7,6 +7,7 @@ using YueJia.Ebk.Application.Contracts.DeptApp.Query;
 using YueJia.Ebk.Application.Contracts.SysUserApp;
 using YueJia.Ebk.Domain.Company;
 using YueJia.Ebk.Domain.Dept;
+using YueJia.Ebk.Domain.SysUser;
 
 namespace YueJia.Ebk.Application.DeptApp;
 
@@ -52,12 +53,17 @@ public class DeptApp : ApplicationService, IDeptApp
     public async Task<bool> DeleteDeptAsync(long id)
     {
         var entity = await DepartmentRepo.GetFirstAsync(x => x.Id == id );
-           if(entity == null) {
+        if(entity == null) {
             throw new InvalidOperationException($"数据未找到！");
         }
+        //部门下面存在用户则不允许删除
+        if (db.Queryable<SysUserDo>().Any(vv=> vv.DeptId == entity.Id)) { 
+            throw new InvalidOperationException($"当前部门存在用户！");
+        }
+
         entity.IsDelete = true;
      
-        var affectedRows = await DepartmentRepo.AsUpdateable(entity)
+         await DepartmentRepo.AsUpdateable(entity)
          .UpdateColumns(it => new { it.IsDelete, it.Version, it.LastModifiedbyId, it.LastModifiedbyName, it.LastModifiedTime })
          .ExecuteCommandAsync();
         return true;

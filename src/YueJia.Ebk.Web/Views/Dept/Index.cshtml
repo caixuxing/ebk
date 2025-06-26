@@ -187,7 +187,7 @@
 
                   ElMessageBox.confirm('您确定删除吗?', { confirmButtonText: '确定', cancelButtonText: '取消', type: 'warning', }).then(() => {
 
-                         axios.delete(`/Dept/${row.id}/delete`).then(res  => {
+                         axios.delete(`/Dept/${row.deptId}/delete`).then(res  => {
                                           top.window.vueElMessage({ message: res.data. message , type:  res.data.isSuccess?'success':'info' })
                                           if(res.data.isSuccess){
                                              loadData();

@@ -158,41 +158,45 @@ public class HotelApp : ApplicationService, IHotelApp
         //房间
         var entity = HotelRoomRepo.GetById(id);
         entity.IsDelete = true;
+        entity.IsEnabled = YesOrNoType.No;
 
         //库存
         var roomInventoryList = db.Queryable<DailyInventoryDo>().Where(vv => vv.RoomId == entity.Id && vv.TenantId == SqlFunc.ToInt64(CurrentUserApp.TenantId)).ToList();
         roomInventoryList.ForEach(x => x.IsDelete = true);
+        roomInventoryList.ForEach(x => x.IsEnabled =  YesOrNoType.No);
 
         //价格计划
         var pricePlanEntity = PricePlanRepo.AsQueryable().Where(x => x.HotelRoomId == entity.Id && x.TenantId == SqlFunc.ToInt64(CurrentUserApp.TenantId)).ToList();
         pricePlanEntity.ForEach(x => x.IsDelete = true);
+        pricePlanEntity.ForEach(x => x.IsEnabled =  YesOrNoType.No);
 
 
         //价格计划价格
         var dailyPriceDoList = db.Queryable<DailyPriceDo>().Where(vv => vv.RoomId == entity.Id && vv.TenantId == SqlFunc.ToInt64(CurrentUserApp.TenantId)).ToList();
         dailyPriceDoList.ForEach(x => x.IsDelete = true);
+        dailyPriceDoList.ForEach(x => x.IsEnabled =  YesOrNoType.No);
 
 
         return await DbTransaction.ExecuteInTransactionAsync(db, async () =>
         {
             await db.Updateable(entity)
                     .PublicSetColumns(it => it.Version, it => it.Version + 1)
-                    .UpdateColumns(it => new { it.IsDelete, it.LastModifiedbyId, it.LastModifiedbyName, it.LastModifiedTime, it.Version })
+                    .UpdateColumns(it => new { it.IsDelete, it.IsEnabled,  it.LastModifiedbyId, it.LastModifiedbyName, it.LastModifiedTime, it.Version })
                     .ExecuteCommandAsync();
 
             await db.Updateable(roomInventoryList)
                       .PublicSetColumns(it => it.Version, it => it.Version + 1)
-                      .UpdateColumns(it => new { it.IsDelete, it.LastModifiedbyId, it.LastModifiedbyName, it.LastModifiedTime, it.Version })
+                      .UpdateColumns(it => new { it.IsDelete, it.IsEnabled ,it.LastModifiedbyId, it.LastModifiedbyName, it.LastModifiedTime, it.Version })
                       .ExecuteCommandAsync();
 
             await db.Updateable(pricePlanEntity)
                     .PublicSetColumns(it => it.Version, it => it.Version + 1)
-                    .UpdateColumns(it => new { it.IsDelete, it.LastModifiedbyId, it.LastModifiedbyName, it.LastModifiedTime, it.Version })
+                    .UpdateColumns(it => new { it.IsDelete, it.IsEnabled ,it.LastModifiedbyId, it.LastModifiedbyName, it.LastModifiedTime, it.Version })
                     .ExecuteCommandAsync();
 
             await db.Updateable(dailyPriceDoList)
                     .PublicSetColumns(it => it.Version, it => it.Version + 1)
-                    .UpdateColumns(it => new { it.IsDelete, it.LastModifiedbyId, it.LastModifiedbyName, it.LastModifiedTime, it.Version })
+                    .UpdateColumns(it => new { it.IsDelete, it.IsEnabled, it.LastModifiedbyId, it.LastModifiedbyName, it.LastModifiedTime, it.Version })
                     .ExecuteCommandAsync();
 
             return true;
@@ -226,22 +230,24 @@ public class HotelApp : ApplicationService, IHotelApp
             throw new InvalidOperationException("价格计划不存在！");
         }
         entity.IsDelete = true;
+        entity.IsEnabled = YesOrNoType.No;
 
         //价格计划价格
         var dailyPriceDoList = db.Queryable<DailyPriceDo>().Where(vv => vv.RoomId == entity.HotelRoomId && vv.PricePlanId == entity.Id && vv.TenantId == SqlFunc.ToInt64(CurrentUserApp.TenantId)).ToList();
         dailyPriceDoList.ForEach(x => x.IsDelete = true);
+        dailyPriceDoList.ForEach(x => x.IsEnabled =  YesOrNoType.No);
 
 
         return await DbTransaction.ExecuteInTransactionAsync(db, async () =>
         {
             await db.Updateable(entity)
                     .PublicSetColumns(it => it.Version, it => it.Version + 1)
-                    .UpdateColumns(it => new { it.IsDelete, it.LastModifiedbyId, it.LastModifiedbyName, it.LastModifiedTime, it.Version })
+                    .UpdateColumns(it => new { it.IsDelete, it.IsEnabled,  it.LastModifiedbyId, it.LastModifiedbyName, it.LastModifiedTime, it.Version })
                     .ExecuteCommandAsync();
 
             await db.Updateable(dailyPriceDoList)
                     .PublicSetColumns(it => it.Version, it => it.Version + 1)
-                    .UpdateColumns(it => new { it.IsDelete, it.LastModifiedbyId, it.LastModifiedbyName, it.LastModifiedTime, it.Version })
+                    .UpdateColumns(it => new { it.IsDelete, it.IsEnabled ,it.LastModifiedbyId, it.LastModifiedbyName, it.LastModifiedTime, it.Version })
                     .ExecuteCommandAsync();
 
             return true;
@@ -1257,6 +1263,7 @@ public class HotelApp : ApplicationService, IHotelApp
             throw new InvalidOperationException("数据不存在！");
         }
         entity.IsDelete = true;
+        entity.Status = HotelSaleTypeEnum.Down;
         await db.Updateable<HotelPublishDo>(entity).ExecuteCommandAsync();
         return true;
 

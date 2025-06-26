@@ -95,14 +95,11 @@ public class CompanyApp : ApplicationService, ICompanyApp
             throw new InvalidOperationException($"数据未找到");
         }
 
-        var delEntity = entity with { };
-        delEntity.IsDelete = true;
-        if (entity.Equals(delEntity))
-        {
-            return true;
-        }
-        await CompanyRepo.AsUpdateable(delEntity)
-                                             .UpdateColumns(it => new { it.IsDelete, it.Version, it.LastModifiedbyId, it.LastModifiedbyName, it.LastModifiedTime })
+        entity.IsDelete = true;
+        entity.Status =  YesOrNoType.No;
+
+        await CompanyRepo.AsUpdateable(entity)
+                                             .UpdateColumns(it => new { it.IsDelete, it.Status, it.Version, it.LastModifiedbyId, it.LastModifiedbyName, it.LastModifiedTime })
                                              .ExecuteCommandWithOptLockAsync();
         return true;
     }

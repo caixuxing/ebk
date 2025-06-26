@@ -12,18 +12,18 @@ public enum BookingStateTypeEnum
     /// <summary>
     /// 失败
     /// </summary>
-    [Description("失败")]
+    [Description("预定失败")]
     BookFail = 0,
 
     /// <summary>
     /// 成功
     /// </summary>
-    [Description("成功")]
+    [Description("预定成功")]
     BookConfirmed = 1,
 
     /// <summary>
     /// 无效
     /// </summary>
-    [Description("无效")]
+    [Description("预定无效")]
     BookInvalid = 2,
 }

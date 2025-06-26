@@ -6,11 +6,20 @@
         <el-scrollbar style="overflow-x: hidden;">
 
            <el-form label-width="auto" :inline="true">
-                    <div>
+            
+                <el-row>
+                    <el-col :span="8">
                         <el-form-item label="订单号" style="margin-bottom:5px;">
                             @Model.OrderNum
                         </el-form-item>
-                    </div>
+                    </el-col>
+                    <el-col :span="8">
+                        <el-form-item label="订单状态" style="margin-bottom:5px;">
+                            @Model.StateName
+                        </el-form-item>
+                    </el-col>
+                 
+                </el-row>
                     <el-row>
                         <el-col :span="8">
                             <el-form-item label="酒店编码" style="margin-bottom:5px;">
